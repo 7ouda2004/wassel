@@ -1,0 +1,14 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "npm",
+			"script": "build",
+			"path": "واصل-Wasel",
+			"group": "build",
+			"problemMatcher": [],
+			"label": "npm: build - واصل-Wasel",
+			"detail": "tsc && vite build"
+		}
+	]
+}

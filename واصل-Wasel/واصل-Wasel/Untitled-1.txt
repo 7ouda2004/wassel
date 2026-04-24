@@ -1,0 +1,17 @@
+// إذا كان الملف صورة
+{fileUrl && (
+  <img 
+    src={fileUrl} 
+    alt="الملف المرفوع"
+    className="max-w-md rounded-lg shadow-md mt-4" 
+  />
+)}
+
+// إذا كان الملف PDF
+{fileUrl && (
+  <iframe
+    src={fileUrl}
+    className="w-full h-[500px] mt-4"
+    title="عرض PDF"
+  />
+)}
