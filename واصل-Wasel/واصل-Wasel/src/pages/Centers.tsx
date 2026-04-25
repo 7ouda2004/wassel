@@ -87,7 +87,7 @@ const Centers = () => {
   useEffect(() => {
     const filtered = centers.filter(center => {
       const matchesSearch = center.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           center.location.toLowerCase().includes(searchTerm.toLowerCase());
+        center.location.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesRegion = selectedRegion === 'الكل' || center.region === selectedRegion;
       return matchesSearch && matchesRegion;
     });
@@ -97,19 +97,19 @@ const Centers = () => {
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
-      
+
       {/* Hero Section */}
       <section className="relative py-20 bg-gradient-to-b from-medical-100 to-white overflow-hidden">
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               className="inline-block py-2 px-6 bg-medical-200 text-medical-800 rounded-full text-sm font-semibold mb-4 shadow-sm"
             >
               <span>شبكة مراكزنا</span>
             </motion.div>
-            <motion.h1 
+            <motion.h1
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5, delay: 0.1 }}
@@ -117,7 +117,7 @@ const Centers = () => {
             >
               مراكز الأطراف الصناعية والأجهزة التقويمية
             </motion.h1>
-            <motion.p 
+            <motion.p
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
@@ -126,18 +126,18 @@ const Centers = () => {
               اكتشف شبكة مراكزنا المتصلة في جميع أنحاء مصر. نحن نربط خبرائنا ومراكزنا ببعضها البعض لضمان حصولك على أعلى جودة من الخدمة، أينما كنت.
             </motion.p>
           </div>
-          
+
           {/* Visual Network Link */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 1, delay: 0.5 }}
             className="w-full max-w-5xl mx-auto h-64 mt-12 bg-gray-100 rounded-3xl overflow-hidden shadow-inner relative flex justify-center items-center border-[6px] border-white"
           >
             {/* Map Placeholder showing connected points */}
-            <img src="https://images.unsplash.com/photo-1596484552993-9c8e146ebce3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" className="absolute inset-0 w-full h-full object-cover opacity-30 mix-blend-multiply" alt="Map Route" />
+            <img src="https://images.unsplash.com/photo-1596484552993-9ce3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" className="absolute inset-0 w-full h-full object-cover opacity-30 mix-blend-multiply" alt="Map Route" />
             <div className="absolute inset-0 bg-medical-900/50"></div>
-            
+
             <div className="relative z-10 flex flex-col md:flex-row items-center gap-4 md:gap-16 w-full justify-center">
               <motion.div animate={{ y: [0, -10, 0] }} transition={{ repeat: Infinity, duration: 2 }} className="flex flex-col items-center">
                 <MapPin className="h-12 w-12 text-white drop-shadow-md mb-2" />
