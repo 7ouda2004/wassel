@@ -153,12 +153,12 @@ const amputationLevels = [
       'قد يحتاج تعديل حذاء أو دعامة فقط',
       'عودة سريعة للحياة الطبيعية'
     ],
-    image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&h=338&fit=crop',
+    image: 'https://www.prostheticrehabclinic.co.za/wp-content/themes/eugenerossouw/images/understanding_prosthetics/foot_prostheses/lisfrank_level.jpg',
     color: 'from-emerald-500 to-emerald-700'
   },
   {
     id: 'symes',
-    name: 'بتر فوق الرسغ / سايم (Syme\'s Amputation)',
+    name: 'بتر الكاحل / سايم (Syme\'s Amputation)',
     category: 'lower',
     description: 'نوع خاص من بتر القدم عند مفصل الكاحل، يتميز بالقدرة على تحمل الوزن جزئيًا بدون طرف صناعي.',
     anatomyPoints: [
@@ -176,7 +176,7 @@ const amputationLevels = [
       'استهلاك طاقة منخفض',
       'نتائج وظيفية جيدة جدًا'
     ],
-    image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&h=338&fit=crop',
+    image: 'https://c8.alamy.com/compde/2axdpc9/das-handbuch-des-chirurgen-zur-behandlung-von-kriegsverletzten-ein-preisaufsatz-abb-389-abb-388-2axdpc9.jpg',
     color: 'from-emerald-500 to-emerald-700'
   },
   {
@@ -223,7 +223,7 @@ const amputationLevels = [
       'تحكم أفضل من بتر فوق الركبة',
       'قدرة أفضل على تحمل الوزن'
     ],
-    image: 'https://images.unsplash.com/photo-1559757175-5700dde675bc?w=600&h=338&fit=crop',
+    image: 'https://media.springernature.com/lw685/springer-static/image/chp%3A10.1007%2F978-3-030-13290-3_43/MediaObjects/270913_2_En_43_Fig8_HTML.png',
     color: 'from-teal-500 to-teal-700'
   },
   {
@@ -293,7 +293,7 @@ const amputationLevels = [
       'كثير من المرضى يعتمدون على الكرسي المتحرك',
       'يتطلب تأهيل مكثف وطويل الأمد'
     ],
-    image: 'https://images.unsplash.com/photo-1559757175-5700dde675bc?w=600&h=338&fit=crop',
+    image: 'https://www.mdanderson.org/content/mda/en/cancerwise/2025/08/what-is-a-hemipelvectomy/jcr:content/blog/adaptiveimage.resize.1296.0.high.jpg/1752080312795.jpg',
     color: 'from-red-500 to-red-700'
   },
 
@@ -318,7 +318,7 @@ const amputationLevels = [
       'ممكن الوصول لمستوى استقلال عالي مع التدريب',
       'نتائج تعتمد بشكل كبير على مستوى البتر والدافع الشخصي'
     ],
-    image: 'https://images.unsplash.com/photo-1559757175-5700dde675bc?w=600&h=338&fit=crop',
+    image: 'https://images.surferseo.art/281bbbe7-8e9b-498d-b53f-6dfaf5937c8b.jpeg',
     color: 'from-amber-500 to-amber-700'
   }
 ];

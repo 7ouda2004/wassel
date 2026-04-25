@@ -135,7 +135,7 @@ const FootAmputationTypes: React.FC = () => {
       {/* Background */}
       <div className="relative">
         <div className="absolute inset-0 bg-gradient-to-b from-white via-slate-50 to-white" />
-        
+
         <div className="relative container mx-auto px-4">
           {/* Section Header */}
           <motion.div
@@ -165,7 +165,7 @@ const FootAmputationTypes: React.FC = () => {
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8, delay: 0.1 }}
-            className="relative rounded-3xl overflow-hidden mb-16 shadow-2xl group"
+            className="relative rounded-3xl overflow-hidden mb-16 shadow-lg group"
           >
             <img
               src="https://www.karepoindia.com/blog/wp-content/uploads/2025/08/chopart-foot-amputation-scaled.webp"

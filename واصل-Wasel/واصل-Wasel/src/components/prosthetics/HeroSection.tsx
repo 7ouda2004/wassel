@@ -18,26 +18,26 @@ const HeroSection: React.FC = () => {
       <div className="absolute inset-0 bg-gradient-to-bl from-medical-50 via-white to-blue-50">
         {/* Floating Circles */}
         <motion.div
-          animate={{ 
-            scale: [1, 1.2, 1], 
-            x: [0, 30, 0], 
-            y: [0, -20, 0] 
+          animate={{
+            scale: [1, 1.2, 1],
+            x: [0, 30, 0],
+            y: [0, -20, 0]
           }}
           transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
           className="absolute top-20 right-20 w-72 h-72 rounded-full bg-gradient-to-br from-medical-200/40 to-blue-200/30 blur-3xl"
         />
         <motion.div
-          animate={{ 
-            scale: [1, 1.3, 1], 
-            x: [0, -20, 0], 
-            y: [0, 30, 0] 
+          animate={{
+            scale: [1, 1.3, 1],
+            x: [0, -20, 0],
+            y: [0, 30, 0]
           }}
           transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 1 }}
           className="absolute bottom-20 left-20 w-96 h-96 rounded-full bg-gradient-to-tr from-teal-200/30 to-medical-200/20 blur-3xl"
         />
         <motion.div
-          animate={{ 
-            scale: [1, 1.15, 1], 
+          animate={{
+            scale: [1, 1.15, 1],
           }}
           transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 2 }}
           className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-gradient-to-br from-purple-100/20 to-pink-100/20 blur-3xl"
@@ -84,9 +84,9 @@ const HeroSection: React.FC = () => {
               <div className="flex flex-wrap gap-4 mb-12">
                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                   <Button size="lg" className="bg-gradient-to-l from-medical-600 to-medical-700 hover:from-medical-700 hover:to-medical-800 shadow-xl shadow-medical-600/30 text-lg px-8 py-6 rounded-xl">
-                    <Link to="/contact" className="flex items-center gap-2">
+                    <Link to="/contact" className="flex items-center gap-2 text-white">
                       تواصل معنا
-                      <ArrowRight className="w-5 h-5" />
+                      <ArrowRight className="w-5 h-5 text-white" />
                     </Link>
                   </Button>
                 </motion.div>
@@ -137,10 +137,10 @@ const HeroSection: React.FC = () => {
                 transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
                 className="absolute -inset-4 rounded-3xl border-2 border-dashed border-medical-200/50"
               />
-              
-              <div className="relative rounded-3xl overflow-hidden shadow-2xl">
+
+              <div className="relative rounded- overflow-hidden shadow-lg">
                 <img
-                  src="https://images.unsplash.com/photo-1530497610245-b1bca5e79b29?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                  src="https://pm-dv.at/wp-content/uploads/2025/11/SCS23088_Genium-X4_LifestyleShoot_DSC05144_Bjoern-916-cf5067433_de-e1766059337679-1024x682.jpg"
                   alt="طرف صناعي متطور"
                   className="w-full h-[500px] object-cover"
                 />
@@ -159,7 +159,7 @@ const HeroSection: React.FC = () => {
                   </div>
                   <div>
                     <p className="font-bold text-gray-900">جودة ألمانية</p>
-                    <p className="text-sm text-gray-500">تقنيات 2024</p>
+                    <p className="text-sm text-gray-500">تقنيات 2026</p>
                   </div>
                 </div>
               </motion.div>
