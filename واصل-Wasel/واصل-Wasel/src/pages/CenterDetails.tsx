@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import { useTranslation } from 'react-i18next';
 
 interface Branch {
   id: string;
@@ -33,72 +34,61 @@ interface Center {
   }[];
 }
 
-// بيانات تجريبية للمركز
-const centerData: Center = {
-  id: '1',
-  name: 'واصل-Wasel - المركز الرئيسي',
-  description: 'مركز متخصص في تقديم أحدث خدمات الأطراف الصناعية والأجهزة التقويمية بأعلى معايير الجودة العالمية. نحن نجمع بين الخبرة الطويلة والتقنيات المتطورة لتقديم حلول مخصصة تناسب احتياجات كل مريض.',
-  location: 'القاهرة',
-  address: 'شارع التحرير، وسط البلد، القاهرة',
-  phone: '02-123-4567',
-  workingHours: 'السبت - الخميس: 9 صباحاً - 9 مساءً',
-  images: [
-    'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80',
-    'https://images.unsplash.com/photo-1586773860418-d37222d8fce3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80',
-    'https://images.unsplash.com/photo-1551190822-a9333d879b1f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80'
-  ],
-  branches: [
-    {
-      id: 'b1',
-      name: 'فرع مدينة نصر',
-      address: 'شارع عباس العقاد، مدينة نصر، القاهرة',
-      phone: '02-123-4568',
-      workingHours: 'السبت - الخميس: 10 صباحاً - 8 مساءً'
-    },
-    {
-      id: 'b2',
-      name: 'فرع المعادي',
-      address: 'شارع 9، المعادي، القاهرة',
-      phone: '02-123-4569',
-      workingHours: 'السبت - الخميس: 10 صباحاً - 8 مساءً'
-    }
-  ],
-  services: [
-    'الأطراف الصناعية العلوية',
-    'الأطراف الصناعية السفلية',
-    'الأجهزة التقويمية للعمود الفقري',
-    'الأجهزة التقويمية للأطراف',
-    'جبائر القدم والكاحل',
-    'الأحذية الطبية المخصصة'
-  ],
-  specialists: [
-    {
-      name: 'محمود إبراهيم',
-      title: 'أخصائي الأطراف الصناعية',
-      image: '/public/images/mahmoud.jpg'
-    },
-    {
-      name: 'باسل أحمد',
-      title: 'أخصائي الأجهزة التقويمية',
-      image: '/public/images/bassel.jpg'
-    }
-  ]
-};
-
 const CenterDetails = () => {
   const { id } = useParams<{ id: string }>();
+  const { t, i18n } = useTranslation();
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [selectedBranch, setSelectedBranch] = useState<Branch | null>(null);
 
   useEffect(() => {
-    document.documentElement.dir = 'rtl';
-    document.body.classList.add('font-cairo');
+    document.documentElement.dir = i18n.dir();
     window.scrollTo(0, 0);
-  }, []);
+  }, [i18n.language]);
 
-  // في التطبيق الحقيقي، سنقوم بجلب بيانات المركز باستخدام الـ ID
-  // const center = fetchCenterById(id);
-  const center = centerData; // نستخدم البيانات التجريبية حالياً
+  // Translate labels and data
+  const center: Center = {
+    id: id || '1',
+    name: t('center_details.data.name'),
+    description: t('center_details.data.desc'),
+    location: t('center_details.data.location'),
+    address: t('center_details.data.addr'),
+    phone: '02-123-4567',
+    workingHours: t('center_details.data.hours'),
+    images: [
+      'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1586773860418-d37222d8fce3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1551190822-a9333d879b1f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80'
+    ],
+    branches: [
+      {
+        id: 'b1',
+        name: t('center_details.data.branches.nasr'),
+        address: i18n.language === 'ar' ? 'شارع عباس العقاد، مدينة نصر، القاهرة' : 'Abbas El Akkad St, Nasr City, Cairo',
+        phone: '02-123-4568',
+        workingHours: i18n.language === 'ar' ? 'السبت - الخميس: 10 صباحاً - 8 مساءً' : 'Sat - Thu: 10 AM - 8 PM'
+      },
+      {
+        id: 'b2',
+        name: t('center_details.data.branches.maadi'),
+        address: i18n.language === 'ar' ? 'شارع 9، المعادي، القاهرة' : 'Road 9, Maadi, Cairo',
+        phone: '02-123-4569',
+        workingHours: i18n.language === 'ar' ? 'السبت - الخميس: 10 صباحاً - 8 مساءً' : 'Sat - Thu: 10 AM - 8 PM'
+      }
+    ],
+    services: t('center_details.data.services_list', { returnObjects: true }) as string[],
+    specialists: [
+      {
+        name: i18n.language === 'ar' ? 'محمود إبراهيم' : 'Mahmoud Ebrahim',
+        title: t('center_details.data.titles.prosthetist'),
+        image: '/public/images/mahmoud.jpg'
+      },
+      {
+        name: i18n.language === 'ar' ? 'باسل أحمد' : 'Bassel Ahmed',
+        title: t('center_details.data.titles.orthotist'),
+        image: '/public/images/bassel.jpg'
+      }
+    ]
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -107,6 +97,7 @@ const CenterDetails = () => {
       {/* Hero Section with Image Slider */}
       <section className="relative h-[500px] overflow-hidden">
         <motion.div
+          key={activeImageIndex}
           className="h-full w-full"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -117,7 +108,7 @@ const CenterDetails = () => {
             alt={center.name}
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-black bg-opacity-40">
+          <div className="absolute inset-0 bg-black/40">
             <div className="container mx-auto px-4 h-full flex items-center">
               <div className="max-w-4xl">
                 <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
@@ -130,54 +121,64 @@ const CenterDetails = () => {
             </div>
           </div>
         </motion.div>
-        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
+        <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex gap-3">
           {center.images.map((_, index) => (
             <button
               key={index}
               onClick={() => setActiveImageIndex(index)}
-              className={`w-3 h-3 rounded-full ${index === activeImageIndex ? 'bg-white' : 'bg-white/50'}`}
+              className={`w-3 h-3 rounded-full transition-all ${index === activeImageIndex ? 'bg-white scale-125' : 'bg-white/50'}`}
             />
           ))}
         </div>
       </section>
 
       {/* Center Information */}
-      <section className="py-12 bg-white">
+      <section className="py-16 bg-white">
         <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-              <div className="space-y-4">
-                <h2 className="text-2xl font-bold mb-4">معلومات الاتصال</h2>
-                <div className="flex items-start space-x-4 rtl:space-x-reverse">
-                  <MapPin className="h-6 w-6 text-medical-600 mt-1" />
+          <div className="max-w-5xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-16">
+              <div className="space-y-6">
+                <h2 className="text-3xl font-bold mb-6 text-gray-900 border-b pb-4">
+                  {t('center_details.contact_info')}
+                </h2>
+                <div className="flex items-start gap-4">
+                  <div className="bg-medical-50 p-3 rounded-lg">
+                    <MapPin className="h-6 w-6 text-medical-600" />
+                  </div>
                   <div>
-                    <h3 className="font-semibold">العنوان</h3>
-                    <p className="text-gray-600">{center.address}</p>
+                    <h3 className="font-bold text-gray-900">{t('center_details.address')}</h3>
+                    <p className="text-gray-600 text-lg">{center.address}</p>
                   </div>
                 </div>
-                <div className="flex items-start space-x-4 rtl:space-x-reverse">
-                  <Phone className="h-6 w-6 text-medical-600 mt-1" />
+                <div className="flex items-start gap-4">
+                  <div className="bg-medical-50 p-3 rounded-lg">
+                    <Phone className="h-6 w-6 text-medical-600" />
+                  </div>
                   <div>
-                    <h3 className="font-semibold">رقم الهاتف</h3>
-                    <p className="text-gray-600">{center.phone}</p>
+                    <h3 className="font-bold text-gray-900">{t('center_details.phone')}</h3>
+                    <p className="text-gray-600 text-lg">{center.phone}</p>
                   </div>
                 </div>
-                <div className="flex items-start space-x-4 rtl:space-x-reverse">
-                  <Clock className="h-6 w-6 text-medical-600 mt-1" />
+                <div className="flex items-start gap-4">
+                  <div className="bg-medical-50 p-3 rounded-lg">
+                    <Clock className="h-6 w-6 text-medical-600" />
+                  </div>
                   <div>
-                    <h3 className="font-semibold">ساعات العمل</h3>
-                    <p className="text-gray-600">{center.workingHours}</p>
+                    <h3 className="font-bold text-gray-900">{t('center_details.working_hours')}</h3>
+                    <p className="text-gray-600 text-lg">{center.workingHours}</p>
                   </div>
                 </div>
               </div>
               
               <div>
-                <h2 className="text-2xl font-bold mb-4">خدماتنا</h2>
-                <ul className="grid grid-cols-1 gap-2">
+                <h2 className="text-3xl font-bold mb-6 text-gray-900 border-b pb-4">
+                  {t('center_details.services')}
+                </h2>
+                <ul className="grid grid-cols-1 gap-3">
                   {center.services.map((service, index) => (
-                    <li key={index} className="flex items-center">
-                      <ChevronRight className="h-5 w-5 text-medical-600 ml-2" />
-                      <span>{service}</span>
+                    <li key={index} className="flex items-center gap-3 bg-gray-50 p-3 rounded-lg hover:bg-medical-50 transition-colors">
+                      <ChevronRight className="h-5 w-5 text-medical-600 rtl:rotate-180" />
+                      <span className="text-gray-800 font-medium">{service}</span>
                     </li>
                   ))}
                 </ul>
@@ -185,66 +186,77 @@ const CenterDetails = () => {
             </div>
 
             {/* Branches Section */}
-            <div className="mb-12">
-              <h2 className="text-2xl font-bold mb-6">فروعنا</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="mb-16">
+              <h2 className="text-3xl font-bold mb-8 text-gray-900 text-center">
+                {t('center_details.branches')}
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {center.branches.map((branch) => (
-                  <div
+                  <motion.div
                     key={branch.id}
-                    className="bg-gray-50 rounded-lg p-6 hover:bg-gray-100 transition-colors"
+                    className="bg-white rounded-xl p-8 shadow-lg border border-gray-100 hover:border-medical-200 transition-all"
+                    whileHover={{ y: -5 }}
                   >
-                    <div className="flex items-center mb-4">
-                      <Building className="h-6 w-6 text-medical-600 ml-3" />
-                      <h3 className="text-xl font-semibold">{branch.name}</h3>
+                    <div className="flex items-center mb-6">
+                      <div className="bg-medical-100 p-3 rounded-full mr-4 rtl:ml-4 rtl:mr-0">
+                        <Building className="h-7 w-7 text-medical-600" />
+                      </div>
+                      <h3 className="text-2xl font-bold text-gray-900">{branch.name}</h3>
                     </div>
-                    <div className="space-y-3 mb-4">
-                      <div className="flex items-center text-gray-600">
-                        <MapPin className="h-5 w-5 ml-2" />
+                    <div className="space-y-4 mb-8">
+                      <div className="flex items-start text-gray-600 text-lg">
+                        <MapPin className="h-5 w-5 mr-3 rtl:ml-3 rtl:mr-0 mt-1 flex-shrink-0" />
                         <span>{branch.address}</span>
                       </div>
-                      <div className="flex items-center text-gray-600">
-                        <Phone className="h-5 w-5 ml-2" />
+                      <div className="flex items-center text-gray-600 text-lg">
+                        <Phone className="h-5 w-5 mr-3 rtl:ml-3 rtl:mr-0 flex-shrink-0" />
                         <span>{branch.phone}</span>
                       </div>
-                      <div className="flex items-center text-gray-600">
-                        <Clock className="h-5 w-5 ml-2" />
+                      <div className="flex items-center text-gray-600 text-lg">
+                        <Clock className="h-5 w-5 mr-3 rtl:ml-3 rtl:mr-0 flex-shrink-0" />
                         <span>{branch.workingHours}</span>
                       </div>
                     </div>
-                    <Button
-                      onClick={() => setSelectedBranch(branch)}
-                      className="w-full"
-                    >
-                      حجز موعد
-                      <Calendar className="mr-2 h-5 w-5" />
-                    </Button>
-                  </div>
+                    <Link to="/booking">
+                      <Button className="w-full py-6 text-lg medical-btn">
+                        {t('center_details.book_appointment')}
+                        <Calendar className="ml-2 h-5 w-5" />
+                      </Button>
+                    </Link>
+                  </motion.div>
                 ))}
               </div>
             </div>
 
             {/* Specialists Section */}
             <div>
-              <h2 className="text-2xl font-bold mb-6">فريقنا المتخصص</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+              <h2 className="text-3xl font-bold mb-10 text-gray-900 text-center">
+                {t('center_details.team')}
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 gap-12 max-w-3xl mx-auto">
                 {center.specialists.map((specialist, index) => (
-                  <div key={index} className="text-center">
-                    <img
-                      src={specialist.image}
-                      alt={specialist.name}
-                      className="w-32 h-32 rounded-full mx-auto mb-4 object-cover"
-                    />
-                    <h3 className="font-semibold text-lg">{specialist.name}</h3>
-                    <p className="text-gray-600">{specialist.title}</p>
-                  </div>
+                  <motion.div 
+                    key={index} 
+                    className="text-center group"
+                    whileHover={{ scale: 1.05 }}
+                  >
+                    <div className="relative inline-block mb-6">
+                      <div className="absolute inset-0 bg-medical-500 rounded-full blur-lg opacity-20 group-hover:opacity-40 transition-opacity"></div>
+                      <img
+                        src={specialist.image}
+                        alt={specialist.name}
+                        className="relative w-48 h-48 rounded-full mx-auto object-cover border-4 border-white shadow-xl"
+                      />
+                    </div>
+                    <h3 className="font-bold text-2xl text-gray-900 mb-2">{specialist.name}</h3>
+                    <p className="text-medical-600 font-semibold text-lg">{specialist.title}</p>
+                  </motion.div>
                 ))}
               </div>
             </div>
           </div>
         </div>
       </section>
-
-      {/* Booking Modal - يمكن إضافته لاحقاً */}
 
       <Footer />
     </div>

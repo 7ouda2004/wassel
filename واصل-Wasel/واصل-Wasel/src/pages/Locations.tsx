@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import { useTranslation } from 'react-i18next';
 
 const locations = [
   {
@@ -34,11 +35,12 @@ const locations = [
 ];
 
 const Locations = () => {
+  const { t, i18n } = useTranslation();
+  
   useEffect(() => {
-    document.documentElement.dir = 'rtl';
-    document.body.classList.add('font-cairo');
+    document.documentElement.dir = i18n.dir();
     window.scrollTo(0, 0);
-  }, []);
+  }, [i18n.language]);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -48,14 +50,13 @@ const Locations = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
             <div className="inline-block oval-header">
-              <span>مراكزنا</span>
+              <span>{t('locations_page.badge')}</span>
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-              مراكزنا في جميع أنحاء مصر
+              {t('locations_page.title')}
             </h1>
             <p className="text-xl text-gray-600 mb-8">
-              لدينا مراكز متخصصة في مختلف المحافظات لتقديم خدماتنا بشكل أفضل وأقرب لكم.
-              اختر المركز الأقرب إليك وتواصل معنا لحجز موعد.
+              {t('locations_page.desc')}
             </p>
           </div>
         </div>
@@ -64,7 +65,7 @@ const Locations = () => {
       {/* Locations */}
       <section className="py-20 bg-white">
         <div className="container mx-auto px-4">
-          <h2 className="section-title">مراكزنا المتخصصة</h2>
+          <h2 className="section-title">{t('locations_page.section_title')}</h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-12">
             {locations.map((location, index) => (
@@ -117,7 +118,7 @@ const Locations = () => {
                       rel="noopener noreferrer"
                       className="text-medical-600 hover:text-medical-700 font-medium inline-flex items-center"
                     >
-                      عرض على الخريطة
+                      {t('locations_page.view_on_map')}
                       <ChevronRight className="h-4 w-4 mr-1 rtl:rotate-180" />
                     </a>
                   </div>
@@ -132,7 +133,7 @@ const Locations = () => {
       <section className="py-20 bg-medical-50">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
-            <h2 className="section-title">ابحث عن أقرب مركز</h2>
+            <h2 className="section-title">{t('locations_page.find_nearest')}</h2>
             
             <div className="relative h-[500px] mt-12 rounded-lg overflow-hidden shadow-xl">
               <iframe 
@@ -143,7 +144,7 @@ const Locations = () => {
                 allowFullScreen 
                 loading="lazy" 
                 referrerPolicy="no-referrer-when-downgrade"
-                title="خريطة مراكز أورثو إيد برو"
+                title={t('locations_page.map_title')}
               ></iframe>
             </div>
             
@@ -152,13 +153,13 @@ const Locations = () => {
                 <div className="h-12 w-12 rounded-full bg-medical-100 flex items-center justify-center mb-4">
                   <img 
                     src="https://img.icons8.com/color/48/000000/marker.png" 
-                    alt="تحديد الموقع" 
+                    alt={t('locations_page.steps.locate.title')} 
                     className="h-6 w-6"
                   />
                 </div>
-                <h3 className="text-lg font-semibold mb-2">تحديد الموقع</h3>
+                <h3 className="text-lg font-semibold mb-2">{t('locations_page.steps.locate.title')}</h3>
                 <p className="text-gray-600">
-                  اسمح لنا بتحديد موقعك الحالي لمساعدتك في العثور على أقرب مركز إليك.
+                  {t('locations_page.steps.locate.desc')}
                 </p>
               </div>
               
@@ -166,13 +167,13 @@ const Locations = () => {
                 <div className="h-12 w-12 rounded-full bg-medical-100 flex items-center justify-center mb-4">
                   <img 
                     src="https://img.icons8.com/color/48/000000/search-location.png" 
-                    alt="العثور على المركز" 
+                    alt={t('locations_page.steps.find.title')} 
                     className="h-6 w-6"
                   />
                 </div>
-                <h3 className="text-lg font-semibold mb-2">العثور على المركز</h3>
+                <h3 className="text-lg font-semibold mb-2">{t('locations_page.steps.find.title')}</h3>
                 <p className="text-gray-600">
-                  سنقوم بتحديد أقرب مركز إليك وتزويدك بالاتجاهات والمعلومات اللازمة.
+                  {t('locations_page.steps.find.desc')}
                 </p>
               </div>
               
@@ -180,13 +181,13 @@ const Locations = () => {
                 <div className="h-12 w-12 rounded-full bg-medical-100 flex items-center justify-center mb-4">
                   <img 
                     src="https://img.icons8.com/color/48/000000/calendar--v1.png" 
-                    alt="حجز موعد" 
+                    alt={t('locations_page.steps.book.title')} 
                     className="h-6 w-6"
                   />
                 </div>
-                <h3 className="text-lg font-semibold mb-2">حجز موعد</h3>
+                <h3 className="text-lg font-semibold mb-2">{t('locations_page.steps.book.title')}</h3>
                 <p className="text-gray-600">
-                  بعد تحديد المركز، يمكنك حجز موعد بسهولة عبر الهاتف أو عبر الإنترنت.
+                  {t('locations_page.steps.book.desc')}
                 </p>
               </div>
             </div>
@@ -203,37 +204,30 @@ const Locations = () => {
                 <div className="md:w-1/2">
                   <img 
                     src="https://images.unsplash.com/photo-1631815588090-d4bfec5b1ccb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
-                    alt="زيارات منزلية" 
+                    alt={t('locations_page.home_visits.title')} 
                     className="w-full h-full object-cover"
                   />
                 </div>
                 <div className="p-8 md:w-1/2">
-                  <h2 className="text-3xl font-bold mb-4">خدمة الزيارات المنزلية</h2>
+                  <h2 className="text-3xl font-bold mb-4">{t('locations_page.home_visits.title')}</h2>
                   <p className="text-gray-600 mb-6">
-                    لا تستطيع الوصول إلى أحد مراكزنا؟ نقدم خدمة الزيارات المنزلية للحالات الخاصة
-                    في مناطق محددة. فريقنا المتخصص سيأتي إليك لتقديم الخدمة المطلوبة.
+                    {t('locations_page.home_visits.desc')}
                   </p>
                   
-                  <h3 className="font-semibold text-lg mb-3">مناطق تغطية الزيارات المنزلية:</h3>
+                  <h3 className="font-semibold text-lg mb-3">{t('locations_page.home_visits.coverage')}</h3>
                   <ul className="space-y-2 mb-6">
-                    <li className="flex items-center">
-                      <span className="h-2 w-2 bg-medical-500 rounded-full mr-2"></span>
-                      <span>القاهرة الكبرى</span>
-                    </li>
-                    <li className="flex items-center">
-                      <span className="h-2 w-2 bg-medical-500 rounded-full mr-2"></span>
-                      <span>الإسكندرية</span>
-                    </li>
-                    <li className="flex items-center">
-                      <span className="h-2 w-2 bg-medical-500 rounded-full mr-2"></span>
-                      <span>المنصورة ومحيطها</span>
-                    </li>
+                    {(t('locations_page.home_visits.areas', { returnObjects: true }) as string[]).map((area, idx) => (
+                      <li key={idx} className="flex items-center">
+                        <span className="h-2 w-2 bg-medical-500 rounded-full mr-2"></span>
+                        <span>{area}</span>
+                      </li>
+                    ))}
                   </ul>
                   
                   <div className="mt-6">
                     <a href="https://wa.me/201119056895" target="_blank" rel="noopener noreferrer">
                       <Button className="medical-btn">
-                        طلب زيارة منزلية
+                        {t('locations_page.home_visits.cta')}
                         <ChevronRight className="mr-2 h-4 w-4 rtl:rotate-180" />
                       </Button>
                     </a>
@@ -250,14 +244,14 @@ const Locations = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              زورنا اليوم للحصول على استشارة مجانية
+              {t('locations_page.cta_title')}
             </h2>
             <p className="text-medical-100 text-lg mb-8">
-              فريقنا المتخصص في انتظارك في جميع مراكزنا. تواصل معنا لحجز موعد أو الاستفسار عن خدماتنا.
+              {t('locations_page.cta_desc')}
             </p>
             <Link to="/contact">
               <Button size="lg" className="bg-white text-medical-700 hover:bg-medical-50 px-6 py-6">
-                تواصل معنا
+                {t('locations_page.cta_button')}
                 <ChevronRight className="mr-2 h-5 w-5 rtl:rotate-180" />
               </Button>
             </Link>

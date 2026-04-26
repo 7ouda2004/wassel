@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Activity, ChevronDown, ChevronUp, Zap, CircleDollarSign, Gauge } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 // أنواع الركب الصناعية
 const kneeTypes = [
@@ -138,7 +139,15 @@ const tierLabels: Record<string, string> = {
 };
 
 const KneeTypes: React.FC = () => {
+  const { t } = useTranslation();
   const [expandedKnee, setExpandedKnee] = useState<string | null>(null);
+
+  const kneeData = t('prosthetics.knee_types.data', { returnObjects: true }) as Record<string, any>;
+  
+  const typesWithData = kneeTypes.map(type => ({
+    ...type,
+    ...(kneeData[type.id] || {})
+  }));
 
   return (
     <section id="knee-types" className="py-20 relative overflow-hidden">
@@ -157,21 +166,21 @@ const KneeTypes: React.FC = () => {
         >
           <div className="inline-flex items-center gap-2 bg-purple-100 text-purple-700 px-4 py-2 rounded-full text-sm font-bold mb-4">
             <Activity className="w-4 h-4" />
-            من الميكانيكي إلى المحوسب
+            {t('prosthetics.knee_types.badge')}
           </div>
           <h2 className="text-4xl md:text-5xl font-bold mb-4">
             <span className="bg-gradient-to-l from-purple-600 to-blue-600 bg-clip-text text-transparent">
-              أنواع الركب الصناعية
+              {t('prosthetics.knee_types.title')}
             </span>
           </h2>
           <p className="text-gray-500 text-lg max-w-2xl mx-auto">
-            اختر الركبة الصناعية المناسبة لمستوى نشاطك وأهدافك الوظيفية
+            {t('prosthetics.knee_types.desc')}
           </p>
         </motion.div>
 
         {/* Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {kneeTypes.map((knee, index) => (
+          {typesWithData.map((knee, index) => (
             <motion.div
               key={knee.id}
               initial={{ opacity: 0, y: 40 }}
@@ -197,7 +206,7 @@ const KneeTypes: React.FC = () => {
                   <div className="absolute top-4 right-4">
                     <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black bg-white/95 backdrop-blur-sm shadow-lg`}>
                       <Zap className="w-3.5 h-3.5 text-amber-500" />
-                      {tierLabels[knee.tier]}
+                      {t(`prosthetics.knee_types.tiers.${knee.tier}`)}
                     </span>
                   </div>
 
@@ -224,8 +233,8 @@ const KneeTypes: React.FC = () => {
                   <div className={`${knee.tierBg} rounded-xl p-3 mb-4 flex items-center gap-2`}>
                     <Gauge className="w-4 h-4 text-gray-600" />
                     <div>
-                      <span className="text-xs text-gray-500 font-medium">مستوى النشاط:</span>
-                      <span className="text-sm font-bold text-gray-800 mr-2">{knee.activityLevel}</span>
+                      <span className="text-xs text-gray-500 font-medium">{t('prosthetics.knee_types.activity')}</span>
+                      <span className="text-sm font-bold text-gray-800 mr-2 ml-2">{knee.activityLevel}</span>
                     </div>
                   </div>
 
@@ -233,10 +242,10 @@ const KneeTypes: React.FC = () => {
                   <div className="mb-3">
                     <h4 className="font-bold text-gray-800 text-sm mb-2 flex items-center gap-1.5">
                       <span className="w-2 h-2 rounded-full bg-green-500" />
-                      المميزات
+                      {t('prosthetics.knee_types.features')}
                     </h4>
-                    <ul className="space-y-1.5 mr-3">
-                      {knee.features.slice(0, 2).map((feature, idx) => (
+                    <ul className="space-y-1.5 mr-3 ml-3">
+                      {knee.features?.slice(0, 2).map((feature: string, idx: number) => (
                         <li key={idx} className="text-gray-600 text-sm flex items-start gap-2">
                           <span className="w-1.5 h-1.5 rounded-full bg-green-400 mt-1.5 flex-shrink-0" />
                           {feature}
@@ -255,8 +264,8 @@ const KneeTypes: React.FC = () => {
                         transition={{ duration: 0.3 }}
                         className="overflow-hidden"
                       >
-                        <ul className="space-y-1.5 mr-3 mb-4">
-                          {knee.features.slice(2).map((feature, idx) => (
+                        <ul className="space-y-1.5 mr-3 ml-3 mb-4">
+                          {knee.features?.slice(2).map((feature: string, idx: number) => (
                             <li key={idx} className="text-gray-600 text-sm flex items-start gap-2">
                               <span className="w-1.5 h-1.5 rounded-full bg-green-400 mt-1.5 flex-shrink-0" />
                               {feature}
@@ -267,10 +276,10 @@ const KneeTypes: React.FC = () => {
                         <div className="pt-3 border-t border-gray-100">
                           <h4 className="font-bold text-gray-800 text-sm mb-2 flex items-center gap-1.5">
                             <span className="w-2 h-2 rounded-full bg-red-400" />
-                            التحديات والقيود
+                            {t('prosthetics.knee_types.limitations')}
                           </h4>
-                          <ul className="space-y-1.5 mr-3">
-                            {knee.limitations.map((limitation, idx) => (
+                          <ul className="space-y-1.5 mr-3 ml-3">
+                            {knee.limitations?.map((limitation: string, idx: number) => (
                               <li key={idx} className="text-gray-600 text-sm flex items-start gap-2">
                                 <span className="w-1.5 h-1.5 rounded-full bg-red-300 mt-1.5 flex-shrink-0" />
                                 {limitation}
@@ -288,9 +297,9 @@ const KneeTypes: React.FC = () => {
                     className="w-full mt-auto pt-4 flex items-center justify-center gap-1.5 text-medical-600 text-sm font-semibold hover:text-medical-800 transition-colors"
                   >
                     {expandedKnee === knee.id ? (
-                      <>عرض أقل <ChevronUp className="w-4 h-4" /></>
+                      <>{t('prosthetics.knee_types.show_less')} <ChevronUp className="w-4 h-4" /></>
                     ) : (
-                      <>عرض المزيد <ChevronDown className="w-4 h-4" /></>
+                      <>{t('prosthetics.knee_types.show_more')} <ChevronDown className="w-4 h-4" /></>
                     )}
                   </button>
                 </div>

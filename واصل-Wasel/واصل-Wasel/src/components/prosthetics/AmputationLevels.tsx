@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/card";
 import { PersonStanding, Hand, Footprints, ChevronDown, ChevronUp, ArrowDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 
 // Data for amputation levels
 const amputationLevels = [
@@ -355,12 +356,20 @@ const categoryIcons: Record<string, React.ReactNode> = {
 };
 
 const AmputationLevels: React.FC = () => {
+  const { t } = useTranslation();
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [expandedCard, setExpandedCard] = useState<string | null>(null);
 
+  const amputationData = t('prosthetics.amputation_levels.data', { returnObjects: true }) as Record<string, any>;
+  
+  const levelsWithData = amputationLevels.map(level => ({
+    ...level,
+    ...(amputationData[level.id] || {})
+  }));
+
   const filteredLevels = activeCategory === 'all'
-    ? amputationLevels
-    : amputationLevels.filter(l => l.category === activeCategory);
+    ? levelsWithData
+    : levelsWithData.filter(l => l.category === activeCategory);
 
   return (
     <section id="amputation-levels" className="py-20 bg-gradient-to-b from-gray-50 via-white to-gray-50">
@@ -376,11 +385,11 @@ const AmputationLevels: React.FC = () => {
           <div className="flex items-center justify-center gap-3 mb-4">
             <PersonStanding className="h-10 w-10 text-medical-600" />
             <h2 className="text-4xl font-bold bg-gradient-to-l from-medical-600 to-medical-800 bg-clip-text text-transparent">
-              مستويات البتر
+              {t('prosthetics.amputation_levels.title')}
             </h2>
           </div>
           <p className="text-gray-500 text-lg max-w-2xl mx-auto">
-            دليل شامل لجميع مستويات البتر مع خيارات الأطراف الصناعية والنتائج الوظيفية المتوقعة
+            {t('prosthetics.amputation_levels.desc')}
           </p>
         </motion.div>
 
@@ -393,10 +402,10 @@ const AmputationLevels: React.FC = () => {
           className="flex flex-wrap justify-center gap-3 mb-10"
         >
           {[
-            { key: 'all', label: 'جميع المستويات', icon: <PersonStanding className="h-5 w-5" /> },
-            { key: 'upper', label: 'الطرف العلوي', icon: <Hand className="h-5 w-5" /> },
-            { key: 'lower', label: 'الطرف السفلي', icon: <Footprints className="h-5 w-5" /> },
-            { key: 'special', label: 'حالات خاصة', icon: <PersonStanding className="h-5 w-5" /> }
+            { key: 'all', label: t('prosthetics.amputation_levels.tabs.all'), icon: <PersonStanding className="h-5 w-5" /> },
+            { key: 'upper', label: t('prosthetics.amputation_levels.tabs.upper'), icon: <Hand className="h-5 w-5" /> },
+            { key: 'lower', label: t('prosthetics.amputation_levels.tabs.lower'), icon: <Footprints className="h-5 w-5" /> },
+            { key: 'special', label: t('prosthetics.amputation_levels.tabs.special'), icon: <PersonStanding className="h-5 w-5" /> }
           ].map((tab) => (
             <button
               key={tab.key}
@@ -444,7 +453,7 @@ const AmputationLevels: React.FC = () => {
                     <div className="absolute top-3 right-3">
                       <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-white/90 text-gray-700 backdrop-blur-sm shadow-sm">
                         {categoryIcons[level.category]}
-                        {categoryNames[level.category]}
+                        {t(`prosthetics.amputation_levels.tabs.${level.category}`)}
                       </span>
                     </div>
                     {/* Level Name on Image */}
@@ -464,10 +473,10 @@ const AmputationLevels: React.FC = () => {
                     <div className="mb-4">
                       <h4 className="font-semibold text-medical-700 mb-2 flex items-center gap-2">
                         <span className="w-2 h-2 rounded-full bg-medical-500" />
-                        التشريح والخصائص:
+                        {t('prosthetics.amputation_levels.anatomy')}
                       </h4>
-                      <ul className="space-y-1.5 mr-4">
-                        {level.anatomyPoints.map((point, idx) => (
+                      <ul className="space-y-1.5 mr-4 ml-4">
+                        {level.anatomyPoints?.map((point: string, idx: number) => (
                           <li key={idx} className="text-gray-600 text-sm flex items-start gap-2">
                             <span className="text-medical-400 mt-1.5 text-xs">●</span>
                             {point}
@@ -489,10 +498,10 @@ const AmputationLevels: React.FC = () => {
                           <div className="mb-4">
                             <h4 className="font-semibold text-medical-700 mb-2 flex items-center gap-2">
                               <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                              خيارات الأطراف الصناعية:
+                              {t('prosthetics.amputation_levels.prosthetic_options')}
                             </h4>
-                            <ul className="space-y-1.5 mr-4">
-                              {level.prostheticOptions.map((option, idx) => (
+                            <ul className="space-y-1.5 mr-4 ml-4">
+                              {level.prostheticOptions?.map((option: string, idx: number) => (
                                 <li key={idx} className="text-gray-600 text-sm flex items-start gap-2">
                                   <span className="text-emerald-400 mt-1.5 text-xs">●</span>
                                   {option}
@@ -504,10 +513,10 @@ const AmputationLevels: React.FC = () => {
                           <div>
                             <h4 className="font-semibold text-medical-700 mb-2 flex items-center gap-2">
                               <span className="w-2 h-2 rounded-full bg-amber-500" />
-                              النتائج الوظيفية:
+                              {t('prosthetics.amputation_levels.functional_outcomes')}
                             </h4>
-                            <ul className="space-y-1.5 mr-4">
-                              {level.functionalOutcomes.map((outcome, idx) => (
+                            <ul className="space-y-1.5 mr-4 ml-4">
+                              {level.functionalOutcomes?.map((outcome: string, idx: number) => (
                                 <li key={idx} className="text-gray-600 text-sm flex items-start gap-2">
                                   <span className="text-amber-400 mt-1.5 text-xs">●</span>
                                   {outcome}
@@ -522,9 +531,9 @@ const AmputationLevels: React.FC = () => {
                     {/* Expand/Collapse Button */}
                     <button className="w-full mt-4 flex items-center justify-center gap-1 text-medical-600 text-sm font-medium hover:text-medical-800 transition-colors">
                       {expandedCard === level.id ? (
-                        <>عرض أقل <ChevronUp className="h-4 w-4" /></>
+                        <>{t('prosthetics.amputation_levels.show_less')} <ChevronUp className="h-4 w-4" /></>
                       ) : (
-                        <>عرض المزيد <ChevronDown className="h-4 w-4" /></>
+                        <>{t('prosthetics.amputation_levels.show_more')} <ChevronDown className="h-4 w-4" /></>
                       )}
                     </button>
                   </CardContent>
@@ -545,8 +554,8 @@ const AmputationLevels: React.FC = () => {
           className="mt-20"
         >
           <div className="text-center mb-10">
-            <h3 className="text-3xl font-bold text-gray-900 mb-3">تصنيف مستويات البتر</h3>
-            <p className="text-gray-500">ترتيب مستويات البتر من الأقل إلى الأعلى لكل طرف</p>
+            <h3 className="text-3xl font-bold text-gray-900 mb-3">{t('prosthetics.amputation_levels.classification_title')}</h3>
+            <p className="text-gray-500">{t('prosthetics.amputation_levels.classification_desc')}</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
@@ -565,7 +574,7 @@ const AmputationLevels: React.FC = () => {
                   </div>
                   <div>
                     <h4 className="text-xl font-bold text-blue-900">Upper Limb Amputation</h4>
-                    <p className="text-blue-600 text-sm font-medium">بتر الطرف العلوي</p>
+                    <p className="text-blue-600 text-sm font-medium">{t('prosthetics.amputation_levels.upper_classification')}</p>
                   </div>
                 </div>
 
@@ -601,7 +610,7 @@ const AmputationLevels: React.FC = () => {
 
                 <div className="mt-4 flex items-center justify-center gap-2 text-blue-500 text-xs font-medium">
                   <ArrowDown className="h-4 w-4 animate-bounce" />
-                  <span>من الأقل إلى الأعلى</span>
+                  <span>{t('prosthetics.amputation_levels.order_desc')}</span>
                   <ArrowDown className="h-4 w-4 animate-bounce" />
                 </div>
               </div>
@@ -622,7 +631,7 @@ const AmputationLevels: React.FC = () => {
                   </div>
                   <div>
                     <h4 className="text-xl font-bold text-teal-900">Lower Limb Amputation</h4>
-                    <p className="text-teal-600 text-sm font-medium">بتر الطرف السفلي</p>
+                    <p className="text-teal-600 text-sm font-medium">{t('prosthetics.amputation_levels.lower_classification')}</p>
                   </div>
                 </div>
 
@@ -658,7 +667,7 @@ const AmputationLevels: React.FC = () => {
 
                 <div className="mt-4 flex items-center justify-center gap-2 text-teal-500 text-xs font-medium">
                   <ArrowDown className="h-4 w-4 animate-bounce" />
-                  <span>من الأقل إلى الأعلى</span>
+                  <span>{t('prosthetics.amputation_levels.order_desc')}</span>
                   <ArrowDown className="h-4 w-4 animate-bounce" />
                 </div>
               </div>

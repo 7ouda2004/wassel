@@ -13,6 +13,7 @@ import {
   MessageCircle, Send, CheckCircle2, ArrowRight, ArrowLeft,
   Camera, MapPin, Stethoscope, Info
 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 // EmailJS - سنستخدمه لإرسال الإيميل
 // import emailjs from '@emailjs/browser';
@@ -40,9 +41,14 @@ const governorates = [
 ];
 
 const Booking = () => {
+  const { t, i18n } = useTranslation();
+  const isRtl = i18n.dir() === 'rtl';
+
+  const appointmentTypes = t('booking.appointment_types', { returnObjects: true }) as any[];
+  const serviceTypes = t('booking.service_types', { returnObjects: true }) as string[];
+  const governorates = t('booking.governorates', { returnObjects: true }) as string[];
+
   useEffect(() => {
-    document.documentElement.dir = 'rtl';
-    document.body.classList.add('font-cairo');
     window.scrollTo(0, 0);
   }, []);
 
@@ -66,6 +72,12 @@ const Booking = () => {
     service: '',
     notes: ''
   });
+
+  useEffect(() => {
+    if (appointmentTypes.length > 0 && !formData.type) {
+      setFormData(prev => ({ ...prev, type: appointmentTypes[0].value }));
+    }
+  }, [appointmentTypes]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -107,18 +119,18 @@ const Booking = () => {
 
   const buildWhatsAppMessage = () => {
     const selectedType = appointmentTypes.find(t => t.value === formData.type);
-    let msg = `*حجز موعد جديد - واصل*\n\n`;
-    msg += ` *الاسم:* ${formData.name}\n`;
-    msg += ` *الهاتف:* ${formData.phone}\n`;
-    if (formData.email) msg += ` *الإيميل:* ${formData.email}\n`;
-    if (formData.age) msg += ` *العمر:* ${formData.age}\n`;
-    if (formData.governorate) msg += ` *المحافظة:* ${formData.governorate}\n`;
-    msg += `\n *التاريخ:* ${formData.date}\n`;
-    msg += ` *الوقت:* ${formData.time}\n`;
-    msg += ` *نوع الموعد:* ${selectedType?.label} - ${selectedType?.desc}\n`;
-    if (formData.service) msg += ` *الخدمة المطلوبة:* ${formData.service}\n`;
-    if (formData.notes) msg += `\n *ملاحظات:*\n${formData.notes}\n`;
-    if (files.length > 0) msg += `\n *مرفقات:* ${files.length} ملف (سيتم إرسالها في الرسالة التالية)`;
+    let msg = `*${t('booking.whatsapp_msg.header')}*\n\n`;
+    msg += ` *${t('booking.whatsapp_msg.name')}:* ${formData.name}\n`;
+    msg += ` *${t('booking.whatsapp_msg.phone')}:* ${formData.phone}\n`;
+    if (formData.email) msg += ` *${t('booking.whatsapp_msg.email')}:* ${formData.email}\n`;
+    if (formData.age) msg += ` *${t('booking.whatsapp_msg.age')}:* ${formData.age}\n`;
+    if (formData.governorate) msg += ` *${t('booking.whatsapp_msg.governorate')}:* ${formData.governorate}\n`;
+    msg += `\n *${t('booking.whatsapp_msg.date')}:* ${formData.date}\n`;
+    msg += ` *${t('booking.whatsapp_msg.time')}:* ${formData.time}\n`;
+    msg += ` *${t('booking.whatsapp_msg.type')}:* ${selectedType?.label} - ${selectedType?.desc}\n`;
+    if (formData.service) msg += ` *${t('booking.whatsapp_msg.service')}:* ${formData.service}\n`;
+    if (formData.notes) msg += `\n *${t('booking.whatsapp_msg.notes')}:*\n${formData.notes}\n`;
+    if (files.length > 0) msg += `\n *${t('booking.whatsapp_msg.attachments')}:* ${files.length} ${t('booking.whatsapp_msg.files_note')}`;
     return encodeURIComponent(msg);
   };
 
@@ -131,7 +143,7 @@ const Booking = () => {
       window.open(`https://wa.me/201119056895?text=${message}`, '_blank');
       setIsSubmitting(false);
       setSubmitted(true);
-      toast.success('تم فتح واتساب بنجاح! أرسل الرسالة لتأكيد الحجز');
+      toast.success(t('booking.toasts.whatsapp_success'));
     } else {
       // EmailJS integration
       try {
@@ -147,18 +159,18 @@ const Booking = () => {
         await new Promise(resolve => setTimeout(resolve, 2000));
 
         // Also open mailto as fallback
-        const subject = encodeURIComponent(`حجز موعد جديد - ${formData.name}`);
+        const subject = encodeURIComponent(`${t('booking.email_subject')} - ${formData.name}`);
         const body = encodeURIComponent(
-          `حجز موعد جديد\n\nالاسم: ${formData.name}\nالهاتف: ${formData.phone}\nالإيميل: ${formData.email}\nالعمر: ${formData.age}\nالمحافظة: ${formData.governorate}\nالتاريخ: ${formData.date}\nالوقت: ${formData.time}\nنوع الموعد: ${formData.type}\nالخدمة: ${formData.service}\nملاحظات: ${formData.notes}`
+          `${t('booking.email_subject')}\n\n${t('booking.whatsapp_msg.name')}: ${formData.name}\n${t('booking.whatsapp_msg.phone')}: ${formData.phone}\n${t('booking.whatsapp_msg.email')}: ${formData.email}\n${t('booking.whatsapp_msg.age')}: ${formData.age}\n${t('booking.whatsapp_msg.governorate')}: ${formData.governorate}\n${t('booking.whatsapp_msg.date')}: ${formData.date}\n${t('booking.whatsapp_msg.time')}: ${formData.time}\n${t('booking.whatsapp_msg.type')}: ${formData.type}\n${t('booking.whatsapp_msg.service')}: ${formData.service}\n${t('booking.whatsapp_msg.notes')}: ${formData.notes}`
         );
         window.open(`mailto:mahmoudebrahim049@gmail.com?subject=${subject}&body=${body}`, '_blank');
 
         setIsSubmitting(false);
         setSubmitted(true);
-        toast.success('تم إرسال طلب الحجز بنجاح عبر الإيميل!');
+        toast.success(t('booking.toasts.email_success'));
       } catch (error) {
         setIsSubmitting(false);
-        toast.error('حدث خطأ أثناء الإرسال. يرجى المحاولة مرة أخرى.');
+        toast.error(t('booking.toasts.error'));
       }
     }
   };
@@ -177,7 +189,7 @@ const Booking = () => {
     if (validateStep(step)) {
       setStep(prev => Math.min(prev + 1, 3));
     } else {
-      toast.error('يرجى ملء جميع الحقول المطلوبة');
+      toast.error(t('booking.toasts.fill_fields'));
     }
   };
 
@@ -197,19 +209,19 @@ const Booking = () => {
             <div className="w-24 h-24 rounded-full bg-gradient-to-br from-green-400 to-emerald-600 flex items-center justify-center mx-auto mb-6 shadow-2xl shadow-green-500/30">
               <CheckCircle2 className="w-12 h-12 text-white" />
             </div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">تم إرسال طلب الحجز بنجاح! 🎉</h2>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">{t('booking.success.title')}</h2>
             <p className="text-gray-600 text-lg mb-2">
               {sendMethod === 'whatsapp'
-                ? 'تم فتح واتساب برسالة الحجز الجاهزة. أرسلها لتأكيد موعدك.'
-                : 'تم إرسال بيانات الحجز على الإيميل. سنتواصل معك قريبًا لتأكيد الموعد.'
+                ? t('booking.success.whatsapp_desc')
+                : t('booking.success.email_desc')
               }
             </p>
-            <p className="text-gray-500 text-sm mb-8">سيتم التواصل معك خلال 24 ساعة لتأكيد الموعد</p>
+            <p className="text-gray-500 text-sm mb-8">{t('booking.success.footer')}</p>
             <Button
               onClick={() => { setSubmitted(false); setStep(1); setFiles([]); setPreviews([]); }}
               className="bg-gradient-to-l from-medical-600 to-medical-700 text-white px-8 py-3 rounded-xl text-lg"
             >
-              حجز موعد آخر
+              {t('booking.success.book_another')}
             </Button>
           </motion.div>
         </div>
@@ -232,15 +244,15 @@ const Booking = () => {
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
             <div className="inline-flex items-center gap-2 bg-medical-100 text-medical-700 px-4 py-2 rounded-full text-sm font-bold mb-4">
               <CalendarDays className="w-4 h-4" />
-              حجز سريع ومضمون
+              {t('booking.badge')}
             </div>
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
               <span className="bg-gradient-to-l from-medical-600 to-teal-600 bg-clip-text text-transparent">
-                حجز موعد
+                {t('booking.title')}
               </span>
             </h1>
             <p className="text-gray-500 text-lg max-w-xl mx-auto">
-              احجز موعدك بسهولة عبر الواتساب أو الإيميل وسنقوم بالتأكيد معك فورًا
+              {t('booking.desc')}
             </p>
           </motion.div>
         </div>
@@ -277,36 +289,36 @@ const Booking = () => {
                   <motion.div key="step1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.3 }}>
                     <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
                       <User className="w-6 h-6 text-medical-600" />
-                      البيانات الشخصية
+                      {t('booking.steps.personal.title')}
                     </h2>
 
                     <div className="space-y-5">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div>
-                          <Label htmlFor="name" className="text-sm font-semibold text-gray-700 mb-1 block">الاسم الكامل *</Label>
-                          <Input id="name" name="name" value={formData.name} onChange={handleInputChange} placeholder="أدخل اسمك الكامل" required className="rounded-xl border-gray-200 focus:border-medical-500 h-12" />
+                          <Label htmlFor="name" className="text-sm font-semibold text-gray-700 mb-1 block">{t('booking.steps.personal.name_label')} *</Label>
+                          <Input id="name" name="name" value={formData.name} onChange={handleInputChange} placeholder={t('booking.steps.personal.name_placeholder')} required className="rounded-xl border-gray-200 focus:border-medical-500 h-12" />
                         </div>
                         <div>
-                          <Label htmlFor="phone" className="text-sm font-semibold text-gray-700 mb-1 block">رقم الهاتف *</Label>
+                          <Label htmlFor="phone" className="text-sm font-semibold text-gray-700 mb-1 block">{t('booking.steps.personal.phone_label')} *</Label>
                           <Input id="phone" name="phone" value={formData.phone} onChange={handleInputChange} placeholder="01xxxxxxxxx" required className="rounded-xl border-gray-200 focus:border-medical-500 h-12" />
                         </div>
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div>
-                          <Label htmlFor="email" className="text-sm font-semibold text-gray-700 mb-1 block">البريد الإلكتروني</Label>
+                          <Label htmlFor="email" className="text-sm font-semibold text-gray-700 mb-1 block">{t('booking.steps.personal.email_label')}</Label>
                           <Input id="email" name="email" type="email" value={formData.email} onChange={handleInputChange} placeholder="example@mail.com" className="rounded-xl border-gray-200 focus:border-medical-500 h-12" />
                         </div>
                         <div>
-                          <Label htmlFor="age" className="text-sm font-semibold text-gray-700 mb-1 block">العمر</Label>
-                          <Input id="age" name="age" type="number" min="1" max="120" value={formData.age} onChange={handleInputChange} placeholder="العمر" className="rounded-xl border-gray-200 focus:border-medical-500 h-12" />
+                          <Label htmlFor="age" className="text-sm font-semibold text-gray-700 mb-1 block">{t('booking.steps.personal.age_label')}</Label>
+                          <Input id="age" name="age" type="number" min="1" max="120" value={formData.age} onChange={handleInputChange} placeholder={t('booking.steps.personal.age_label')} className="rounded-xl border-gray-200 focus:border-medical-500 h-12" />
                         </div>
                       </div>
 
                       <div>
-                        <Label htmlFor="governorate" className="text-sm font-semibold text-gray-700 mb-1 block">المحافظة</Label>
+                        <Label htmlFor="governorate" className="text-sm font-semibold text-gray-700 mb-1 block">{t('booking.steps.personal.governorate_label')}</Label>
                         <select id="governorate" name="governorate" value={formData.governorate} onChange={handleInputChange} className="w-full rounded-xl border border-gray-200 p-3 h-12 focus:ring-2 focus:ring-medical-500 focus:border-transparent bg-white text-sm">
-                          <option value="">اختر المحافظة</option>
+                          <option value="">{t('booking.steps.personal.governorate_placeholder')}</option>
                           {governorates.map(g => <option key={g} value={g}>{g}</option>)}
                         </select>
                       </div>
@@ -319,24 +331,24 @@ const Booking = () => {
                   <motion.div key="step2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.3 }}>
                     <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
                       <CalendarDays className="w-6 h-6 text-medical-600" />
-                      تفاصيل الموعد
+                      {t('booking.steps.details.title')}
                     </h2>
 
                     <div className="space-y-6">
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <Label htmlFor="date" className="text-sm font-semibold text-gray-700 mb-1 block">التاريخ *</Label>
+                          <Label htmlFor="date" className="text-sm font-semibold text-gray-700 mb-1 block">{t('booking.steps.details.date_label')} *</Label>
                           <Input id="date" name="date" type="date" value={formData.date} onChange={handleInputChange} required className="rounded-xl border-gray-200 h-12" />
                         </div>
                         <div>
-                          <Label htmlFor="time" className="text-sm font-semibold text-gray-700 mb-1 block">الوقت *</Label>
+                          <Label htmlFor="time" className="text-sm font-semibold text-gray-700 mb-1 block">{t('booking.steps.details.time_label')} *</Label>
                           <Input id="time" name="time" type="time" value={formData.time} onChange={handleInputChange} required className="rounded-xl border-gray-200 h-12" />
                         </div>
                       </div>
 
                       {/* Appointment Type */}
                       <div>
-                        <Label className="text-sm font-semibold text-gray-700 mb-3 block">نوع الموعد *</Label>
+                        <Label className="text-sm font-semibold text-gray-700 mb-3 block">{t('booking.steps.details.type_label')} *</Label>
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                           {appointmentTypes.map(type => (
                             <button
@@ -351,8 +363,8 @@ const Booking = () => {
                               <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${type.color} flex items-center justify-center mb-2`}>
                                 <type.icon className="w-4 h-4 text-white" />
                               </div>
-                              <p className="font-bold text-sm text-gray-900">{type.label}</p>
-                              <p className="text-xs text-gray-500 mt-0.5">{type.desc}</p>
+                              <p className="font-bold text-sm text-gray-900 text-start">{type.label}</p>
+                              <p className="text-xs text-gray-500 mt-0.5 text-start">{type.desc}</p>
                               {formData.type === type.value && (
                                 <div className="absolute top-2 left-2 w-5 h-5 rounded-full bg-medical-500 flex items-center justify-center">
                                   <CheckCircle2 className="w-3.5 h-3.5 text-white" />
@@ -365,9 +377,9 @@ const Booking = () => {
 
                       {/* Service Type */}
                       <div>
-                        <Label htmlFor="service" className="text-sm font-semibold text-gray-700 mb-1 block">الخدمة المطلوبة</Label>
+                        <Label htmlFor="service" className="text-sm font-semibold text-gray-700 mb-1 block">{t('booking.steps.details.service_label')}</Label>
                         <select id="service" name="service" value={formData.service} onChange={handleInputChange} className="w-full rounded-xl border border-gray-200 p-3 h-12 focus:ring-2 focus:ring-medical-500 focus:border-transparent bg-white text-sm">
-                          <option value="">اختر الخدمة</option>
+                          <option value="">{t('booking.steps.details.service_placeholder')}</option>
                           {serviceTypes.map(s => <option key={s} value={s}>{s}</option>)}
                         </select>
                       </div>
@@ -380,13 +392,13 @@ const Booking = () => {
                   <motion.div key="step3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.3 }}>
                     <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
                       <Send className="w-6 h-6 text-medical-600" />
-                      المرفقات وطريقة الإرسال
+                      {t('booking.steps.files.title')}
                     </h2>
 
                     <div className="space-y-6">
                       {/* File Upload */}
                       <div>
-                        <Label className="text-sm font-semibold text-gray-700 mb-2 block">إرفاق صور أو تقارير (حتى 5 ملفات)</Label>
+                        <Label className="text-sm font-semibold text-gray-700 mb-2 block">{t('booking.steps.files.upload_label')}</Label>
                         <div className="border-2 border-dashed border-gray-300 rounded-2xl p-6 text-center hover:border-medical-400 transition-colors">
                           <input
                             type="file"
@@ -400,8 +412,8 @@ const Booking = () => {
                             <div className="w-14 h-14 rounded-2xl bg-medical-100 flex items-center justify-center mx-auto mb-3">
                               <Camera className="w-7 h-7 text-medical-600" />
                             </div>
-                            <p className="text-gray-700 font-semibold">اضغط لرفع صور أو تقارير</p>
-                            <p className="text-gray-400 text-sm mt-1">PNG, JPG, PDF حتى 10MB</p>
+                            <p className="text-gray-700 font-semibold">{t('booking.steps.files.upload_placeholder')}</p>
+                            <p className="text-gray-400 text-sm mt-1">PNG, JPG, PDF {t('booking.steps.files.max_size')}</p>
                           </label>
                         </div>
 
@@ -433,13 +445,13 @@ const Booking = () => {
 
                       {/* Notes */}
                       <div>
-                        <Label htmlFor="notes" className="text-sm font-semibold text-gray-700 mb-1 block">ملاحظات إضافية</Label>
-                        <Textarea id="notes" name="notes" value={formData.notes} onChange={handleInputChange} rows={3} placeholder="اكتب أي ملاحظات أو تفاصيل إضافية عن حالتك..." className="rounded-xl border-gray-200 resize-none" />
+                        <Label htmlFor="notes" className="text-sm font-semibold text-gray-700 mb-1 block">{t('booking.steps.files.notes_label')}</Label>
+                        <Textarea id="notes" name="notes" value={formData.notes} onChange={handleInputChange} rows={3} placeholder={t('booking.steps.files.notes_placeholder')} className="rounded-xl border-gray-200 resize-none" />
                       </div>
 
                       {/* Send Method */}
                       <div>
-                        <Label className="text-sm font-semibold text-gray-700 mb-3 block">طريقة الإرسال *</Label>
+                        <Label className="text-sm font-semibold text-gray-700 mb-3 block">{t('booking.steps.files.method_label')} *</Label>
                         <div className="grid grid-cols-2 gap-4">
                           <button
                             type="button"
@@ -452,8 +464,8 @@ const Booking = () => {
                             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center mx-auto mb-3 shadow-lg shadow-green-500/20">
                               <MessageCircle className="w-6 h-6 text-white" />
                             </div>
-                            <p className="font-bold text-gray-900">واتساب</p>
-                            <p className="text-xs text-gray-500 mt-1">رد سريع ومباشر</p>
+                            <p className="font-bold text-gray-900">{t('booking.methods.whatsapp.title')}</p>
+                            <p className="text-xs text-gray-500 mt-1">{t('booking.methods.whatsapp.desc')}</p>
                           </button>
 
                           <button
@@ -467,8 +479,8 @@ const Booking = () => {
                             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center mx-auto mb-3 shadow-lg shadow-blue-500/20">
                               <Mail className="w-6 h-6 text-white" />
                             </div>
-                            <p className="font-bold text-gray-900">إيميل</p>
-                            <p className="text-xs text-gray-500 mt-1">مع تفاصيل كاملة</p>
+                            <p className="font-bold text-gray-900">{t('booking.methods.email.title')}</p>
+                            <p className="text-xs text-gray-500 mt-1">{t('booking.methods.email.desc')}</p>
                           </button>
                         </div>
                       </div>
@@ -481,15 +493,15 @@ const Booking = () => {
               <div className="flex items-center justify-between mt-8 pt-6 border-t border-gray-100">
                 {step > 1 ? (
                   <Button type="button" variant="outline" onClick={prevStep} className="flex items-center gap-2 rounded-xl px-6 py-3 border-2 border-gray-200">
-                    <ArrowRight className="w-4 h-4" />
-                    السابق
+                    <ArrowRight className={`w-4 h-4 ${isRtl ? '' : 'rotate-180'}`} />
+                    {t('booking.nav.prev')}
                   </Button>
                 ) : <div />}
 
                 {step < 3 ? (
                   <Button type="button" onClick={nextStep} className="flex items-center gap-2 bg-gradient-to-l from-medical-600 to-medical-700 text-white rounded-xl px-8 py-3 shadow-lg shadow-medical-600/20">
-                    التالي
-                    <ArrowLeft className="w-4 h-4" />
+                    {t('booking.nav.next')}
+                    <ArrowLeft className={`w-4 h-4 ${isRtl ? '' : 'rotate-180'}`} />
                   </Button>
                 ) : (
                   <Button
@@ -506,17 +518,17 @@ const Booking = () => {
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                         </svg>
-                        جاري الإرسال...
+                        {t('booking.nav.sending')}
                       </>
                     ) : sendMethod === 'whatsapp' ? (
                       <>
                         <MessageCircle className="w-5 h-5" />
-                        إرسال عبر واتساب
+                        {t('booking.nav.send_whatsapp')}
                       </>
                     ) : (
                       <>
                         <Send className="w-5 h-5" />
-                        إرسال عبر الإيميل
+                        {t('booking.nav.send_email')}
                       </>
                     )}
                   </Button>
@@ -536,11 +548,9 @@ const Booking = () => {
               <Info className="w-5 h-5 text-amber-600" />
             </div>
             <div>
-              <h4 className="font-bold text-gray-900 mb-1">ملاحظة مهمة</h4>
+              <h4 className="font-bold text-gray-900 mb-1">{t('booking.note.title')}</h4>
               <p className="text-gray-600 text-sm leading-relaxed">
-                بعد إرسال طلب الحجز، سيتم التواصل معك خلال 24 ساعة لتأكيد الموعد.
-                يمكنك إرفاق صور أو تقارير طبية لتسريع عملية التقييم.
-                مواعيد العمل: السبت - الخميس، 9 صباحًا - 6 مساءً.
+                {t('booking.note.desc')}
               </p>
             </div>
           </motion.div>

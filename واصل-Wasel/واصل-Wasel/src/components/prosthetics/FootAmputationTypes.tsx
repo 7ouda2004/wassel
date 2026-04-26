@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Footprints, ChevronDown, ChevronUp, Info, Scissors, Target, Activity } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 const footAmputationTypes = [
   {
@@ -127,8 +128,16 @@ const footAmputationTypes = [
 ];
 
 const FootAmputationTypes: React.FC = () => {
+  const { t } = useTranslation();
   const [activeType, setActiveType] = useState<string | null>(null);
   const [hoveredLevel, setHoveredLevel] = useState<number | null>(null);
+
+  const amputationData = t('prosthetics.foot_amputation_types.data', { returnObjects: true }) as Record<string, any>;
+  
+  const typesWithData = footAmputationTypes.map(type => ({
+    ...type,
+    ...(amputationData[type.id] || {})
+  }));
 
   return (
     <section id="foot-amputation-types" className="py-20 overflow-hidden">
@@ -147,15 +156,15 @@ const FootAmputationTypes: React.FC = () => {
           >
             <div className="inline-flex items-center gap-2 bg-amber-100 text-amber-700 px-4 py-2 rounded-full text-sm font-bold mb-4">
               <Scissors className="w-4 h-4" />
-              دليل مفصّل
+              {t('prosthetics.foot_amputation_types.badge')}
             </div>
             <h2 className="text-4xl md:text-5xl font-bold mb-4">
               <span className="bg-gradient-to-l from-amber-600 via-orange-600 to-red-600 bg-clip-text text-transparent">
-                أنواع بتر القدم
+                {t('prosthetics.foot_amputation_types.title')}
               </span>
             </h2>
             <p className="text-gray-500 text-lg max-w-2xl mx-auto leading-relaxed">
-              تعرّف على المستويات المختلفة لبتر القدم، من أبسطها إلى أعلاها، مع خصائص كل نوع وخيارات الأطراف الصناعية المتاحة
+              {t('prosthetics.foot_amputation_types.desc')}
             </p>
           </motion.div>
 
@@ -180,12 +189,12 @@ const FootAmputationTypes: React.FC = () => {
                 viewport={{ once: true }}
                 transition={{ delay: 0.4, duration: 0.6 }}
               >
-                <h3 className="text-white text-3xl md:text-4xl font-bold mb-3">مستويات بتر القدم</h3>
+                <h3 className="text-white text-3xl md:text-4xl font-bold mb-3">{t('prosthetics.foot_amputation_types.banner_title')}</h3>
                 <p className="text-white/80 text-lg max-w-xl">
-                  من بتر الأصابع البسيط إلى بتر سايم عند الكاحل – كل مستوى له خصائصه وحلوله
+                  {t('prosthetics.foot_amputation_types.banner_desc')}
                 </p>
                 <div className="flex flex-wrap gap-3 mt-4">
-                  {footAmputationTypes.map((type) => (
+                  {typesWithData.map((type) => (
                     <span
                       key={type.id}
                       className="px-3 py-1 rounded-full text-sm font-medium bg-white/20 text-white backdrop-blur-sm border border-white/20 hover:bg-white/30 transition-all cursor-pointer"
@@ -207,7 +216,7 @@ const FootAmputationTypes: React.FC = () => {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="hidden md:flex items-center justify-center gap-0 mb-14"
           >
-            {footAmputationTypes.map((type, index) => (
+            {typesWithData.map((type, index) => (
               <React.Fragment key={type.id}>
                 <motion.button
                   whileHover={{ scale: 1.15, y: -5 }}
@@ -239,7 +248,7 @@ const FootAmputationTypes: React.FC = () => {
                     )}
                   </AnimatePresence>
                 </motion.button>
-                {index < footAmputationTypes.length - 1 && (
+                {index < typesWithData.length - 1 && (
                   <div className="w-12 h-1 bg-gradient-to-l from-gray-300 to-gray-200 rounded-full mx-1" />
                 )}
               </React.Fragment>
@@ -248,7 +257,7 @@ const FootAmputationTypes: React.FC = () => {
 
           {/* Cards Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {footAmputationTypes.map((type, index) => (
+            {typesWithData.map((type, index) => (
               <motion.div
                 key={type.id}
                 initial={{ opacity: 0, y: 40 }}
@@ -294,10 +303,10 @@ const FootAmputationTypes: React.FC = () => {
                         <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ backgroundColor: type.color + '20' }}>
                           <Target className="w-3.5 h-3.5" style={{ color: type.color }} />
                         </div>
-                        <h4 className="font-bold text-gray-800 text-sm">التشريح والخصائص</h4>
+                        <h4 className="font-bold text-gray-800 text-sm">{t('prosthetics.foot_amputation_types.anatomy')}</h4>
                       </div>
-                      <ul className="space-y-2 mr-2">
-                        {type.anatomy.map((point, idx) => (
+                      <ul className="space-y-2 mr-2 ml-2">
+                        {type.anatomy?.map((point: string, idx: number) => (
                           <li key={idx} className="flex items-start gap-2 text-sm text-gray-600">
                             <span className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0" style={{ backgroundColor: type.color }} />
                             {point}
@@ -322,10 +331,10 @@ const FootAmputationTypes: React.FC = () => {
                               <div className="w-6 h-6 rounded-lg bg-blue-50 flex items-center justify-center">
                                 <Footprints className="w-3.5 h-3.5 text-blue-500" />
                               </div>
-                              <h4 className="font-bold text-gray-800 text-sm">خيارات الأطراف الصناعية</h4>
+                              <h4 className="font-bold text-gray-800 text-sm">{t('prosthetics.foot_amputation_types.options')}</h4>
                             </div>
-                            <ul className="space-y-2 mr-2">
-                              {type.prostheticOptions.map((option, idx) => (
+                            <ul className="space-y-2 mr-2 ml-2">
+                              {type.prostheticOptions?.map((option: string, idx: number) => (
                                 <li key={idx} className="flex items-start gap-2 text-sm text-gray-600">
                                   <span className="w-1.5 h-1.5 rounded-full bg-blue-400 mt-2 flex-shrink-0" />
                                   {option}
@@ -340,10 +349,10 @@ const FootAmputationTypes: React.FC = () => {
                               <div className="w-6 h-6 rounded-lg bg-green-50 flex items-center justify-center">
                                 <Activity className="w-3.5 h-3.5 text-green-500" />
                               </div>
-                              <h4 className="font-bold text-gray-800 text-sm">النتائج الوظيفية</h4>
+                              <h4 className="font-bold text-gray-800 text-sm">{t('prosthetics.foot_amputation_types.outcomes')}</h4>
                             </div>
-                            <ul className="space-y-2 mr-2">
-                              {type.functionalOutcomes.map((outcome, idx) => (
+                            <ul className="space-y-2 mr-2 ml-2">
+                              {type.functionalOutcomes?.map((outcome: string, idx: number) => (
                                 <li key={idx} className="flex items-start gap-2 text-sm text-gray-600">
                                   <span className="w-1.5 h-1.5 rounded-full bg-green-400 mt-2 flex-shrink-0" />
                                   {outcome}
@@ -360,9 +369,9 @@ const FootAmputationTypes: React.FC = () => {
                       style={{ color: type.color }}
                     >
                       {activeType === type.id ? (
-                        <>عرض أقل <ChevronUp className="w-4 h-4" /></>
+                        <>{t('prosthetics.foot_amputation_types.show_less')} <ChevronUp className="w-4 h-4" /></>
                       ) : (
-                        <>عرض التفاصيل <ChevronDown className="w-4 h-4" /></>
+                        <>{t('prosthetics.foot_amputation_types.show_more')} <ChevronDown className="w-4 h-4" /></>
                       )}
                     </button>
                   </div>
@@ -384,11 +393,9 @@ const FootAmputationTypes: React.FC = () => {
                 <Info className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h4 className="text-xl font-bold text-gray-900 mb-2">ملاحظة مهمة</h4>
+                <h4 className="text-xl font-bold text-gray-900 mb-2">{t('prosthetics.foot_amputation_types.note_title')}</h4>
                 <p className="text-gray-600 leading-relaxed">
-                  كلما كان مستوى البتر أقل (أقرب لأصابع القدم)، كانت النتائج الوظيفية أفضل واستهلاك الطاقة أثناء المشي أقل.
-                  يعتمد اختيار مستوى البتر على عدة عوامل منها: الدورة الدموية، حالة الأنسجة، وإمكانية التئام الجرح.
-                  استشر أخصائي الأطراف الصناعية لتحديد أفضل حل مناسب لحالتك.
+                  {t('prosthetics.foot_amputation_types.note_desc')}
                 </p>
               </div>
             </div>

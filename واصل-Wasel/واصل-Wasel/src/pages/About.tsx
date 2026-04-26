@@ -6,8 +6,11 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import { useTranslation } from 'react-i18next';
 
 const About = () => {
+  const { t } = useTranslation();
+
   useEffect(() => {
     document.documentElement.dir = 'rtl';
     document.body.classList.add('font-cairo');
@@ -23,14 +26,13 @@ const About = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
             <div className="inline-block oval-header">
-              <span>عن التطبيق</span>
+              <span>{t('about.about_app')}</span>
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-              قصتنا ورسالتنا
+              {t('about.our_story_mission')}
             </h1>
             <p className="text-xl text-gray-600 mb-8">
-               واصل-wassel، نسعى لتقديم أفضل الحلول الطبية في مجال الجبائر والأطراف الصناعية،
-              مع التركيز على جودة الحياة والاستقلالية لعملائنا.
+               {t('about.hero_desc')}
             </p>
           </div>
           
@@ -55,64 +57,58 @@ const About = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <div className="mb-16">
-              <h2 className="text-3xl font-bold mb-6">من نحن</h2>
+              <h2 className="text-3xl font-bold mb-6">{t('about.who_we_are')}</h2>
               <p className="text-lg text-gray-600 mb-4">
-                 واصل-wassel هي مؤسسة متخصصة في مجال الجبائر الطبية والأطراف الصناعية، تأسست على يد 
-                <strong> محمود إبراهيم</strong>، أخصائي الأطراف الصناعية والأجهزة التقويمية المتخصص.
+                 {t('about.about_desc_1')}
               </p>
               <p className="text-lg text-gray-600 mb-4">
-                تخرج محمود من جامعة القاهرة الجديدة التكنولوجية، وامتلك خبرة واسعة في مجال الأطراف الصناعية 
-                والجبائر الطبية. بدأ مسيرته المهنية بشغف لمساعدة الأشخاص على استعادة حريتهم وحركتهم 
-                من خلال تقديم أفضل الحلول المخصصة لكل حالة.
+                {t('about.about_desc_2')}
               </p>
               <p className="text-lg text-gray-600">
-                نحن فريق متكامل من الأخصائيين والفنيين المدربين على أعلى مستوى، نعمل معًا لتوفير 
-                خدمة استثنائية ومنتجات ذات جودة عالية تلبي احتياجات عملائنا وتتجاوز توقعاتهم.
+                {t('about.about_desc_3')}
               </p>
             </div>
             
             <div className="mb-16">
-              <h2 className="text-3xl font-bold mb-6">رؤيتنا</h2>
+              <h2 className="text-3xl font-bold mb-6">{t('about.our_vision')}</h2>
               <div className="flex items-start space-x-4 rtl:space-x-reverse mb-6">
                 <div className="h-12 w-12 rounded-full bg-medical-100 flex items-center justify-center flex-shrink-0">
                   <Medal className="h-6 w-6 text-medical-600" />
                 </div>
                 <div>
                   <p className="text-lg text-gray-600">
-                    نسعى لأن نكون الرواد في مجال الجبائر الطبية والأطراف الصناعية في مصر والشرق الأوسط، 
-                    من خلال تقديم حلول مبتكرة وعالية الجودة تمكّن الأشخاص من عيش حياة نشطة ومستقلة دون قيود.
+                    {t('about.vision_desc')}
                   </p>
                 </div>
               </div>
             </div>
             
             <div className="mb-16">
-              <h2 className="text-3xl font-bold mb-6">رسالتنا</h2>
+              <h2 className="text-3xl font-bold mb-6">{t('about.our_mission')}</h2>
               <div className="flex items-start space-x-4 rtl:space-x-reverse mb-6">
                 <div className="h-12 w-12 rounded-full bg-medical-100 flex items-center justify-center flex-shrink-0">
                   <Book className="h-6 w-6 text-medical-600" />
                 </div>
                 <div>
                   <p className="text-lg text-gray-600">
-                    مهمتنا هي تحسين نوعية حياة الأشخاص من خلال توفير حلول مخصصة عالية الجودة في مجال 
-                    الجبائر الطبية والأطراف الصناعية، مع تقديم خدمة متميزة ودعم مستمر لعملائنا.
+                    {t('about.mission_desc')}
                   </p>
                 </div>
               </div>
             </div>
             
             <div className="mb-16">
-              <h2 className="text-3xl font-bold mb-6">قيمنا</h2>
+              <h2 className="text-3xl font-bold mb-6">{t('about.our_values')}</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="bg-medical-50 rounded-lg p-6">
                   <div className="flex items-center mb-4">
                     <div className="h-10 w-10 rounded-full bg-medical-100 flex items-center justify-center mr-3">
                       <Award className="h-5 w-5 text-medical-600" />
                     </div>
-                    <h3 className="text-xl font-semibold">الجودة والتميز</h3>
+                    <h3 className="text-xl font-semibold">{t('about.value_1_title')}</h3>
                   </div>
                   <p className="text-gray-600">
-                    نلتزم بتقديم أفضل المنتجات والخدمات التي تلبي أعلى معايير الجودة العالمية.
+                    {t('about.value_1_desc')}
                   </p>
                 </div>
                 
@@ -121,10 +117,10 @@ const About = () => {
                     <div className="h-10 w-10 rounded-full bg-medical-100 flex items-center justify-center mr-3">
                       <Heart className="h-5 w-5 text-medical-600" />
                     </div>
-                    <h3 className="text-xl font-semibold">الاهتمام بالعميل</h3>
+                    <h3 className="text-xl font-semibold">{t('about.value_2_title')}</h3>
                   </div>
                   <p className="text-gray-600">
-                    نضع احتياجات عملائنا في مقدمة أولوياتنا، ونسعى دائمًا لتوفير حلول مخصصة تناسب كل حالة.
+                    {t('about.value_2_desc')}
                   </p>
                 </div>
                 
@@ -139,10 +135,10 @@ const About = () => {
                         <path d="M12 10v8"></path>
                       </svg>
                     </div>
-                    <h3 className="text-xl font-semibold">الابتكار</h3>
+                    <h3 className="text-xl font-semibold">{t('about.value_3_title')}</h3>
                   </div>
                   <p className="text-gray-600">
-                    نستمر في البحث عن أحدث التقنيات والحلول المبتكرة لتحسين منتجاتنا وخدماتنا.
+                    {t('about.value_3_desc')}
                   </p>
                 </div>
                 
@@ -155,27 +151,26 @@ const About = () => {
                         <path d="M15.1 18H3"></path>
                       </svg>
                     </div>
-                    <h3 className="text-xl font-semibold">الاحترافية</h3>
+                    <h3 className="text-xl font-semibold">{t('about.value_4_title')}</h3>
                   </div>
                   <p className="text-gray-600">
-                    نعمل بمهنية عالية وأخلاقيات راسخة، ونلتزم بأعلى معايير الممارسة المهنية.
+                    {t('about.value_4_desc')}
                   </p>
                 </div>
               </div>
             </div>
             
             <div className="mb-16">
-              <h2 className="text-3xl font-bold mb-6">لماذا تختارنا؟</h2>
+              <h2 className="text-3xl font-bold mb-6">{t('about.why_us')}</h2>
               <div className="space-y-4">
                 <div className="flex items-start">
                   <div className="h-8 w-8 rounded-full bg-medical-100 flex items-center justify-center mr-3 mt-1">
                     <span className="text-medical-600 font-bold">1</span>
                   </div>
                   <div>
-                    <h3 className="text-xl font-semibold mb-2">خبرة متميزة</h3>
+                    <h3 className="text-xl font-semibold mb-2">{t('about.why_1_title')}</h3>
                     <p className="text-gray-600">
-                      فريقنا يتمتع بخبرة واسعة في مجال الجبائر والأطراف الصناعية، مع تدريب مستمر 
-                      على أحدث التقنيات والممارسات.
+                      {t('about.why_1_desc')}
                     </p>
                   </div>
                 </div>
@@ -185,9 +180,9 @@ const About = () => {
                     <span className="text-medical-600 font-bold">2</span>
                   </div>
                   <div>
-                    <h3 className="text-xl font-semibold mb-2">حلول مخصصة</h3>
+                    <h3 className="text-xl font-semibold mb-2">{t('about.why_2_title')}</h3>
                     <p className="text-gray-600">
-                      نقدم حلولًا مخصصة تمامًا لكل حالة، مع مراعاة الاحتياجات الفردية والظروف الخاصة لكل عميل.
+                      {t('about.why_2_desc')}
                     </p>
                   </div>
                 </div>
@@ -197,9 +192,9 @@ const About = () => {
                     <span className="text-medical-600 font-bold">3</span>
                   </div>
                   <div>
-                    <h3 className="text-xl font-semibold mb-2">تقنيات متطورة</h3>
+                    <h3 className="text-xl font-semibold mb-2">{t('about.why_3_title')}</h3>
                     <p className="text-gray-600">
-                      نستخدم أحدث التقنيات والمواد في تصميم وتصنيع منتجاتنا، مما يضمن جودة عالية وأداء متميز.
+                      {t('about.why_3_desc')}
                     </p>
                   </div>
                 </div>
@@ -209,9 +204,9 @@ const About = () => {
                     <span className="text-medical-600 font-bold">4</span>
                   </div>
                   <div>
-                    <h3 className="text-xl font-semibold mb-2">متابعة مستمرة</h3>
+                    <h3 className="text-xl font-semibold mb-2">{t('about.why_4_title')}</h3>
                     <p className="text-gray-600">
-                      نقدم خدمة متابعة شاملة لعملائنا، للتأكد من رضاهم وتقديم الدعم المستمر لهم.
+                      {t('about.why_4_desc')}
                     </p>
                   </div>
                 </div>
@@ -219,7 +214,7 @@ const About = () => {
             </div>
             
             <div>
-              <h2 className="text-3xl font-bold mb-6">شهاداتنا واعتماداتنا</h2>
+              <h2 className="text-3xl font-bold mb-6">{t('about.our_certs')}</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-8">
                 <div className="bg-white border border-gray-200 rounded-lg p-4 text-center shadow-sm">
                   <div className="h-16 w-16 mx-auto mb-3">
@@ -229,7 +224,7 @@ const About = () => {
                       className="h-full w-full object-contain"
                     />
                   </div>
-                  <h3 className="font-semibold mb-1">شهادة الهيئة المصرية للرعاية الصحية</h3>
+                  <h3 className="font-semibold mb-1">{t('about.cert_1')}</h3>
                   <p className="text-sm text-gray-500">2023</p>
                 </div>
                 
@@ -241,7 +236,7 @@ const About = () => {
                       className="h-full w-full object-contain"
                     />
                   </div>
-                  <h3 className="font-semibold mb-1">اعتماد الجمعية الدولية للأطراف الصناعية</h3>
+                  <h3 className="font-semibold mb-1">{t('about.cert_2')}</h3>
                   <p className="text-sm text-gray-500">2024</p>
                 </div>
                 
@@ -253,7 +248,7 @@ const About = () => {
                       className="h-full w-full object-contain"
                     />
                   </div>
-                  <h3 className="font-semibold mb-1">شهادة ISO 9001 للجودة</h3>
+                  <h3 className="font-semibold mb-1">{t('about.cert_3')}</h3>
                   <p className="text-sm text-gray-500">2025</p>
                 </div>
               </div>
@@ -267,22 +262,21 @@ const About = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              انضم إلى عائلتنا من العملاء السعداء
+              {t('about.cta_title')}
             </h2>
             <p className="text-medical-100 text-lg mb-8">
-              نحن هنا لمساعدتك في رحلتك نحو حياة أفضل. تواصل معنا اليوم للحصول على استشارة مجانية
-              ومعرفة كيف يمكننا مساعدتك.
+              {t('about.cta_desc')}
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <Link to="/contact">
                 <Button size="lg" className="bg-white text-medical-700 hover:bg-medical-50 px-6 py-6 w-full sm:w-auto">
-                  تواصل معنا
+                  {t('about.contact_us')}
                   <ChevronRight className="mr-2 h-5 w-5 rtl:rotate-180" />
                 </Button>
               </Link>
               <Link to="/team">
                 <Button variant="outline" size="lg" className="border-white text-white hover:bg-white/10 px-6 py-6 w-full sm:w-auto">
-                  تعرف على فريقنا
+                  {t('about.meet_team')}
                   <ChevronRight className="mr-2 h-5 w-5 rtl:rotate-180" />
                 </Button>
               </Link>

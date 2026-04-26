@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Ruler, ChevronDown, ChevronUp, CircleDollarSign, Gauge, Star, TrendingUp } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 // أنواع الأقدام الصناعية
 const footTypes = [
@@ -127,7 +128,15 @@ const footTypes = [
 ];
 
 const FootTypes: React.FC = () => {
+  const { t } = useTranslation();
   const [expandedFoot, setExpandedFoot] = useState<string | null>(null);
+
+  const footData = t('prosthetics.foot_types.data', { returnObjects: true }) as Record<string, any>;
+  
+  const typesWithData = footTypes.map(type => ({
+    ...type,
+    ...(footData[type.id] || {})
+  }));
 
   return (
     <section id="foot-types" className="py-20 relative overflow-hidden">
@@ -146,21 +155,21 @@ const FootTypes: React.FC = () => {
         >
           <div className="inline-flex items-center gap-2 bg-teal-100 text-teal-700 px-4 py-2 rounded-full text-sm font-bold mb-4">
             <Ruler className="w-4 h-4" />
-            تقنيات متقدمة
+            {t('prosthetics.foot_types.badge')}
           </div>
           <h2 className="text-4xl md:text-5xl font-bold mb-4">
             <span className="bg-gradient-to-l from-teal-600 to-emerald-600 bg-clip-text text-transparent">
-              أنواع الأقدام الصناعية
+              {t('prosthetics.foot_types.title')}
             </span>
           </h2>
           <p className="text-gray-500 text-lg max-w-2xl mx-auto">
-            من الأقدام البسيطة إلى المحوسبة – اختر ما يناسب نمط حياتك ومستوى نشاطك
+            {t('prosthetics.foot_types.desc')}
           </p>
         </motion.div>
 
         {/* Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {footTypes.map((foot, index) => (
+          {typesWithData.map((foot, index) => (
             <motion.div
               key={foot.id}
               initial={{ opacity: 0, y: 40 }}
@@ -216,7 +225,7 @@ const FootTypes: React.FC = () => {
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-1.5">
                         <Gauge className="w-4 h-4 text-gray-500" />
-                        <span className="text-xs text-gray-500 font-medium">مستوى النشاط</span>
+                        <span className="text-xs text-gray-500 font-medium">{t('prosthetics.foot_types.activity')}</span>
                       </div>
                       <span className="text-sm font-bold" style={{ color: foot.accentColor }}>{foot.activityLevel}</span>
                     </div>
@@ -236,10 +245,10 @@ const FootTypes: React.FC = () => {
                   <div className="mb-3">
                     <h4 className="font-bold text-gray-800 text-sm mb-2 flex items-center gap-1.5">
                       <span className="w-2 h-2 rounded-full bg-green-500" />
-                      المميزات
+                      {t('prosthetics.foot_types.features')}
                     </h4>
-                    <ul className="space-y-1.5 mr-3">
-                      {foot.features.slice(0, 2).map((feature, idx) => (
+                    <ul className="space-y-1.5 mr-3 ml-3">
+                      {foot.features?.slice(0, 2).map((feature: string, idx: number) => (
                         <li key={idx} className="text-gray-600 text-sm flex items-start gap-2">
                           <span className="w-1.5 h-1.5 rounded-full bg-green-400 mt-1.5 flex-shrink-0" />
                           {feature}
@@ -258,8 +267,8 @@ const FootTypes: React.FC = () => {
                         transition={{ duration: 0.3 }}
                         className="overflow-hidden"
                       >
-                        <ul className="space-y-1.5 mr-3 mb-4">
-                          {foot.features.slice(2).map((feature, idx) => (
+                        <ul className="space-y-1.5 mr-3 ml-3 mb-4">
+                          {foot.features?.slice(2).map((feature: string, idx: number) => (
                             <li key={idx} className="text-gray-600 text-sm flex items-start gap-2">
                               <span className="w-1.5 h-1.5 rounded-full bg-green-400 mt-1.5 flex-shrink-0" />
                               {feature}
@@ -270,10 +279,10 @@ const FootTypes: React.FC = () => {
                         <div className="pt-3 border-t border-gray-100">
                           <h4 className="font-bold text-gray-800 text-sm mb-2 flex items-center gap-1.5">
                             <span className="w-2 h-2 rounded-full bg-red-400" />
-                            التحديات والقيود
+                            {t('prosthetics.foot_types.limitations')}
                           </h4>
-                          <ul className="space-y-1.5 mr-3">
-                            {foot.limitations.map((limitation, idx) => (
+                          <ul className="space-y-1.5 mr-3 ml-3">
+                            {foot.limitations?.map((limitation: string, idx: number) => (
                               <li key={idx} className="text-gray-600 text-sm flex items-start gap-2">
                                 <span className="w-1.5 h-1.5 rounded-full bg-red-300 mt-1.5 flex-shrink-0" />
                                 {limitation}
@@ -292,9 +301,9 @@ const FootTypes: React.FC = () => {
                     style={{ color: foot.accentColor }}
                   >
                     {expandedFoot === foot.id ? (
-                      <>عرض أقل <ChevronUp className="w-4 h-4" /></>
+                      <>{t('prosthetics.foot_types.show_less')} <ChevronUp className="w-4 h-4" /></>
                     ) : (
-                      <>عرض المزيد <ChevronDown className="w-4 h-4" /></>
+                      <>{t('prosthetics.foot_types.show_more')} <ChevronDown className="w-4 h-4" /></>
                     )}
                   </button>
                 </div>
@@ -314,7 +323,7 @@ const FootTypes: React.FC = () => {
           <div className="inline-flex items-center gap-2 bg-emerald-50 text-emerald-700 px-6 py-3 rounded-2xl border border-emerald-200 shadow-sm">
             <TrendingUp className="w-5 h-5" />
             <p className="font-medium text-sm">
-              كلما زاد مستوى النشاط المطلوب، احتجت لقدم صناعية أكثر تطوراً
+              {t('prosthetics.foot_types.tip')}
             </p>
           </div>
         </motion.div>

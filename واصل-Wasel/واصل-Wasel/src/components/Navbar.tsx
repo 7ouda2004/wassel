@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Menu, X, User, Phone, Moon, Sun } from 'lucide-react';
+import { Menu, X, User, Phone, Moon, Sun, Globe } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from "@/providers/theme-provider";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -12,6 +13,11 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [password, setPassword] = useState('');
   const { theme, setTheme } = useTheme();
+  const { t, i18n } = useTranslation();
+
+  const toggleLanguage = () => {
+    i18n.changeLanguage(i18n.language === 'ar' ? 'en' : 'ar');
+  };
 
   const toggleMenu = () => {
     setIsOpen(!isOpen);
@@ -47,14 +53,14 @@ const Navbar = () => {
 
   // Define navigation links once to avoid duplication
   const navLinks = [
-    { path: "/", label: "الرئيسية" },
-    { path: "/orthoses", label: "الجبائر الطبية" },
-    { path: "/prosthetics", label: "الأطراف الصناعية" },
-    { path: "/about", label: "عن التطبيق" },
-    { path: "/team", label: "فريق العمل" },
-    { path: "/locations", label: "مراكزنا" },
-    { path: "/contact", label: "تواصل معنا" },
-    { path: "/booking", label: "حجز موعد" }
+    { path: "/", label: t('nav.home') },
+    { path: "/orthoses", label: t('nav.orthoses') },
+    { path: "/prosthetics", label: t('nav.prosthetics') },
+    { path: "/about", label: t('nav.about') },
+    { path: "/team", label: t('nav.team') },
+    { path: "/locations", label: t('nav.locations') },
+    { path: "/contact", label: t('nav.contact') },
+    { path: "/booking", label: t('nav.booking') }
   ];
 
   return (
@@ -88,7 +94,7 @@ const Navbar = () => {
               <Link to="/specialist-dashboard">
                 <Button variant="outline" className="flex items-center">
                   <User className="mr-2 h-4 w-4" />
-                  لوحة التحكم
+                  {t('nav.specialist_dashboard')}
                 </Button>
               </Link>
             ) : (
@@ -96,7 +102,7 @@ const Navbar = () => {
                 <DialogTrigger asChild>
                   <Button variant="outline" className="flex items-center">
                     <User className="mr-2 h-4 w-4" />
-                      الدخول كـأخصائي
+                      {t('nav.login_specialist')}
                   </Button>
                 </DialogTrigger>
                 <DialogContent>
@@ -120,13 +126,17 @@ const Navbar = () => {
               </Dialog>
             )}
             
-    
             <a href="https://wa.me/201119056895" target="_blank" rel="noopener noreferrer">
               <Button variant="default" className="flex items-center medical-btn">
                 <Phone className="mr-2 h-4 w-4" />
-                تواصل معنا
+                {t('nav.contact_us')}
               </Button>
             </a>
+
+            <Button variant="ghost" size="icon" onClick={toggleLanguage} title="تغيير اللغة / Change Language">
+              <Globe className="h-5 w-5 text-gray-700" />
+              <span className="sr-only">Toggle language</span>
+            </Button>
             
             <div className="md:hidden flex items-center">
               <button

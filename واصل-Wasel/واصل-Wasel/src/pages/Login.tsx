@@ -8,8 +8,10 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import { useTranslation } from 'react-i18next';
 
 const Login = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     username: '',
@@ -23,10 +25,10 @@ const Login = () => {
     if (formData.username === 'specialist' && formData.password === 'specialist123') {
       sessionStorage.setItem('isSpecialist', 'true');
       sessionStorage.setItem('username', formData.username);
-      toast.success('تم تسجيل الدخول بنجاح');
+      toast.success(t('login.success'));
       window.location.href = '/specialist-dashboard';
     } else {
-      toast.error('اسم المستخدم أو كلمة المرور غير صحيحة');
+      toast.error(t('login.error'));
     }
   };
 
@@ -43,12 +45,12 @@ const Login = () => {
         >
           <div className="bg-white p-8 rounded-2xl shadow-lg">
             <h1 className="text-3xl font-bold text-center text-medical-900 mb-6">
-              تسجيل دخول الأخصائيين
+              {t('login.title')}
             </h1>
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="username">اسم المستخدم</Label>
+                <Label htmlFor="username">{t('login.username')}</Label>
                 <div className="relative">
                   <Input
                     id="username"
@@ -56,7 +58,7 @@ const Login = () => {
                     value={formData.username}
                     onChange={(e) => setFormData({ ...formData, username: e.target.value })}
                     className="pl-10"
-                    placeholder="أدخل اسم المستخدم"
+                    placeholder={t('login.username_placeholder')}
                     required
                   />
                   <User className="absolute right-3 top-2.5 h-5 w-5 text-gray-400" />
@@ -64,7 +66,7 @@ const Login = () => {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password">كلمة المرور</Label>
+                <Label htmlFor="password">{t('login.password')}</Label>
                 <div className="relative">
                   <Input
                     id="password"
@@ -72,7 +74,7 @@ const Login = () => {
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                     className="pl-10"
-                    placeholder="أدخل كلمة المرور"
+                    placeholder={t('login.password_placeholder')}
                     required
                   />
                   <Lock className="absolute right-3 top-2.5 h-5 w-5 text-gray-400" />
@@ -80,7 +82,7 @@ const Login = () => {
               </div>
 
               <Button type="submit" className="w-full bg-medical-600 hover:bg-medical-700">
-                تسجيل الدخول
+                {t('login.submit')}
               </Button>
             </form>
           </div>

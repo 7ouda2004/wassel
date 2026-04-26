@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import { useTranslation } from 'react-i18next';
 
 const teamMembers = [
   {
@@ -54,9 +55,11 @@ const teamMembers = [
 ];
 
 const Team = () => {
+  const { t, i18n } = useTranslation();
+  const isRtl = i18n.dir() === 'rtl';
+  const teamMembers = t('team.members', { returnObjects: true }) as any[];
+
   useEffect(() => {
-    document.documentElement.dir = 'rtl';
-    document.body.classList.add('font-cairo');
     window.scrollTo(0, 0);
   }, []);
 
@@ -69,14 +72,13 @@ const Team = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
             <div className="inline-block oval-header">
-              <span>فريق العمل</span>
+              <span>{t('team.badge')}</span>
             </div>
             <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-              تعرف على فريقنا المتخصص
+              {t('team.title')}
             </h1>
             <p className="text-xl text-gray-600 mb-8">
-              نفخر بفريقنا المتميز من الخبراء والمتخصصين الذين يعملون معًا لتقديم أفضل الحلول
-              والخدمات في مجال الجبائر والأطراف الصناعية.
+              {t('team.desc')}
             </p>
           </div>
 
@@ -99,7 +101,7 @@ const Team = () => {
       {/* Team Members */}
       <section className="py-20 bg-white">
         <div className="container mx-auto px-4">
-          <h2 className="section-title">أعضاء الفريق</h2>
+          <h2 className="section-title">{t('team.members_title')}</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-12">
             {teamMembers.map((member, index) => (
@@ -126,11 +128,11 @@ const Team = () => {
                 <div className="p-6">
                   <p className="text-gray-600 mb-4">{member.bio}</p>
 
-                  <h4 className="font-semibold text-medical-700 mb-2">التخصصات:</h4>
+                  <h4 className="font-semibold text-medical-700 mb-2">{t('team.expertise_label')}:</h4>
                   <ul className="mb-6">
-                    {member.expertise.map((item, idx) => (
+                    {member.expertise.map((item: string, idx: number) => (
                       <li key={idx} className="flex items-center mb-1">
-                        <span className="h-2 w-2 bg-medical-500 rounded-full mr-2"></span>
+                        <span className="h-2 w-2 bg-medical-500 rounded-full mx-2"></span>
                         <span className="text-gray-700">{item}</span>
                       </li>
                     ))}
@@ -160,7 +162,7 @@ const Team = () => {
       {/* Values Section */}
       <section className="py-20 bg-medical-50">
         <div className="container mx-auto px-4">
-          <h2 className="section-title">قيم فريقنا</h2>
+          <h2 className="section-title">{t('team.values_title')}</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
             <motion.div
@@ -177,10 +179,9 @@ const Team = () => {
                   className="h-10 w-10"
                 />
               </div>
-              <h3 className="text-xl font-bold mb-3 text-center">العمل الجماعي</h3>
+              <h3 className="text-xl font-bold mb-3 text-center">{t('team.values.teamwork.title')}</h3>
               <p className="text-gray-600 text-center">
-                نعمل كفريق واحد متكامل، نتعاون معًا لتحقيق أفضل النتائج لعملائنا.
-                كل عضو في الفريق يقدم خبرته ومهاراته لخدمة الهدف المشترك.
+                {t('team.values.teamwork.desc')}
               </p>
             </motion.div>
 
@@ -198,10 +199,9 @@ const Team = () => {
                   className="h-10 w-10"
                 />
               </div>
-              <h3 className="text-xl font-bold mb-3 text-center">الابتكار المستمر</h3>
+              <h3 className="text-xl font-bold mb-3 text-center">{t('team.values.innovation.title')}</h3>
               <p className="text-gray-600 text-center">
-                نشجع التفكير الإبداعي والبحث المستمر عن حلول مبتكرة. نسعى دائمًا للتطوير
-                وتبني أحدث التقنيات والأساليب في مجالنا.
+                {t('team.values.innovation.desc')}
               </p>
             </motion.div>
 
@@ -219,10 +219,9 @@ const Team = () => {
                   className="h-10 w-10"
                 />
               </div>
-              <h3 className="text-xl font-bold mb-3 text-center">الرعاية والتعاطف</h3>
+              <h3 className="text-xl font-bold mb-3 text-center">{t('team.values.care.title')}</h3>
               <p className="text-gray-600 text-center">
-                نتعامل مع عملائنا برعاية وتعاطف، متفهمين لاحتياجاتهم ومشاعرهم.
-                نسعى لتقديم الدعم النفسي إلى جانب الحلول التقنية.
+                {t('team.values.care.desc')}
               </p>
             </motion.div>
           </div>
@@ -233,31 +232,24 @@ const Team = () => {
       <section className="py-20 bg-white">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl font-bold mb-6">انضم إلى فريقنا</h2>
+            <h2 className="text-3xl font-bold mb-6">{t('team.join.title')}</h2>
             <p className="text-xl text-gray-600 mb-8">
-              نبحث دائمًا عن المواهب المتميزة والشغوفة للانضمام إلى فريقنا. إذا كنت ترغب في العمل
-              في بيئة ديناميكية ومبتكرة، وتشاركنا شغفنا لمساعدة الآخرين، فنحن نرحب بك.
+              {t('team.join.desc')}
             </p>
 
             <div className="bg-medical-50 rounded-lg p-8 border border-medical-100 shadow-sm">
-              <h3 className="text-2xl font-semibold mb-4">الوظائف المتاحة</h3>
-              <ul className="space-y-4 text-right max-w-lg mx-auto mb-8">
-                <li className="flex items-center justify-between p-3 bg-white rounded-md shadow-sm">
-                  <span className="font-medium">أخصائي أطراف صناعية</span>
-                  <span className="bg-medical-100 text-medical-700 px-3 py-1 rounded-full text-sm">دوام كامل</span>
-                </li>
-                <li className="flex items-center justify-between p-3 bg-white rounded-md shadow-sm">
-                  <span className="font-medium">فني تصنيع وتشكيل</span>
-                  <span className="bg-medical-100 text-medical-700 px-3 py-1 rounded-full text-sm">دوام كامل</span>
-                </li>
-                <li className="flex items-center justify-between p-3 bg-white rounded-md shadow-sm">
-                  <span className="font-medium">أخصائي علاج طبيعي</span>
-                  <span className="bg-medical-100 text-medical-700 px-3 py-1 rounded-full text-sm">دوام جزئي</span>
-                </li>
+              <h3 className="text-2xl font-semibold mb-4">{t('team.join.jobs_title')}</h3>
+              <ul className="space-y-4 text-start max-w-lg mx-auto mb-8">
+                {t('team.join.jobs', { returnObjects: true }).map((job: any, idx: number) => (
+                  <li key={idx} className="flex items-center justify-between p-3 bg-white rounded-md shadow-sm">
+                    <span className="font-medium">{job.title}</span>
+                    <span className="bg-medical-100 text-medical-700 px-3 py-1 rounded-full text-sm">{job.type}</span>
+                  </li>
+                ))}
               </ul>
 
               <p className="text-gray-600 mb-6">
-                للتقديم، يرجى إرسال سيرتك الذاتية ورسالة توضح سبب رغبتك في الانضمام إلينا إلى:
+                {t('team.join.contact_desc')}
               </p>
               <div className="text-xl font-semibold text-medical-700">
                 <a href="mailto:mahmoudebrahim049@gmail.com" className="hover:underline">
@@ -274,15 +266,15 @@ const Team = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              تواصل مع فريقنا اليوم
+              {t('team.cta.title')}
             </h2>
             <p className="text-medical-100 text-lg mb-8">
-              احصل على استشارة مجانية وتعرف على كيف يمكن لخبرائنا مساعدتك في الحصول على الحل المناسب.
+              {t('team.cta.desc')}
             </p>
             <Link to="/contact">
               <Button size="lg" className="bg-white text-medical-700 hover:bg-medical-50 px-6 py-6">
-                تواصل معنا
-                <ChevronRight className="mr-2 h-5 w-5 rtl:rotate-180" />
+                {t('team.cta.button')}
+                <ChevronRight className={`mr-2 h-5 w-5 ${isRtl ? 'rotate-0' : 'rotate-180'}`} />
               </Button>
             </Link>
           </div>

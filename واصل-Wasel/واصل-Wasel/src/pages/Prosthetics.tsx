@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import { ArrowRight, ChevronRight } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import { useTranslation } from 'react-i18next';
 
 // Import component sections
 import HeroSection from '@/components/prosthetics/HeroSection';
@@ -17,10 +18,12 @@ import ManufacturingSteps from '@/components/prosthetics/ManufacturingSteps';
 import FAQSection from '@/components/prosthetics/FAQSection';
 
 const Prosthetics = () => {
+  const { i18n } = useTranslation();
+
   useEffect(() => {
-    document.documentElement.dir = 'rtl';
+    document.documentElement.dir = i18n.language === 'ar' ? 'rtl' : 'ltr';
     document.body.classList.add('font-cairo');
-  }, []);
+  }, [i18n.language]);
 
   return (
     <div className="min-h-screen flex flex-col">

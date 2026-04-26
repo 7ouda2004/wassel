@@ -9,43 +9,48 @@ import { Label } from '@/components/ui/label';
 import { toast } from "sonner";
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import { useTranslation } from 'react-i18next';
 
-const contactInfo = [
-  {
-    icon: Phone,
-    title: 'الهاتف',
-    subtitle: 'اتصل بنا على:',
-    value: '+201119056895',
-    href: 'tel:+201119056895',
-    color: 'from-blue-500 to-blue-600'
-  },
-  {
-    icon: Mail,
-    title: 'البريد الإلكتروني',
-    subtitle: 'راسلنا على:',
-    value: 'mahmoudebrahim049@gmail.com',
-    href: 'mailto:mahmoudebrahim049@gmail.com',
-    color: 'from-purple-500 to-purple-600'
-  },
-  {
-    icon: MapPin,
-    title: 'العنوان',
-    subtitle: 'المركز الرئيسي:',
-    value: 'المنصورة، مصر',
-    href: '#map',
-    color: 'from-red-500 to-red-600'
-  },
-  {
-    icon: Clock,
-    title: 'ساعات العمل',
-    subtitle: 'مواعيد العمل:',
-    value: 'السبت - الخميس: 9ص - 6م',
-    href: null,
-    color: 'from-amber-500 to-amber-600'
-  }
-];
-
+// Since contactInfo is defined outside the component, we'll need to define it inside or translate it inline.
+// I will move contactInfo inside the component to use the hook.
 const Contact = () => {
+  const { t } = useTranslation();
+
+  const contactInfo = [
+    {
+      icon: Phone,
+      title: t('contact.phone_title'),
+      subtitle: t('contact.phone_subtitle'),
+      value: '+201119056895',
+      href: 'tel:+201119056895',
+      color: 'from-blue-500 to-blue-600'
+    },
+    {
+      icon: Mail,
+      title: t('contact.email_title'),
+      subtitle: t('contact.email_subtitle'),
+      value: 'mahmoudebrahim049@gmail.com',
+      href: 'mailto:mahmoudebrahim049@gmail.com',
+      color: 'from-purple-500 to-purple-600'
+    },
+    {
+      icon: MapPin,
+      title: t('contact.address_title'),
+      subtitle: t('contact.address_subtitle'),
+      value: t('contact.address_value'),
+      href: '#map',
+      color: 'from-red-500 to-red-600'
+    },
+    {
+      icon: Clock,
+      title: t('contact.working_hours_title'),
+      subtitle: t('contact.working_hours_subtitle'),
+      value: t('contact.working_hours_value'),
+      href: null,
+      color: 'from-amber-500 to-amber-600'
+    }
+  ];
+
   useEffect(() => {
     document.documentElement.dir = 'rtl';
     document.body.classList.add('font-cairo');
@@ -126,15 +131,15 @@ const Contact = () => {
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}>
             <div className="inline-flex items-center gap-2 bg-medical-100 text-medical-700 px-4 py-2 rounded-full text-sm font-bold mb-4">
               <Mail className="w-4 h-4" />
-              نحن هنا لمساعدتك
+              {t('contact.contact_us_badge')}
             </div>
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
               <span className="bg-gradient-to-l from-medical-600 to-indigo-600 bg-clip-text text-transparent">
-                تواصل معنا
+                {t('contact.contact_us_title')}
               </span>
             </h1>
             <p className="text-gray-500 text-lg max-w-2xl mx-auto">
-              فريقنا مستعد للرد على جميع أسئلتك وتقديم المساعدة. تواصل معنا عبر الطريقة المناسبة لك.
+              {t('contact.contact_us_desc')}
             </p>
           </motion.div>
         </div>
@@ -180,16 +185,16 @@ const Contact = () => {
               <div className="md:flex">
                 {/* Form */}
                 <div className="md:w-1/2 p-8 md:p-10">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-2">أرسل لنا رسالة</h2>
-                  <p className="text-gray-500 text-sm mb-6">اختر طريقة الإرسال المفضلة لك</p>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('contact.send_message_title')}</h2>
+                  <p className="text-gray-500 text-sm mb-6">{t('contact.send_message_subtitle')}</p>
 
                   {submitted ? (
                     <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="text-center py-12">
                       <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
                         <CheckCircle className="w-10 h-10 text-green-600" />
                       </div>
-                      <h3 className="text-xl font-bold text-gray-900 mb-2">تم الإرسال بنجاح!</h3>
-                      <p className="text-gray-600">شكرًا للتواصل معنا. سنرد عليك في أقرب وقت.</p>
+                      <h3 className="text-xl font-bold text-gray-900 mb-2">{t('contact.sent_success')}</h3>
+                      <p className="text-gray-600">{t('contact.sent_success_desc')}</p>
                     </motion.div>
                   ) : (
                     <form ref={formRef} onSubmit={handleSubmit} className="space-y-4">
@@ -199,49 +204,49 @@ const Contact = () => {
                           className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all ${
                             sendVia === 'email' ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/20' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                           }`}>
-                          <Mail className="w-4 h-4" /> إيميل
+                          <Mail className="w-4 h-4" /> {t('contact.send_via_email')}
                         </button>
                         <button type="button" onClick={() => setSendVia('whatsapp')}
                           className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all ${
                             sendVia === 'whatsapp' ? 'bg-green-500 text-white shadow-lg shadow-green-500/20' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                           }`}>
-                          <MessageCircle className="w-4 h-4" /> واتساب
+                          <MessageCircle className="w-4 h-4" /> {t('contact.send_via_whatsapp')}
                         </button>
                       </div>
 
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <Label htmlFor="name" className="text-sm font-semibold text-gray-700">الاسم *</Label>
-                          <Input id="name" name="name" value={formData.name} onChange={handleChange} placeholder="الاسم الكامل" required className="rounded-xl mt-1 h-11" />
+                          <Label htmlFor="name" className="text-sm font-semibold text-gray-700">{t('contact.form_name')}</Label>
+                          <Input id="name" name="name" value={formData.name} onChange={handleChange} placeholder={t('contact.form_name_placeholder')} required className="rounded-xl mt-1 h-11" />
                         </div>
                         <div>
-                          <Label htmlFor="phone" className="text-sm font-semibold text-gray-700">الهاتف *</Label>
-                          <Input id="phone" name="phone" value={formData.phone} onChange={handleChange} placeholder="رقم الهاتف" required className="rounded-xl mt-1 h-11" />
+                          <Label htmlFor="phone" className="text-sm font-semibold text-gray-700">{t('contact.form_phone')}</Label>
+                          <Input id="phone" name="phone" value={formData.phone} onChange={handleChange} placeholder={t('contact.form_phone_placeholder')} required className="rounded-xl mt-1 h-11" />
                         </div>
                       </div>
 
                       <div>
-                        <Label htmlFor="email" className="text-sm font-semibold text-gray-700">البريد الإلكتروني</Label>
-                        <Input id="email" name="email" type="email" value={formData.email} onChange={handleChange} placeholder="البريد الإلكتروني" className="rounded-xl mt-1 h-11" />
+                        <Label htmlFor="email" className="text-sm font-semibold text-gray-700">{t('contact.form_email')}</Label>
+                        <Input id="email" name="email" type="email" value={formData.email} onChange={handleChange} placeholder={t('contact.form_email')} className="rounded-xl mt-1 h-11" />
                       </div>
 
                       <div>
-                        <Label htmlFor="subject" className="text-sm font-semibold text-gray-700">الموضوع *</Label>
+                        <Label htmlFor="subject" className="text-sm font-semibold text-gray-700">{t('contact.form_subject')}</Label>
                         <select id="subject" name="subject" value={formData.subject} onChange={handleChange} required
                           className="w-full rounded-xl border border-gray-200 p-2.5 h-11 focus:ring-2 focus:ring-medical-500 focus:border-transparent bg-white text-sm mt-1">
-                          <option value="" disabled>اختر الموضوع</option>
-                          <option value="استفسار عام">استفسار عام</option>
-                          <option value="حجز موعد">حجز موعد</option>
-                          <option value="استشارة فنية">استشارة فنية</option>
-                          <option value="خدمة ما بعد البيع">خدمة ما بعد البيع</option>
-                          <option value="شكوى أو اقتراح">شكوى أو اقتراح</option>
-                          <option value="أخرى">أخرى</option>
+                          <option value="" disabled>{t('contact.form_subject_placeholder')}</option>
+                          <option value="استفسار عام">{t('contact.subject_1')}</option>
+                          <option value="حجز موعد">{t('contact.subject_2')}</option>
+                          <option value="استشارة فنية">{t('contact.subject_3')}</option>
+                          <option value="خدمة ما بعد البيع">{t('contact.subject_4')}</option>
+                          <option value="شكوى أو اقتراح">{t('contact.subject_5')}</option>
+                          <option value="أخرى">{t('contact.subject_6')}</option>
                         </select>
                       </div>
 
                       <div>
-                        <Label htmlFor="message" className="text-sm font-semibold text-gray-700">الرسالة *</Label>
-                        <Textarea id="message" name="message" value={formData.message} onChange={handleChange} placeholder="اكتب رسالتك هنا..." rows={4} required className="rounded-xl mt-1 resize-none" />
+                        <Label htmlFor="message" className="text-sm font-semibold text-gray-700">{t('contact.form_message')}</Label>
+                        <Textarea id="message" name="message" value={formData.message} onChange={handleChange} placeholder={t('contact.form_message_placeholder')} rows={4} required className="rounded-xl mt-1 resize-none" />
                       </div>
 
                       <Button type="submit" disabled={isSubmitting}
@@ -256,12 +261,12 @@ const Contact = () => {
                               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                             </svg>
-                            جاري الإرسال...
+                            {t('contact.sending')}
                           </span>
                         ) : (
                           <span className="flex items-center justify-center gap-2">
                             {sendVia === 'whatsapp' ? <MessageCircle className="w-5 h-5" /> : <Send className="w-5 h-5" />}
-                            {sendVia === 'whatsapp' ? 'إرسال عبر واتساب' : 'إرسال عبر الإيميل'}
+                            {sendVia === 'whatsapp' ? t('contact.send_whatsapp') : t('contact.send_email')}
                           </span>
                         )}
                       </Button>
@@ -279,7 +284,7 @@ const Contact = () => {
                     allowFullScreen
                     loading="lazy"
                     referrerPolicy="no-referrer-when-downgrade"
-                    title="موقع المركز الرئيسي"
+                    title={t('contact.map_title')}
                   />
                 </div>
               </div>
@@ -303,14 +308,14 @@ const Contact = () => {
                 <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center mx-auto mb-4">
                   <MessageCircle className="w-8 h-8 text-white" />
                 </div>
-                <h2 className="text-3xl font-bold text-white mb-3">تواصل معنا عبر واتساب</h2>
+                <h2 className="text-3xl font-bold text-white mb-3">{t('contact.whatsapp_cta_title')}</h2>
                 <p className="text-white/80 text-lg mb-6 max-w-lg mx-auto">
-                  للحصول على استجابة فورية، تواصل معنا مباشرة عبر واتساب. متاحون للرد على استفساراتك.
+                  {t('contact.whatsapp_cta_desc')}
                 </p>
                 <a href="https://wa.me/201119056895" target="_blank" rel="noopener noreferrer">
                   <Button className="bg-white text-green-600 hover:bg-green-50 px-8 py-3 rounded-xl text-lg font-bold shadow-xl">
                     <MessageCircle className="w-5 h-5 ml-2" />
-                    فتح محادثة واتساب
+                    {t('contact.open_whatsapp')}
                   </Button>
                 </a>
               </div>

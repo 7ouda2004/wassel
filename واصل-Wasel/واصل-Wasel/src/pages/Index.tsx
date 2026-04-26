@@ -7,8 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import { useTranslation } from 'react-i18next';
 
 const Index = () => {
+  const { t } = useTranslation();
+
   useEffect(() => {
     document.documentElement.dir = 'rtl';
     document.body.classList.add('font-cairo');
@@ -33,11 +36,11 @@ const Index = () => {
             transition={{ duration: 1, type: "spring", stiffness: 50 }}
           >
             <h1 className="text-4xl md:text-5xl lg:text-7xl font-extrabold text-medical-950 leading-tight tracking-tight">
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-medical-600 to-medical-400 block mb-2 drop-shadow-md pb-2"> واصل </span>
-              لحلول الجبائر والأطراف الصناعية المتطورة
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-medical-600 to-medical-400 block mb-2 drop-shadow-md pb-2"> {t('index.hero_title_1')} </span>
+              {t('index.hero_title_2')}
             </h1>
             <p className="mt-6 text-xl text-gray-600 max-w-xl mx-auto md:mx-0 leading-relaxed font-medium">
-              أفضل الحلول التقويمية والأطراف الصناعية المصممة خصيصًا لتلبية احتياجاتك بأحدث التقنيات والمعايير العالمية، بأسعار واقعية وجودة لا تُضاهى.
+              {t('index.hero_desc')}
             </p>
             <motion.div
               className="mt-10 flex flex-col sm:flex-row justify-center md:justify-start space-y-4 sm:space-y-0 sm:space-x-4 rtl:space-x-reverse"
@@ -52,7 +55,7 @@ const Index = () => {
                 >
                   <Button size="lg" className="px-8 py-7 text-lg bg-sky-400 hover:bg-sky-500 text-white shadow-md hover:shadow-lg transition-all rounded-xl border-0">
                     <Sparkles className="ml-2 h-5 w-5" />
-                    <span className="font-bold">استكشف الجبائر الطبية</span>
+                    <span className="font-bold">{t('index.explore_orthoses')}</span>
                     <ChevronRight className="mr-2 h-5 w-5 rtl:rotate-180" />
                   </Button>
                 </motion.div>
@@ -64,7 +67,7 @@ const Index = () => {
                 >
                   <Button size="lg" className="px-8 py-7 text-lg bg-sky-400 hover:bg-sky-500 text-white shadow-md hover:shadow-lg transition-all rounded-xl border-0">
                     <Sparkles className="ml-2 h-5 w-5" />
-                    <span className="font-bold">استكشف الأطراف الصناعية</span>
+                    <span className="font-bold">{t('index.explore_prosthetics')}</span>
                     <ChevronRight className="mr-2 h-5 w-5 rtl:rotate-180" />
                   </Button>
                 </motion.div>
@@ -98,8 +101,8 @@ const Index = () => {
                     <Award className="h-6 w-6 text-medical-600" />
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500 font-bold">جودة ألمانية</p>
-                    <p className="text-医療-800 font-extrabold text-lg">تقنيات 2026</p>
+                    <p className="text-sm text-gray-500 font-bold">{t('index.german_quality')}</p>
+                    <p className="text-medical-800 font-extrabold text-lg">{t('index.tech_2026')}</p>
                   </div>
                 </div>
               </motion.div>
@@ -117,7 +120,7 @@ const Index = () => {
       {/* Features Section */}
       <section className="py-20 bg-white">
         <div className="container mx-auto px-4">
-          <h2 className="section-title">خدماتنا المميزة</h2>
+          <h2 className="section-title">{t('index.services_title')}</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
             <motion.div
@@ -132,12 +135,12 @@ const Index = () => {
                   className="h-10 w-10"
                 />
               </div>
-              <h3 className="text-xl font-bold mb-2">الأطراف الصناعية المتطورة</h3>
+              <h3 className="text-xl font-bold mb-2">{t('index.service_1_title')}</h3>
               <p className="text-gray-600">
-                نوفر أحدث تقنيات الأطراف الصناعية المصممة خصيصًا لتلبية احتياجاتك اليومية بأعلى معايير الجودة والراحة.
+                {t('index.service_1_desc')}
               </p>
               <Link to="/prosthetics" className="block mt-4 text-medical-600 hover:text-medical-700 font-medium inline-flex items-center">
-                المزيد
+                {t('index.more')}
                 <ArrowRight className="h-4 w-4 mr-1 rtl:rotate-180" />
               </Link>
             </motion.div>
@@ -154,12 +157,12 @@ const Index = () => {
                   className="h-10 w-10"
                 />
               </div>
-              <h3 className="text-xl font-bold mb-2">الجبائر الطبية المتخصصة</h3>
+              <h3 className="text-xl font-bold mb-2">{t('index.service_2_title')}</h3>
               <p className="text-gray-600">
-                مجموعة متنوعة من الجبائر الطبية عالية الجودة لمختلف الحالات، مصممة لتوفير الدعم الأمثل والراحة.
+                {t('index.service_2_desc')}
               </p>
               <Link to="/orthoses" className="block mt-4 text-medical-600 hover:text-medical-700 font-medium inline-flex items-center">
-                المزيد
+                {t('index.more')}
                 <ArrowRight className="h-4 w-4 mr-1 rtl:rotate-180" />
               </Link>
             </motion.div>
@@ -176,12 +179,12 @@ const Index = () => {
                   className="h-10 w-10"
                 />
               </div>
-              <h3 className="text-xl font-bold mb-2">حلول مخصصة</h3>
+              <h3 className="text-xl font-bold mb-2">{t('index.service_3_title')}</h3>
               <p className="text-gray-600">
-                نقدم حلولًا مخصصة تمامًا وفقًا لاحتياجاتك الفردية، مع مراعاة نمط حياتك ومستوى نشاطك.
+                {t('index.service_3_desc')}
               </p>
               <Link to="/contact" className="block mt-4 text-medical-600 hover:text-medical-700 font-medium inline-flex items-center">
-                تواصل معنا
+                {t('nav.contact_us')}
                 <ArrowRight className="h-4 w-4 mr-1 rtl:rotate-180" />
               </Link>
             </motion.div>
@@ -208,13 +211,13 @@ const Index = () => {
                 />
                 <div className="absolute -bottom-6 -right-6 bg-white rounded-lg shadow-lg p-4 z-10">
                   <div className="text-3xl font-bold text-medical-600">10+</div>
-                  <div className="text-gray-600">سنوات من الخبرة</div>
+                  <div className="text-gray-600">{t('index.years_exp')}</div>
                 </div>
               </motion.div>
             </div>
 
             <div className="md:w-1/2 md:pr-10">
-              <h2 className="section-title text-right">لماذا تختارنا؟</h2>
+              <h2 className="section-title text-right">{t('index.why_us')}</h2>
 
               <div className="space-y-6 mt-8">
                 <motion.div
@@ -228,8 +231,8 @@ const Index = () => {
                     <Users className="h-6 w-6 text-medical-600" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-semibold text-gray-900 mb-1">فريق متخصص</h3>
-                    <p className="text-gray-600">يضم فريقنا خبراء متخصصين في مجال الأطراف الصناعية والجبائر الطبية ذوي خبرة واسعة.</p>
+                    <h3 className="text-xl font-semibold text-gray-900 mb-1">{t('index.team_title')}</h3>
+                    <p className="text-gray-600">{t('index.team_desc')}</p>
                   </div>
                 </motion.div>
 
@@ -244,8 +247,8 @@ const Index = () => {
                     <Award className="h-6 w-6 text-medical-600" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-semibold text-gray-900 mb-1">معايير عالمية</h3>
-                    <p className="text-gray-600">نعتمد على أعلى المعايير العالمية في تصميم وتصنيع منتجاتنا لضمان الجودة والأمان.</p>
+                    <h3 className="text-xl font-semibold text-gray-900 mb-1">{t('index.standards_title')}</h3>
+                    <p className="text-gray-600">{t('index.standards_desc')}</p>
                   </div>
                 </motion.div>
 
@@ -260,8 +263,8 @@ const Index = () => {
                     <Calendar className="h-6 w-6 text-medical-600" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-semibold text-gray-900 mb-1">متابعة مستمرة</h3>
-                    <p className="text-gray-600">نقدم خدمة متابعة مستمرة بعد التركيب لضمان أفضل النتائج والتأقلم مع الجهاز.</p>
+                    <h3 className="text-xl font-semibold text-gray-900 mb-1">{t('index.followup_title')}</h3>
+                    <p className="text-gray-600">{t('index.followup_desc')}</p>
                   </div>
                 </motion.div>
 
@@ -276,8 +279,8 @@ const Index = () => {
                     <MapPin className="h-6 w-6 text-medical-600" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-semibold text-gray-900 mb-1">مراكز متعددة</h3>
-                    <p className="text-gray-600">لدينا مراكز متعددة في مختلف المناطق لتسهيل الوصول إلى خدماتنا.</p>
+                    <h3 className="text-xl font-semibold text-gray-900 mb-1">{t('index.centers_title')}</h3>
+                    <p className="text-gray-600">{t('index.centers_desc')}</p>
                   </div>
                 </motion.div>
               </div>
@@ -285,7 +288,7 @@ const Index = () => {
               <div className="mt-8">
                 <Link to="/about">
                   <Button variant="default" size="lg" className="medical-btn">
-                    معرفة المزيد عنا
+                    {t('index.know_more')}
                     <ChevronRight className="h-5 w-5 mr-1 rtl:rotate-180" />
                   </Button>
                 </Link>
@@ -298,7 +301,7 @@ const Index = () => {
       {/* Featured Products */}
       <section className="py-20 bg-white">
         <div className="container mx-auto px-4">
-          <h2 className="section-title">منتجاتنا المميزة</h2>
+          <h2 className="section-title">{t('index.products_title')}</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
             <motion.div
@@ -313,18 +316,18 @@ const Index = () => {
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                 />
                 <div className="absolute top-2 right-2 bg-gradient-to-r from-medical-600 to-medical-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
-                  الأكثر مبيعًا
+                  {t('index.best_seller')}
                 </div>
               </div>
               <div className="p-5">
-                <h3 className="text-lg font-extrabold text-gray-900 group-hover:text-medical-600 transition-colors">جبيرة الكاحل والقدم (AFO)</h3>
+                <h3 className="text-lg font-extrabold text-gray-900 group-hover:text-medical-600 transition-colors">{t('index.product_1_title')}</h3>
                 <p className="text-sm text-gray-600 mt-2 line-clamp-2">
-                  جبيرة طبية حديثة لدعم الكاحل والقدم، تناسب حالات سقوط القدم.
+                  {t('index.product_1_desc')}
                 </p>
                 <div className="flex justify-between items-center mt-5">
-                  <span className="text-medical-700 font-black text-lg">تبدأ من 1,500 ج.م</span>
+                  <span className="text-medical-700 font-black text-lg">{t('index.price_starts')} 1,500 {t('index.currency')}</span>
                   <Link to="/orthoses">
-                    <Button variant="outline" size="sm" className="hover:bg-medical-50">التفاصيل</Button>
+                    <Button variant="outline" size="sm" className="hover:bg-medical-50">{t('index.details')}</Button>
                   </Link>
                 </div>
               </div>
@@ -343,14 +346,14 @@ const Index = () => {
                 />
               </div>
               <div className="p-5">
-                <h3 className="text-lg font-extrabold text-gray-900 group-hover:text-medical-600 transition-colors">جبيرة الركبة المفصلية</h3>
+                <h3 className="text-lg font-extrabold text-gray-900 group-hover:text-medical-600 transition-colors">{t('index.product_2_title')}</h3>
                 <p className="text-sm text-gray-600 mt-2 line-clamp-2">
-                  دعم متقدم للركبة والأربطة أثناء التعافي وبجودة عالية.
+                  {t('index.product_2_desc')}
                 </p>
                 <div className="flex justify-between items-center mt-5">
-                  <span className="text-medical-700 font-black text-lg">تبدأ من 2,500 ج.م</span>
+                  <span className="text-medical-700 font-black text-lg">{t('index.price_starts')} 2,500 {t('index.currency')}</span>
                   <Link to="/orthoses">
-                    <Button variant="outline" size="sm" className="hover:bg-medical-50">التفاصيل</Button>
+                    <Button variant="outline" size="sm" className="hover:bg-medical-50">{t('index.details')}</Button>
                   </Link>
                 </div>
               </div>
@@ -368,18 +371,18 @@ const Index = () => {
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                 />
                 <div className="absolute top-2 right-2 bg-gradient-to-r from-medical-800 to-medical-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
-                  تقنية ألمانية
+                  {t('index.german_tech')}
                 </div>
               </div>
               <div className="p-5">
-                <h3 className="text-lg font-extrabold text-gray-900 group-hover:text-medical-600 transition-colors">طرف صناعي ديناميكي</h3>
+                <h3 className="text-lg font-extrabold text-gray-900 group-hover:text-medical-600 transition-colors">{t('index.product_3_title')}</h3>
                 <p className="text-sm text-gray-600 mt-2 line-clamp-2">
-                  قدم صناعية من ألياف الكربون للاستجابة الديناميكية العالية.
+                  {t('index.product_3_desc')}
                 </p>
                 <div className="flex justify-between items-center mt-5">
-                  <span className="text-medical-700 font-black text-lg">تبدأ من 35,000 ج.م</span>
+                  <span className="text-medical-700 font-black text-lg">{t('index.price_starts')} 35,000 {t('index.currency')}</span>
                   <Link to="/prosthetics">
-                    <Button variant="outline" size="sm" className="hover:bg-medical-50">التفاصيل</Button>
+                    <Button variant="outline" size="sm" className="hover:bg-medical-50">{t('index.details')}</Button>
                   </Link>
                 </div>
               </div>
@@ -398,14 +401,14 @@ const Index = () => {
                 />
               </div>
               <div className="p-5">
-                <h3 className="text-lg font-extrabold text-gray-900 group-hover:text-medical-600 transition-colors">ذراع إلكتروني حديث</h3>
+                <h3 className="text-lg font-extrabold text-gray-900 group-hover:text-medical-600 transition-colors">{t('index.product_4_title')}</h3>
                 <p className="text-sm text-gray-600 mt-2 line-clamp-2">
-                  ذراع روبوتي ذكي يستجيب للإشارات العصبية بدقة متناهية.
+                  {t('index.product_4_desc')}
                 </p>
                 <div className="flex justify-between items-center mt-5">
-                  <span className="text-medical-700 font-black text-lg">تبدأ من 150,000 ج.م</span>
+                  <span className="text-medical-700 font-black text-lg">{t('index.price_starts')} 150,000 {t('index.currency')}</span>
                   <Link to="/prosthetics">
-                    <Button variant="outline" size="sm" className="hover:bg-medical-50">التفاصيل</Button>
+                    <Button variant="outline" size="sm" className="hover:bg-medical-50">{t('index.details')}</Button>
                   </Link>
                 </div>
               </div>
@@ -415,13 +418,13 @@ const Index = () => {
           <div className="text-center mt-16">
             <Link to="/prosthetics">
               <Button variant="outline" size="lg" className="mr-4">
-                عرض الأطراف الصناعية
+                {t('index.show_prosthetics')}
                 <ChevronRight className="h-5 w-5 mr-1 rtl:rotate-180" />
               </Button>
             </Link>
             <Link to="/orthoses">
               <Button variant="outline" size="lg">
-                عرض الجبائر الطبية
+                {t('index.show_orthoses')}
                 <ChevronRight className="h-5 w-5 mr-1 rtl:rotate-180" />
               </Button>
             </Link>
@@ -432,7 +435,7 @@ const Index = () => {
       {/* Testimonials */}
       <section className="py-20 bg-gradient-to-b from-white to-medical-50">
         <div className="container mx-auto px-4">
-          <h2 className="section-title">ماذا يقول عملاؤنا</h2>
+          <h2 className="section-title">{t('index.testimonials_title')}</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
             <Card className="bg-white/50 backdrop-blur-sm border-medical-100">
@@ -447,11 +450,11 @@ const Index = () => {
                   </div>
                   <div>
                     <h4 className="font-semibold">أحمد محمد</h4>
-                    <p className="text-sm text-gray-500">مستخدم طرف صناعي</p>
+                    <p className="text-sm text-gray-500">{t('index.test_1_role')}</p>
                   </div>
                 </div>
                 <p className="text-gray-600">
-                  "حياتي تغيرت بشكل كبير بعد الحصول على الطرف الصناعي من   واصــل. الجودة ممتازة والحركة طبيعية جدًا. الفريق الطبي كان متعاونًا جدًا وقدموا لي كل الدعم اللازم."
+                  "{t('index.test_1_text')}"
                 </p>
                 <div className="flex mt-4">
                   {[1, 2, 3, 4, 5].map((star) => (
@@ -475,11 +478,11 @@ const Index = () => {
                   </div>
                   <div>
                     <h4 className="font-semibold">سارة أحمد</h4>
-                    <p className="text-sm text-gray-500">مستخدمة جبيرة AFO</p>
+                    <p className="text-sm text-gray-500">{t('index.test_2_role')}</p>
                   </div>
                 </div>
                 <p className="text-gray-600">
-                  "الجبيرة التي حصلت عليها من   فريق واصــل مريحة جدًا وساعدتني كثيرًا في المشي بشكل أفضل. أشكر الفريق على احترافيتهم والتصميم المناسب لحالتي."
+                  "{t('index.test_2_text')}"
                 </p>
                 <div className="flex mt-4">
                   {[1, 2, 3, 4, 5].map((star) => (
@@ -503,11 +506,11 @@ const Index = () => {
                   </div>
                   <div>
                     <h4 className="font-semibold">محمود علي</h4>
-                    <p className="text-sm text-gray-500">مستخدم ركبة صناعية</p>
+                    <p className="text-sm text-gray-500">{t('index.test_3_role')}</p>
                   </div>
                 </div>
                 <p className="text-gray-600">
-                  "الركبة الصناعية المحوسبة التي حصلت عليها غيرت حياتي. أستطيع الآن ممارسة حياتي بشكل طبيعي والمشي لمسافات طويلة بدون تعب. شكرًا بشمهندس محمود على هذه التقنية المتطورة."
+                  "{t('index.test_3_text')}"
                 </p>
                 <div className="flex mt-4">
                   {[1, 2, 3, 4, 5].map((star) => (
@@ -539,13 +542,13 @@ const Index = () => {
           >
             <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm text-white/90 px-5 py-2 rounded-full text-sm font-bold mb-6 border border-white/20">
               <Sparkles className="w-4 h-4" />
-              استشارة مجانية
+              {t('index.consult_badge')}
             </div>
             <h2 className="text-3xl md:text-5xl font-bold text-white mb-5">
-              استشارة مجانية مع خبرائنا
+              {t('index.consult_title')}
             </h2>
             <p className="text-medical-100/90 text-lg mb-10 max-w-2xl mx-auto leading-relaxed">
-              تواصل معنا اليوم للحصول على استشارة مجانية وتقييم شامل لاحتياجاتك. فريقنا المتخصص في انتظارك.
+              {t('index.consult_desc')}
             </p>
             <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4 rtl:space-x-reverse">
               <motion.a
@@ -559,7 +562,7 @@ const Index = () => {
                   <svg className="h-6 w-6 ml-2" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
                   </svg>
-                  تواصل على واتساب
+                  {t('index.whatsapp')}
                 </Button>
               </motion.a>
               <motion.a
@@ -569,7 +572,7 @@ const Index = () => {
               >
                 <Button variant="outline" size="lg" className="border-2 border-white/30 text-white hover:bg-white/10 px-8 py-7 text-lg rounded-xl backdrop-blur-sm">
                   <Mail className="h-5 w-5 ml-2" />
-                  راسلنا عبر البريد الإلكتروني
+                  {t('index.email')}
                 </Button>
               </motion.a>
             </div>

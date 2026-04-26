@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import { useTranslation } from 'react-i18next';
 
 interface Center {
   id: string;
@@ -74,25 +75,30 @@ const centers: Center[] = [
 const regions = ['الكل', 'القاهرة الكبرى', 'الإسكندرية', 'الدلتا', 'الصعيد'];
 
 const Centers = () => {
+  const { t, i18n } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedRegion, setSelectedRegion] = useState('الكل');
-  const [filteredCenters, setFilteredCenters] = useState(centers);
+  
+  const regions = t('centers.regions', { returnObjects: true }) as string[];
+  const [selectedRegion, setSelectedRegion] = useState(regions[0]);
+
+  const centersData = t('centers.data', { returnObjects: true }) as any[];
+  const [filteredCenters, setFilteredCenters] = useState(centersData);
+
+  const isRtl = i18n.dir() === 'rtl';
 
   useEffect(() => {
-    document.documentElement.dir = 'rtl';
-    document.body.classList.add('font-cairo');
     window.scrollTo(0, 0);
   }, []);
 
   useEffect(() => {
-    const filtered = centers.filter(center => {
+    const filtered = centersData.filter(center => {
       const matchesSearch = center.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         center.location.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesRegion = selectedRegion === 'الكل' || center.region === selectedRegion;
+      const matchesRegion = selectedRegion === regions[0] || center.region === selectedRegion;
       return matchesSearch && matchesRegion;
     });
     setFilteredCenters(filtered);
-  }, [searchTerm, selectedRegion]);
+  }, [searchTerm, selectedRegion, centersData, regions]);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -107,7 +113,7 @@ const Centers = () => {
               animate={{ opacity: 1, y: 0 }}
               className="inline-block py-2 px-6 bg-medical-200 text-medical-800 rounded-full text-sm font-semibold mb-4 shadow-sm"
             >
-              <span>شبكة مراكزنا</span>
+              <span>{t('centers.badge')}</span>
             </motion.div>
             <motion.h1
               initial={{ opacity: 0, scale: 0.9 }}
@@ -115,7 +121,7 @@ const Centers = () => {
               transition={{ duration: 0.5, delay: 0.1 }}
               className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 mb-6"
             >
-              مراكز الأطراف الصناعية والأجهزة التقويمية
+              {t('centers.title')}
             </motion.h1>
             <motion.p
               initial={{ opacity: 0, y: 20 }}
@@ -123,7 +129,7 @@ const Centers = () => {
               transition={{ duration: 0.5, delay: 0.2 }}
               className="text-xl text-gray-600 mb-8 leading-relaxed font-medium"
             >
-              اكتشف شبكة مراكزنا المتصلة في جميع أنحاء مصر. نحن نربط خبرائنا ومراكزنا ببعضها البعض لضمان حصولك على أعلى جودة من الخدمة، أينما كنت.
+              {t('centers.desc')}
             </motion.p>
           </div>
 
@@ -141,17 +147,17 @@ const Centers = () => {
             <div className="relative z-10 flex flex-col md:flex-row items-center gap-4 md:gap-16 w-full justify-center">
               <motion.div animate={{ y: [0, -10, 0] }} transition={{ repeat: Infinity, duration: 2 }} className="flex flex-col items-center">
                 <MapPin className="h-12 w-12 text-white drop-shadow-md mb-2" />
-                <span className="text-white font-bold text-lg drop-shadow-md">القاهرة</span>
+                <span className="text-white font-bold text-lg drop-shadow-md">{t('centers.cities.cairo')}</span>
               </motion.div>
-              <div className="hidden md:block h-1 w-16 md:w-32 bg-gradient-to-r from-medical-200 to-white rounded-full animate-pulse"></div>
+              <div className={`hidden md:block h-1 w-16 md:w-32 bg-gradient-to-l from-medical-200 to-white rounded-full animate-pulse ${!isRtl ? 'rotate-180' : ''}`}></div>
               <motion.div animate={{ y: [0, -10, 0], scale: [1, 1.1, 1] }} transition={{ repeat: Infinity, duration: 2, delay: 0.5 }} className="flex flex-col items-center">
                 <MapPin className="h-16 w-16 text-medical-300 drop-shadow-lg mb-2" />
-                <span className="text-white font-black text-2xl drop-shadow-md">المركز الرئيسي</span>
+                <span className="text-white font-black text-2xl drop-shadow-md">{t('centers.main_center')}</span>
               </motion.div>
-              <div className="hidden md:block h-1 w-16 md:w-32 bg-gradient-to-l from-medical-200 to-white rounded-full animate-pulse"></div>
+              <div className={`hidden md:block h-1 w-16 md:w-32 bg-gradient-to-l from-medical-200 to-white rounded-full animate-pulse ${isRtl ? 'rotate-180' : ''}`}></div>
               <motion.div animate={{ y: [0, -10, 0] }} transition={{ repeat: Infinity, duration: 2, delay: 1 }} className="flex flex-col items-center">
                 <MapPin className="h-12 w-12 text-white drop-shadow-md mb-2" />
-                <span className="text-white font-bold text-lg drop-shadow-md">الإسكندرية</span>
+                <span className="text-white font-bold text-lg drop-shadow-md">{t('centers.cities.alex')}</span>
               </motion.div>
             </div>
           </motion.div>
@@ -166,12 +172,12 @@ const Centers = () => {
               <div className="flex-1 relative">
                 <Input
                   type="text"
-                  placeholder="ابحث عن مركز..."
+                  placeholder={t('centers.search_placeholder')}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 pr-4"
+                  className={`${isRtl ? 'pl-10 pr-4' : 'pr-10 pl-4'}`}
                 />
-                <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                <Search className={`absolute ${isRtl ? 'right-3' : 'left-3'} top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5`} />
               </div>
               <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0">
                 {regions.map((region) => (
@@ -226,8 +232,8 @@ const Centers = () => {
                     </div>
                     <Link to={`/centers/${center.id}`}>
                       <Button className="w-full">
-                        عرض التفاصيل
-                        <ChevronRight className="mr-2 h-5 w-5 rtl:rotate-180" />
+                        {t('centers.view_details')}
+                        <ChevronRight className={`mr-2 h-5 w-5 ${isRtl ? 'rotate-0' : 'rotate-180'}`} />
                       </Button>
                     </Link>
                   </div>

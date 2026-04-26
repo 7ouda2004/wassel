@@ -2,6 +2,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Info, MessageCircleQuestion, HelpCircle } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import {
   Accordion,
   AccordionContent,
@@ -43,6 +44,15 @@ const faqItems = [
 ];
 
 const FAQSection: React.FC = () => {
+  const { t } = useTranslation();
+
+  const faqData = t('prosthetics.faq.items', { returnObjects: true }) as Array<any>;
+  
+  const itemsWithData = faqItems.map((item, index) => ({
+    ...item,
+    ...(faqData[index] || {})
+  }));
+
   return (
     <section id="faq" className="py-20 relative overflow-hidden">
       {/* Background */}
@@ -59,15 +69,15 @@ const FAQSection: React.FC = () => {
         >
           <div className="inline-flex items-center gap-2 bg-orange-100 text-orange-700 px-4 py-2 rounded-full text-sm font-bold mb-4">
             <MessageCircleQuestion className="w-4 h-4" />
-            إجابات شاملة
+            {t('prosthetics.faq.badge')}
           </div>
           <h2 className="text-4xl md:text-5xl font-bold mb-4">
             <span className="bg-gradient-to-l from-orange-600 to-amber-600 bg-clip-text text-transparent">
-              الأسئلة الشائعة
+              {t('prosthetics.faq.title')}
             </span>
           </h2>
           <p className="text-gray-500 text-lg max-w-2xl mx-auto">
-            إجابات على أكثر الأسئلة شيوعاً حول الأطراف الصناعية والتأهيل
+            {t('prosthetics.faq.desc')}
           </p>
         </motion.div>
 
@@ -81,7 +91,7 @@ const FAQSection: React.FC = () => {
             className="bg-white rounded-3xl shadow-xl p-8 border border-gray-100"
           >
             <Accordion type="single" collapsible className="w-full space-y-3">
-              {faqItems.map((item, index) => (
+              {itemsWithData.map((item, index) => (
                 <motion.div
                   key={index}
                   initial={{ opacity: 0, x: 15 }}
@@ -99,7 +109,7 @@ const FAQSection: React.FC = () => {
                         {item.question}
                       </div>
                     </AccordionTrigger>
-                    <AccordionContent className="text-base text-gray-600 leading-relaxed pb-5 pr-12">
+                    <AccordionContent className="text-base text-gray-600 leading-relaxed pb-5 pl-12 pr-12">
                       {item.answer}
                     </AccordionContent>
                   </AccordionItem>
@@ -119,9 +129,9 @@ const FAQSection: React.FC = () => {
             <div className="inline-flex items-center gap-3 bg-gradient-to-l from-medical-50 to-blue-50 text-medical-700 px-8 py-4 rounded-2xl border border-medical-200 shadow-sm">
               <HelpCircle className="w-5 h-5" />
               <p className="font-medium">
-                لم تجد إجابة لسؤالك؟{' '}
+                {t('prosthetics.faq.no_answer')}{' '}
                 <a href="/contact" className="text-medical-600 font-bold underline underline-offset-2 hover:text-medical-800 transition-colors">
-                  تواصل معنا مباشرة
+                  {t('prosthetics.faq.contact_us')}
                 </a>
               </p>
             </div>

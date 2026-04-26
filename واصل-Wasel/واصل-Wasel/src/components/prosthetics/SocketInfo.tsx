@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bandage, Check, ArrowLeft, Lock, Droplets, Cpu, Wrench } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 // معلومات السوكيت
 const socketTypes = [
@@ -98,8 +99,25 @@ const manufacturingSteps = [
 ];
 
 const SocketInfo: React.FC = () => {
+  const { t, i18n } = useTranslation();
   const [activeTab, setActiveTab] = useState<'types' | 'manufacturing'>('types');
   const [activeSocket, setActiveSocket] = useState<string | null>(null);
+  
+  const isRtl = i18n.dir() === 'rtl';
+
+  const socketData = t('prosthetics.socket_info.data', { returnObjects: true }) as Record<string, any>;
+  
+  const typesWithData = socketTypes.map(type => ({
+    ...type,
+    ...(socketData[type.id] || {})
+  }));
+
+  const manufacturingStepsData = t('prosthetics.socket_info.manufacturing_steps_data', { returnObjects: true }) as Array<any>;
+  
+  const stepsWithData = manufacturingSteps.map((step, index) => ({
+    ...step,
+    ...(manufacturingStepsData[index] || {})
+  }));
 
   return (
     <section id="socket-info" className="py-20 relative overflow-hidden">
@@ -118,15 +136,15 @@ const SocketInfo: React.FC = () => {
         >
           <div className="inline-flex items-center gap-2 bg-indigo-100 text-indigo-700 px-4 py-2 rounded-full text-sm font-bold mb-4">
             <Bandage className="w-4 h-4" />
-            نقطة الاتصال الحيوية
+            {t('prosthetics.socket_info.badge')}
           </div>
           <h2 className="text-4xl md:text-5xl font-bold mb-4">
             <span className="bg-gradient-to-l from-indigo-600 to-violet-600 bg-clip-text text-transparent">
-              السوكيت
+              {t('prosthetics.socket_info.title')}
             </span>
           </h2>
           <p className="text-gray-500 text-lg max-w-2xl mx-auto mb-4">
-            الجزء الأهم من الطرف الصناعي – يربط الطرف المتبقي بالطرف الصناعي ويوزع الوزن وينقل الحركة
+            {t('prosthetics.socket_info.desc')}
           </p>
         </motion.div>
 
@@ -138,8 +156,8 @@ const SocketInfo: React.FC = () => {
           className="flex justify-center gap-3 mb-12"
         >
           {[
-            { key: 'types' as const, label: 'أنواع السوكيت', icon: Bandage },
-            { key: 'manufacturing' as const, label: 'مراحل التصنيع', icon: Wrench }
+            { key: 'types' as const, label: t('prosthetics.socket_info.tabs.types'), icon: Bandage },
+            { key: 'manufacturing' as const, label: t('prosthetics.socket_info.tabs.manufacturing'), icon: Wrench }
           ].map((tab) => (
             <button
               key={tab.key}
@@ -169,7 +187,7 @@ const SocketInfo: React.FC = () => {
               transition={{ duration: 0.3 }}
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {socketTypes.map((type, index) => (
+                {typesWithData.map((type, index) => (
                   <motion.div
                     key={type.id}
                     initial={{ opacity: 0, y: 30 }}
@@ -210,9 +228,9 @@ const SocketInfo: React.FC = () => {
                           <p className="text-gray-600 text-sm leading-relaxed mb-4">{type.description}</p>
 
                           <div>
-                            <h4 className="font-bold text-gray-800 text-sm mb-2">المميزات:</h4>
+                            <h4 className="font-bold text-gray-800 text-sm mb-2">{t('prosthetics.socket_info.features')}</h4>
                             <ul className="space-y-2">
-                              {type.features.map((feature, idx) => (
+                              {type.features?.map((feature: string, idx: number) => (
                                 <li key={idx} className="flex items-start gap-2 text-sm text-gray-600">
                                   <Check className="w-4 h-4 mt-0.5 flex-shrink-0" style={{ color: type.color }} />
                                   {feature}
@@ -239,7 +257,7 @@ const SocketInfo: React.FC = () => {
               transition={{ duration: 0.3 }}
             >
               <div className="max-w-4xl mx-auto space-y-0">
-                {manufacturingSteps.map((step, index) => (
+                {stepsWithData.map((step, index) => (
                   <motion.div
                     key={index}
                     initial={{ opacity: 0, y: 20 }}
@@ -249,8 +267,8 @@ const SocketInfo: React.FC = () => {
                     className="relative"
                   >
                     {/* Vertical connector line */}
-                    {index < manufacturingSteps.length - 1 && (
-                      <div className="absolute right-[39px] top-20 bottom-0 w-0.5 bg-gradient-to-b from-indigo-400 to-violet-400 z-0" />
+                    {index < stepsWithData.length - 1 && (
+                      <div className={`absolute ${isRtl ? 'right-[39px]' : 'left-[39px]'} top-20 bottom-0 w-0.5 bg-gradient-to-b from-indigo-400 to-violet-400 z-0`} />
                     )}
 
                     <div className="flex gap-6 relative z-10 pb-12">

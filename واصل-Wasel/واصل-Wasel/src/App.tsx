@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { useEffect } from "react";
 import { ThemeProvider } from "./providers/theme-provider";
 import { AnimatePresence } from "framer-motion";
+import { useTranslation } from "react-i18next";
 
 // Import pages
 import Index from "./pages/Index";
@@ -45,10 +46,13 @@ const AnimatedRoutes = () => {
 };
 
 const App = () => {
+  const { i18n } = useTranslation();
+
   useEffect(() => {
-    // Set RTL direction for the entire app
-    document.documentElement.dir = 'rtl';
-  }, []);
+    // Set direction based on language
+    document.documentElement.dir = i18n.language === 'ar' ? 'rtl' : 'ltr';
+    document.documentElement.lang = i18n.language;
+  }, [i18n.language]);
 
   return (
     <ThemeProvider defaultTheme="light">

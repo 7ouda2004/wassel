@@ -2,6 +2,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { BarChart, Award, Check, ArrowLeft } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 // مراحل تصنيع الطرف الصناعي
 const manufacturingSteps = [
@@ -87,6 +88,15 @@ const manufacturingSteps = [
 ];
 
 const ManufacturingSteps: React.FC = () => {
+  const { t } = useTranslation();
+
+  const stepsData = t('prosthetics.manufacturing_steps.data', { returnObjects: true }) as Array<any>;
+  
+  const stepsWithData = manufacturingSteps.map((step, index) => ({
+    ...step,
+    ...(stepsData[index] || {})
+  }));
+
   return (
     <section id="manufacturing-steps" className="py-20 relative overflow-hidden">
       {/* Background */}
@@ -104,21 +114,21 @@ const ManufacturingSteps: React.FC = () => {
         >
           <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-700 px-4 py-2 rounded-full text-sm font-bold mb-4">
             <BarChart className="w-4 h-4" />
-            خطوة بخطوة
+            {t('prosthetics.manufacturing_steps.badge')}
           </div>
           <h2 className="text-4xl md:text-5xl font-bold mb-4">
             <span className="bg-gradient-to-l from-blue-600 via-purple-600 to-teal-600 bg-clip-text text-transparent">
-              مراحل تصنيع الطرف الصناعي
+              {t('prosthetics.manufacturing_steps.title')}
             </span>
           </h2>
           <p className="text-gray-500 text-lg max-w-2xl mx-auto">
-            رحلة تصنيع الطرف الصناعي من التقييم الأولي حتى المتابعة المستمرة
+            {t('prosthetics.manufacturing_steps.desc')}
           </p>
         </motion.div>
 
         {/* Timeline Steps */}
         <div className="max-w-5xl mx-auto">
-          {manufacturingSteps.map((step, index) => (
+          {stepsWithData.map((step, index) => (
             <motion.div
               key={index}
               initial={{ opacity: 0, x: index % 2 === 0 ? 40 : -40 }}
@@ -157,7 +167,7 @@ const ManufacturingSteps: React.FC = () => {
                     <p className="text-gray-600 mb-5 leading-relaxed">{step.description}</p>
                     
                     <ul className="space-y-3">
-                      {step.details.map((detail, idx) => (
+                      {step.details?.map((detail: string, idx: number) => (
                         <motion.li
                           key={idx}
                           initial={{ opacity: 0, x: 10 }}
@@ -178,7 +188,7 @@ const ManufacturingSteps: React.FC = () => {
               </div>
 
               {/* Connector */}
-              {index < manufacturingSteps.length - 1 && (
+              {index < stepsWithData.length - 1 && (
                 <div className="hidden md:flex justify-center my-6">
                   <motion.div
                     initial={{ scaleY: 0 }}
@@ -211,9 +221,9 @@ const ManufacturingSteps: React.FC = () => {
                   <Award className="h-8 w-8 text-white" />
                 </div>
               </div>
-              <h3 className="text-3xl font-bold text-white mb-4">التأهيل المستمر</h3>
+              <h3 className="text-3xl font-bold text-white mb-4">{t('prosthetics.manufacturing_steps.cta_title')}</h3>
               <p className="text-white/80 text-lg max-w-3xl mx-auto leading-relaxed">
-                يستمر تطوير وتحسين الأطراف الصناعية مع التقدم التكنولوجي والبحث العلمي، مما يوفر خيارات أفضل وأكثر طبيعية للمرضى. تلعب المتابعة المستمرة والتأهيل دوراً أساسياً في نجاح استخدام الطرف الصناعي على المدى الطويل.
+                {t('prosthetics.manufacturing_steps.cta_desc')}
               </p>
             </div>
           </div>

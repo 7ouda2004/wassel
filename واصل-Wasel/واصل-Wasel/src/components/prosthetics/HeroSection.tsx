@@ -4,14 +4,22 @@ import { motion } from 'framer-motion';
 import { ArrowRight, Award, Users, Shield, Star } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
-const stats = [
-  { icon: Users, value: '+500', label: 'مريض سعيد' },
-  { icon: Award, value: '+10', label: 'سنوات خبرة' },
-  { icon: Shield, value: '100%', label: 'جودة مضمونة' },
-];
+const iconMap: Record<string, any> = {
+  patients: Users,
+  experience: Award,
+  quality: Shield,
+};
 
 const HeroSection: React.FC = () => {
+  const { t } = useTranslation();
+  const statsData = t('prosthetics.hero.stats', { returnObjects: true }) as Record<string, { value: string, label: string }>;
+  const stats = Object.entries(statsData).map(([key, stat]) => ({
+    icon: iconMap[key],
+    value: stat.value,
+    label: stat.label
+  }));
   return (
     <section className="relative min-h-[90vh] overflow-hidden">
       {/* Animated Background */}
@@ -66,18 +74,18 @@ const HeroSection: React.FC = () => {
                 className="inline-flex items-center gap-2 bg-medical-100/80 backdrop-blur-sm text-medical-700 px-4 py-2 rounded-full text-sm font-bold mb-6 border border-medical-200/50"
               >
                 <Star className="w-4 h-4 fill-medical-500 text-medical-500" />
-                أحدث التقنيات العالمية
+                {t('prosthetics.hero.badge')}
               </motion.div>
 
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-gray-900 mb-6 leading-tight">
-                <span className="block">الأطراف الصناعية</span>
+                <span className="block">{t('prosthetics.hero.title_1')}</span>
                 <span className="bg-gradient-to-l from-medical-600 via-medical-500 to-teal-500 bg-clip-text text-transparent">
-                  المتطورة
+                  {t('prosthetics.hero.title_2')}
                 </span>
               </h1>
 
               <p className="text-xl text-gray-600 mb-8 leading-relaxed max-w-lg">
-                نقدم أحدث التقنيات في الأطراف الصناعية لمساعدتك على استعادة حريتك واستقلاليتك. نجمع بين الخبرة الطبية والتكنولوجيا المتطورة لتوفير حلول مخصصة.
+                {t('prosthetics.hero.desc')}
               </p>
 
               {/* CTA Buttons */}
@@ -85,16 +93,16 @@ const HeroSection: React.FC = () => {
                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                   <Button size="lg" className="bg-gradient-to-l from-medical-600 to-medical-700 hover:from-medical-700 hover:to-medical-800 shadow-xl shadow-medical-600/30 text-lg px-8 py-6 rounded-xl">
                     <Link to="/contact" className="flex items-center gap-2 text-white">
-                      تواصل معنا
-                      <ArrowRight className="w-5 h-5 text-white" />
+                      {t('prosthetics.hero.cta_contact')}
+                      <ArrowRight className="w-5 h-5 text-white rtl:rotate-180" />
                     </Link>
                   </Button>
                 </motion.div>
                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                   <Button size="lg" variant="outline" className="border-2 border-medical-300 text-medical-700 hover:bg-medical-50 text-lg px-8 py-6 rounded-xl">
                     <a href="#amputation-levels" className="flex items-center gap-2">
-                      تعرف على المزيد
-                      <ArrowRight className="w-5 h-5" />
+                      {t('prosthetics.hero.cta_learn')}
+                      <ArrowRight className="w-5 h-5 rtl:rotate-180" />
                     </a>
                   </Button>
                 </motion.div>
@@ -158,8 +166,8 @@ const HeroSection: React.FC = () => {
                     <Award className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <p className="font-bold text-gray-900">جودة ألمانية</p>
-                    <p className="text-sm text-gray-500">تقنيات 2026</p>
+                    <p className="font-bold text-gray-900">{t('prosthetics.hero.card_title')}</p>
+                    <p className="text-sm text-gray-500">{t('prosthetics.hero.card_subtitle')}</p>
                   </div>
                 </div>
               </motion.div>
