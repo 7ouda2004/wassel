@@ -509,7 +509,8 @@ const resources = {
             "role": "المؤسس وأخصائي أطراف صناعية وأجهزة تقويمية",
             "image": "/images/mahmoud.jpg",
             "bio": "خريج جامعة القاهرة الجديدة التكنولوجية، ومتخصص في تصميم وتصنيع الأطراف الصناعية والأجهزة التقويمية. يمتلك خبرة واسعة في المجال ويسعى دائمًا لتقديم أحدث التقنيات والحلول المبتكرة للمرضى.",
-            "expertise": ["تصميم الأطراف الصناعية", "الجبائر التقويمية", "تقييم الحالات المتقدمة"]
+            "expertise": ["تصميم الأطراف الصناعية", "الجبائر التقويمية", "تقييم الحالات المتقدمة"],
+            "social": { "facebook": "https://www.facebook.com/profile.php?id=100009899685976", "instagram": "https://www.instagram.com/mahmoud.ibrahim.7/", "twitter": "#", "linkedin": "https://www.linkedin.com/in/mahmoud-arafa-b490b4265/" }
           },
           {
             "id": 2,
@@ -517,7 +518,8 @@ const resources = {
             "role": "أخصائي تركيب وضبط الأطراف الصناعية",
             "image": "/images/nader.jpeg",
             "bio": "متخصص في ضبط وتركيب الأطراف الصناعية بدقة عالية، مع خبرة أكثر من 3 سنوات في المجال. يتميز بمهاراته الفنية العالية ودقته في العمل، مما يضمن حصول المرضى على أفضل النتائج وأعلى مستويات الراحة.",
-            "expertise": ["ضبط الأطراف الصناعية", "تقييم الحركة والمشي", "الصيانة والإصلاح"]
+            "expertise": ["ضبط الأطراف الصناعية", "تقييم الحركة والمشي", "الصيانة والإصلاح"],
+            "social": { "facebook": "https://www.facebook.com/nader.ibrahem.35", "instagram": "https://www.instagram.com/nader_op1/", "twitter": "#", "linkedin": "https://www.linkedin.com/in/nader-ibrahim-3a2554278/" }
           },
           {
             "id": 3,
@@ -525,7 +527,8 @@ const resources = {
             "role": "أخصائي الجبائر الطبية وتقنيات السيليكون الحديثة",
             "image": "/images/bassel.jpg",
             "bio": "متخصص في تصميم وتصنيع الجبائر الطبية المخصصة. يمتلك معرفة عميقة بعلم التشريح وميكانيكا الجسم، مما يمكنه من تصميم جبائر تلبي الاحتياجات الدقيقة لكل مريض. يسعى دائمًا لتطوير مهاراته واكتساب أحدث التقنيات في المجال.",
-            "expertise": ["جبائر العمود الفقري", "جبائر الركبة والكاحل", "جبائر الأطفال المتخصصة"]
+            "expertise": ["جبائر العمود الفقري", "جبائر الركبة والكاحل", "جبائر الأطفال المتخصصة"],
+            "social": { "facebook": "https://www.facebook.com/bassel.hany.mohammed", "instagram": "https://www.instagram.com/bassel_hanymohammad/", "twitter": "#", "linkedin": "https://www.linkedin.com/in/bassel-hany-mohammed-526276328/" }
           }
         ]
       },
@@ -1083,7 +1086,8 @@ const resources = {
             "role": "Founder & Prosthetist/Orthotist",
             "image": "/images/mahmoud.jpg",
             "bio": "Graduate of New Cairo Technological University, specializing in the design and manufacture of prosthetics and orthotics. He has extensive experience in the field and always seeks to provide the latest technologies and innovative solutions for patients.",
-            "expertise": ["Prosthetic Design", "Orthotic Braces", "Advanced Case Assessment"]
+            "expertise": ["Prosthetic Design", "Orthotic Braces", "Advanced Case Assessment"],
+            "social": { "facebook": "https://www.facebook.com/profile.php?id=100009899685976", "instagram": "https://www.instagram.com/mahmoud.ibrahim.7/", "twitter": "#", "linkedin": "https://www.linkedin.com/in/mahmoud-arafa-b490b4265/" }
           },
           {
             "id": 2,
@@ -1091,7 +1095,8 @@ const resources = {
             "role": "Prosthetic Fitting Specialist",
             "image": "/images/nader.jpeg",
             "bio": "Specialized in fitting and adjusting prosthetics with high precision, with more than 3 years of experience in the field. He is characterized by his high technical skills and accuracy in work, ensuring patients get the best results and highest levels of comfort.",
-            "expertise": ["Prosthetic Adjustment", "Gait and Mobility Assessment", "Maintenance and Repair"]
+            "expertise": ["Prosthetic Adjustment", "Gait and Mobility Assessment", "Maintenance and Repair"],
+            "social": { "facebook": "https://www.facebook.com/nader.ibrahem.35", "instagram": "https://www.instagram.com/nader_op1/", "twitter": "#", "linkedin": "https://www.linkedin.com/in/nader-ibrahim-3a2554278/" }
           },
           {
             "id": 3,
@@ -1099,7 +1104,8 @@ const resources = {
             "role": "Orthotics & Modern Silicone Specialist",
             "image": "/images/bassel.jpg",
             "bio": "Specialized in designing and manufacturing custom medical orthoses. He has deep knowledge of anatomy and body mechanics, enabling him to design braces that meet the precise needs of each patient. He always strives to develop his skills and acquire the latest technologies in the field.",
-            "expertise": ["Spinal Braces", "Knee and Ankle Braces", "Specialized Pediatric Orthoses"]
+            "expertise": ["Spinal Braces", "Knee and Ankle Braces", "Specialized Pediatric Orthoses"],
+            "social": { "facebook": "https://www.facebook.com/bassel.hany.mohammed", "instagram": "https://www.instagram.com/bassel_hanymohammad/", "twitter": "#", "linkedin": "https://www.linkedin.com/in/bassel-hany-mohammed-526276328/" }
           }
         ]
       },

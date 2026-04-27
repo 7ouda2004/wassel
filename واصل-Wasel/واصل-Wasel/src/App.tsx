@@ -19,6 +19,9 @@ import Contact from "./pages/Contact";
 import SpecialistDashboard from "./pages/SpecialistDashboard";
 import NotFound from "./pages/NotFound";
 import Booking from '@/pages/Booking';
+import Centers from "./pages/Centers";
+import CenterDetails from "./pages/CenterDetails";
+import Login from "./pages/Login";
 import WhatsAppButton from '@/components/WhatsAppButton';
 
 const queryClient = new QueryClient();
@@ -39,6 +42,9 @@ const AnimatedRoutes = () => {
         <Route path="/contact" element={<Contact />} />
         <Route path="/specialist-dashboard" element={<SpecialistDashboard />} />
         <Route path="/booking" element={<Booking />} />
+        <Route path="/centers" element={<Centers />} />
+        <Route path="/center/:id" element={<CenterDetails />} />
+        <Route path="/login" element={<Login />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </AnimatePresence>

@@ -139,18 +139,26 @@ const Team = () => {
                   </ul>
 
                   <div className="flex justify-center space-x-3 pt-4 border-t border-gray-100">
-                    <a href={member.social.facebook} className="text-gray-400 hover:text-medical-600 transition-colors">
-                      <Facebook className="h-5 w-5" />
-                    </a>
-                    <a href={member.social.instagram} className="text-gray-400 hover:text-medical-600 transition-colors">
-                      <Instagram className="h-5 w-5" />
-                    </a>
-                    <a href={member.social.twitter} className="text-gray-400 hover:text-medical-600 transition-colors">
-                      <Twitter className="h-5 w-5" />
-                    </a>
-                    <a href={member.social.linkedin} className="text-gray-400 hover:text-medical-600 transition-colors">
-                      <Linkedin className="h-5 w-5" />
-                    </a>
+                    {member.social?.facebook && (
+                      <a href={member.social.facebook} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-medical-600 transition-colors">
+                        <Facebook className="h-5 w-5" />
+                      </a>
+                    )}
+                    {member.social?.instagram && (
+                      <a href={member.social.instagram} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-medical-600 transition-colors">
+                        <Instagram className="h-5 w-5" />
+                      </a>
+                    )}
+                    {member.social?.twitter && member.social.twitter !== '#' && (
+                      <a href={member.social.twitter} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-medical-600 transition-colors">
+                        <Twitter className="h-5 w-5" />
+                      </a>
+                    )}
+                    {member.social?.linkedin && (
+                      <a href={member.social.linkedin} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-medical-600 transition-colors">
+                        <Linkedin className="h-5 w-5" />
+                      </a>
+                    )}
                   </div>
                 </div>
               </motion.div>
