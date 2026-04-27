@@ -77,12 +77,12 @@ const Navbar = () => {
           </div>
           
           {/* Desktop menu */}
-          <div className="hidden md:flex md:items-center md:space-x-6 md:rtl:space-x-reverse">
+          <div className="hidden lg:flex lg:items-center lg:space-x-4 lg:rtl:space-x-reverse flex-1 justify-center px-4">
             {navLinks.map((link) => (
               <Link 
                 key={link.path} 
                 to={link.path} 
-                className="text-gray-700 hover:text-primary font-medium"
+                className="text-gray-700 hover:text-primary font-medium text-sm xl:text-base whitespace-nowrap"
               >
                 {link.label}
               </Link>
@@ -92,7 +92,7 @@ const Navbar = () => {
           <div className="flex items-center space-x-4 rtl:space-x-reverse">
             {isLoggedIn ? (
               <Link to="/specialist-dashboard">
-                <Button variant="outline" className="flex items-center">
+                <Button variant="outline" className="flex items-center whitespace-nowrap">
                   <User className="mr-2 h-4 w-4" />
                   {t('nav.specialist_dashboard')}
                 </Button>
@@ -100,7 +100,7 @@ const Navbar = () => {
             ) : (
               <Dialog>
                 <DialogTrigger asChild>
-                  <Button variant="outline" className="flex items-center">
+                  <Button variant="outline" className="hidden sm:flex items-center whitespace-nowrap">
                     <User className="mr-2 h-4 w-4" />
                       {t('nav.login_specialist')}
                   </Button>
@@ -127,7 +127,7 @@ const Navbar = () => {
             )}
             
             <a href="https://wa.me/201119056895" target="_blank" rel="noopener noreferrer">
-              <Button variant="default" className="flex items-center medical-btn">
+              <Button variant="default" className="hidden sm:flex items-center medical-btn whitespace-nowrap">
                 <Phone className="mr-2 h-4 w-4" />
                 {t('nav.contact_us')}
               </Button>
@@ -138,7 +138,7 @@ const Navbar = () => {
               <span className="sr-only">Toggle language</span>
             </Button>
             
-            <div className="md:hidden flex items-center">
+            <div className="lg:hidden flex items-center">
               <button
                 onClick={toggleMenu}
                 className="text-gray-700 hover:text-primary"
@@ -156,7 +156,7 @@ const Navbar = () => {
         
         {/* Mobile menu - integrated within the same navbar container */}
         {isOpen && (
-          <div className="md:hidden py-2 border-t border-gray-200">
+          <div className="lg:hidden py-2 border-t border-gray-200">
             <div className="flex flex-col space-y-1">
               {navLinks.map((link) => (
                 <Link 
@@ -168,6 +168,49 @@ const Navbar = () => {
                   {link.label}
                 </Link>
               ))}
+              {!isLoggedIn ? (
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <button className="block w-full text-start py-2 px-3 rounded-md hover:bg-primary/10 text-gray-700 font-medium">
+                      {t('nav.login_specialist')}
+                    </button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle className="text-center">تسجيل دخول الأخصائي</DialogTitle>
+                    </DialogHeader>
+                    <form onSubmit={handleSpecialistLogin} className="space-y-4">
+                      <div>
+                        <Label htmlFor="mobile-password">كلمة المرور</Label>
+                        <Input 
+                          id="mobile-password" 
+                          type="password" 
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          className="mt-1"
+                        />
+                      </div>
+                      <Button type="submit" className="w-full">تسجيل الدخول</Button>
+                    </form>
+                  </DialogContent>
+                </Dialog>
+              ) : (
+                <Link 
+                  to="/specialist-dashboard" 
+                  className="block py-2 px-3 rounded-md hover:bg-primary/10 font-bold text-medical-700" 
+                  onClick={toggleMenu}
+                >
+                  {t('nav.specialist_dashboard')}
+                </Link>
+              )}
+              <a 
+                href="https://wa.me/201119056895" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="block py-2 px-3 rounded-md hover:bg-primary/10 font-bold text-medical-700"
+              >
+                {t('nav.contact_us')}
+              </a>
             </div>
           </div>
         )}
