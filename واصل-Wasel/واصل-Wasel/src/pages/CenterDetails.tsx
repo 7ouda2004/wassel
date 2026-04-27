@@ -80,12 +80,12 @@ const CenterDetails = () => {
       {
         name: i18n.language === 'ar' ? 'محمود إبراهيم' : 'Mahmoud Ebrahim',
         title: t('center_details.data.titles.prosthetist'),
-        image: '/public/images/mahmoud.jpg'
+        image: '/images/mahmoud.jpg'
       },
       {
         name: i18n.language === 'ar' ? 'باسل أحمد' : 'Bassel Ahmed',
         title: t('center_details.data.titles.orthotist'),
-        image: '/public/images/bassel.jpg'
+        image: '/images/bassel.jpg'
       }
     ]
   };
