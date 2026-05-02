@@ -32,19 +32,19 @@ const About = () => {
               {t('about.our_story_mission')}
             </h1>
             <p className="text-xl text-gray-600 mb-8">
-               {t('about.hero_desc')}
+              {t('about.hero_desc')}
             </p>
           </div>
-          
-          <motion.div 
+
+          <motion.div
             className="mt-12 relative max-w-3xl mx-auto"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <img 
-              src="/images/new.png" 
-              alt="فريق عمل أورثو إيد برو" 
+            <img
+              src="/images/new.png"
+              alt=" فريق واصل"
               className="w-full rounded-2xl shadow-2xl"
             />
             <div className="absolute inset-0 rounded-2xl bg-gradient-to-tr from-medical-600/30 to-transparent"></div>
@@ -59,7 +59,7 @@ const About = () => {
             <div className="mb-16">
               <h2 className="text-3xl font-bold mb-6">{t('about.who_we_are')}</h2>
               <p className="text-lg text-gray-600 mb-4">
-                 {t('about.about_desc_1')}
+                {t('about.about_desc_1')}
               </p>
               <p className="text-lg text-gray-600 mb-4">
                 {t('about.about_desc_2')}
@@ -68,7 +68,7 @@ const About = () => {
                 {t('about.about_desc_3')}
               </p>
             </div>
-            
+
             <div className="mb-16">
               <h2 className="text-3xl font-bold mb-6">{t('about.our_vision')}</h2>
               <div className="flex items-start space-x-4 rtl:space-x-reverse mb-6">
@@ -82,7 +82,7 @@ const About = () => {
                 </div>
               </div>
             </div>
-            
+
             <div className="mb-16">
               <h2 className="text-3xl font-bold mb-6">{t('about.our_mission')}</h2>
               <div className="flex items-start space-x-4 rtl:space-x-reverse mb-6">
@@ -96,7 +96,7 @@ const About = () => {
                 </div>
               </div>
             </div>
-            
+
             <div className="mb-16">
               <h2 className="text-3xl font-bold mb-6">{t('about.our_values')}</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -111,7 +111,7 @@ const About = () => {
                     {t('about.value_1_desc')}
                   </p>
                 </div>
-                
+
                 <div className="bg-medical-50 rounded-lg p-6">
                   <div className="flex items-center mb-4">
                     <div className="h-10 w-10 rounded-full bg-medical-100 flex items-center justify-center mr-3">
@@ -123,7 +123,7 @@ const About = () => {
                     {t('about.value_2_desc')}
                   </p>
                 </div>
-                
+
                 <div className="bg-medical-50 rounded-lg p-6">
                   <div className="flex items-center mb-4">
                     <div className="h-10 w-10 rounded-full bg-medical-100 flex items-center justify-center mr-3">
@@ -141,7 +141,7 @@ const About = () => {
                     {t('about.value_3_desc')}
                   </p>
                 </div>
-                
+
                 <div className="bg-medical-50 rounded-lg p-6">
                   <div className="flex items-center mb-4">
                     <div className="h-10 w-10 rounded-full bg-medical-100 flex items-center justify-center mr-3">
@@ -159,7 +159,7 @@ const About = () => {
                 </div>
               </div>
             </div>
-            
+
             <div className="mb-16">
               <h2 className="text-3xl font-bold mb-6">{t('about.why_us')}</h2>
               <div className="space-y-4">
@@ -174,7 +174,7 @@ const About = () => {
                     </p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-start">
                   <div className="h-8 w-8 rounded-full bg-medical-100 flex items-center justify-center mr-3 mt-1">
                     <span className="text-medical-600 font-bold">2</span>
@@ -186,7 +186,7 @@ const About = () => {
                     </p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-start">
                   <div className="h-8 w-8 rounded-full bg-medical-100 flex items-center justify-center mr-3 mt-1">
                     <span className="text-medical-600 font-bold">3</span>
@@ -198,7 +198,7 @@ const About = () => {
                     </p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-start">
                   <div className="h-8 w-8 rounded-full bg-medical-100 flex items-center justify-center mr-3 mt-1">
                     <span className="text-medical-600 font-bold">4</span>
@@ -212,39 +212,39 @@ const About = () => {
                 </div>
               </div>
             </div>
-            
+
             <div>
               <h2 className="text-3xl font-bold mb-6">{t('about.our_certs')}</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-8">
                 <div className="bg-white border border-gray-200 rounded-lg p-4 text-center shadow-sm">
                   <div className="h-16 w-16 mx-auto mb-3">
-                    <img 
-                      src="https://img.icons8.com/color/96/000000/diploma.png" 
-                      alt="شهادة" 
+                    <img
+                      src="https://img.icons8.com/color/96/000000/diploma.png"
+                      alt="شهادة"
                       className="h-full w-full object-contain"
                     />
                   </div>
                   <h3 className="font-semibold mb-1">{t('about.cert_1')}</h3>
                   <p className="text-sm text-gray-500">2023</p>
                 </div>
-                
+
                 <div className="bg-white border border-gray-200 rounded-lg p-4 text-center shadow-sm">
                   <div className="h-16 w-16 mx-auto mb-3">
-                    <img 
-                      src="https://img.icons8.com/color/96/000000/certificate.png" 
-                      alt="شهادة" 
+                    <img
+                      src="https://img.icons8.com/color/96/000000/certificate.png"
+                      alt="شهادة"
                       className="h-full w-full object-contain"
                     />
                   </div>
                   <h3 className="font-semibold mb-1">{t('about.cert_2')}</h3>
                   <p className="text-sm text-gray-500">2024</p>
                 </div>
-                
+
                 <div className="bg-white border border-gray-200 rounded-lg p-4 text-center shadow-sm">
                   <div className="h-16 w-16 mx-auto mb-3">
-                    <img 
-                      src="https://img.icons8.com/color/96/000000/warranty.png" 
-                      alt="شهادة" 
+                    <img
+                      src="https://img.icons8.com/color/96/000000/warranty.png"
+                      alt="شهادة"
                       className="h-full w-full object-contain"
                     />
                   </div>
@@ -284,7 +284,7 @@ const About = () => {
           </div>
         </div>
       </section>
-      
+
       <Footer />
     </div>
   );
