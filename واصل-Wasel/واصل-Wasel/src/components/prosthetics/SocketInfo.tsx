@@ -82,13 +82,13 @@ const manufacturingSteps = [
     step: 'إنشاء النموذج الأولي',
     description: 'إنشاء نموذج أولي للسوكيت باستخدام القياسات.',
     details: 'مسح رقمي وإنشاء نموذج ثلاثي الأبعاد يمكن تعديله لتحسين الملاءمة والأداء.',
-    image: 'https://www.orfit.com/app/uploads/Tubular-stockinette.jpg'
+    image: 'https://static-01.extrica.com/articles/22012/22012-gabs-2997x2099.webp'
   },
   {
     step: 'تصنيع السوكيت',
     description: 'تصنيع السوكيت النهائي من مواد مثل البلاستيك الحراري أو الألياف الكربونية.',
     details: 'تشكيل المادة على النموذج باستخدام التفريغ الهوائي والحرارة.',
-    image: 'https://www.orfit.com/app/uploads/Moulding-a-prosthetic-socket-3.jpg'
+    image: 'https://pro-orthoindia.com/images/3.jpg'
   },
   {
     step: 'التجربة والتعديل',

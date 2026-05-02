@@ -44,9 +44,22 @@ const Booking = () => {
   const { t, i18n } = useTranslation();
   const isRtl = i18n.dir() === 'rtl';
 
-  const appointmentTypes = t('booking.appointment_types', { returnObjects: true }) as any[];
-  const serviceTypes = t('booking.service_types', { returnObjects: true }) as string[];
-  const governorates = t('booking.governorates', { returnObjects: true }) as string[];
+  const translatedTypes = t('booking.appointment_types', { returnObjects: true }) as any[];
+  const localizedAppointmentTypes = appointmentTypes.map((type, index) => {
+    const translated = Array.isArray(translatedTypes) ? translatedTypes[index] : null;
+    return {
+      ...type,
+      label: translated?.label || type.label,
+      desc: translated?.desc || type.desc,
+      value: translated?.value || type.value,
+    };
+  });
+  
+  const translatedServiceTypes = t('booking.service_types', { returnObjects: true }) as string[];
+  const localizedServiceTypes = Array.isArray(translatedServiceTypes) ? translatedServiceTypes : serviceTypes;
+  
+  const translatedGovernorates = t('booking.governorates', { returnObjects: true }) as string[];
+  const localizedGovernorates = Array.isArray(translatedGovernorates) ? translatedGovernorates : governorates;
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -74,10 +87,10 @@ const Booking = () => {
   });
 
   useEffect(() => {
-    if (appointmentTypes.length > 0 && !formData.type) {
-      setFormData(prev => ({ ...prev, type: appointmentTypes[0].value }));
+    if (localizedAppointmentTypes.length > 0 && !formData.type) {
+      setFormData(prev => ({ ...prev, type: localizedAppointmentTypes[0].value }));
     }
-  }, [appointmentTypes]);
+  }, [localizedAppointmentTypes]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -319,7 +332,7 @@ const Booking = () => {
                         <Label htmlFor="governorate" className="text-sm font-semibold text-gray-700 mb-1 block">{t('booking.steps.personal.governorate_label')}</Label>
                         <select id="governorate" name="governorate" value={formData.governorate} onChange={handleInputChange} className="w-full rounded-xl border border-gray-200 p-3 h-12 focus:ring-2 focus:ring-medical-500 focus:border-transparent bg-white text-sm">
                           <option value="">{t('booking.steps.personal.governorate_placeholder')}</option>
-                          {governorates.map(g => <option key={g} value={g}>{g}</option>)}
+                          {localizedGovernorates.map(g => <option key={g} value={g}>{g}</option>)}
                         </select>
                       </div>
                     </div>
@@ -350,7 +363,7 @@ const Booking = () => {
                       <div>
                         <Label className="text-sm font-semibold text-gray-700 mb-3 block">{t('booking.steps.details.type_label')} *</Label>
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                          {appointmentTypes.map(type => (
+                          {localizedAppointmentTypes.map(type => (
                             <button
                               key={type.value}
                               type="button"
@@ -380,7 +393,7 @@ const Booking = () => {
                         <Label htmlFor="service" className="text-sm font-semibold text-gray-700 mb-1 block">{t('booking.steps.details.service_label')}</Label>
                         <select id="service" name="service" value={formData.service} onChange={handleInputChange} className="w-full rounded-xl border border-gray-200 p-3 h-12 focus:ring-2 focus:ring-medical-500 focus:border-transparent bg-white text-sm">
                           <option value="">{t('booking.steps.details.service_placeholder')}</option>
-                          {serviceTypes.map(s => <option key={s} value={s}>{s}</option>)}
+                          {localizedServiceTypes.map(s => <option key={s} value={s}>{s}</option>)}
                         </select>
                       </div>
                     </div>

@@ -28,7 +28,7 @@ const manufacturingSteps = [
       'تصنيع السوكيت من المواد المناسبة',
       'تجربة وتعديل السوكيت'
     ],
-    image: 'https://www.orfit.com/app/uploads/Applying-acrylic-varnish.jpg',
+    image: 'https://static-01.extrica.com/articles/22012/22012-gabs-2997x2099.webp',
     color: 'from-indigo-500 to-indigo-700',
     iconBg: 'bg-indigo-500'
   },

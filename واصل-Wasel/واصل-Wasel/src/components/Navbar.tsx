@@ -56,9 +56,9 @@ const Navbar = () => {
     { path: "/", label: t('nav.home') },
     { path: "/orthoses", label: t('nav.orthoses') },
     { path: "/prosthetics", label: t('nav.prosthetics') },
+    { path: "/centers", label: i18n.language === 'ar' ? 'المراكز' : 'Centers' },
+    { path: "/smart-recommendation", label: i18n.language === 'ar' ? 'اختبار ذكي' : 'Smart Quiz' },
     { path: "/about", label: t('nav.about') },
-    { path: "/team", label: t('nav.team') },
-    { path: "/locations", label: t('nav.locations') },
     { path: "/contact", label: t('nav.contact') },
     { path: "/booking", label: t('nav.booking') }
   ];
