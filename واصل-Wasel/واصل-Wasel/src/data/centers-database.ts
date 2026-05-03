@@ -45,10 +45,10 @@ export interface GovernorateCenter {
 const specialistImages = [
   '../images/mahmoud.jpg',
   '../images/mahmoud.jpg',
+  '../images/nader.jpeg',
+  '../images/bassel.jpg',
   '../images/mahmoud.jpg',
-  '../images/mahmoud.jpg',
-  '../images/mahmoud.jpg',
-  '../images/mahmoud.jpg',
+  '../images/youssef.jpg',
 ];
 
 const centerImages = [
@@ -151,11 +151,11 @@ uniqueGovernorates[27] = {
 
 const specialistNames = [
   { ar: 'د. محمود إبراهيم', en: 'Dr. Mahmoud Ebrahim', spec_ar: 'أطراف صناعية تحت الركبة', spec_en: 'Below-Knee Prosthetics' },
-  { ar: 'د. أحمد سامي', en: 'Dr. Ahmed Samy', spec_ar: 'أطراف صناعية فوق الركبة', spec_en: 'Above-Knee Prosthetics' },
-  { ar: 'د. سارة خالد', en: 'Dr. Sara Khaled', spec_ar: 'جبائر طبية وأجهزة تقويمية', spec_en: 'Orthotics & Braces' },
-  { ar: 'د. باسل أحمد', en: 'Dr. Bassel Ahmed', spec_ar: 'أطراف صناعية للطرف العلوي', spec_en: 'Upper Limb Prosthetics' },
-  { ar: 'د. نورهان محمد', en: 'Dr. Nourhan Mohamed', spec_ar: 'أحذية طبية وتقويم القدم', spec_en: 'Medical Footwear & Orthotics' },
-  { ar: 'د. عمر حسن', en: 'Dr. Omar Hassan', spec_ar: 'إعادة تأهيل وعلاج طبيعي', spec_en: 'Rehabilitation & Physiotherapy' },
+  { ar: 'د. محمد سلطان', en: 'Dr. Mohammed Sultan ', spec_ar: 'أطراف صناعية فوق الركبة', spec_en: 'Above-Knee Prosthetics' },
+  { ar: 'د. نادر ابراهيم', en: 'Dr. Nader Ibrahim ', spec_ar: 'جبائر طبية وأجهزة تقويمية', spec_en: 'Orthotics & Braces' },
+  { ar: 'د. باسل هاني', en: 'Dr. Bassel Hany', spec_ar: 'أطراف صناعية للطرف العلوي', spec_en: 'Upper Limb Prosthetics' },
+  { ar: 'د. محمد احمد', en: 'Dr. Mohammed Ahmed ', spec_ar: 'أحذية طبية وتقويم القدم', spec_en: 'Medical Footwear & Orthotics' },
+  { ar: 'د. يوسف احمد', en: 'Dr. Youssef Ahmed', spec_ar: 'إعادة تأهيل وعلاج طبيعي', spec_en: 'Rehabilitation & Physiotherapy' },
 ];
 
 export const egyptCenters: GovernorateCenter[] = uniqueGovernorates.map((gov, idx) => {
