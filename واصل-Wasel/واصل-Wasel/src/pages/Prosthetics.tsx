@@ -15,6 +15,7 @@ import KneeTypes from '@/components/prosthetics/KneeTypes';
 import FootTypes from '@/components/prosthetics/FootTypes';
 import SocketInfo from '@/components/prosthetics/SocketInfo';
 import ManufacturingSteps from '@/components/prosthetics/ManufacturingSteps';
+import LimbCareSection from '@/components/prosthetics/LimbCareSection';
 import FAQSection from '@/components/prosthetics/FAQSection';
 
 const Prosthetics = () => {
@@ -50,6 +51,9 @@ const Prosthetics = () => {
       {/* Manufacturing Steps */}
       <ManufacturingSteps />
 
+      {/* Limb Care Section - NEW: Maintenance, Cleaning, Wearing, Exercises */}
+      <LimbCareSection />
+
       {/* FAQ Section */}
       <FAQSection />
 
@@ -59,3 +63,4 @@ const Prosthetics = () => {
 };
 
 export default Prosthetics;
+

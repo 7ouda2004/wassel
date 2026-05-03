@@ -3,7 +3,8 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Users, FileText, PlusCircle, X, Edit, Trash, Save, 
-  Search, Download, Upload, ChevronDown, FileUp, UserCheck
+  Search, Download, Upload, ChevronDown, FileUp, UserCheck,
+  Phone, MessageCircle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -471,10 +472,20 @@ const SpecialistDashboard = () => {
                             </TableCell>
                             <TableCell>{patient.lastVisit}</TableCell>
                             <TableCell>
-                              <div className="flex space-x-2 rtl:space-x-reverse">
-                                <Button variant="ghost" size="sm" onClick={() => handleViewPatient(patient)}>
+                              <div className="flex space-x-1 rtl:space-x-reverse">
+                                <Button variant="ghost" size="sm" onClick={() => handleViewPatient(patient)} title={t('dashboard.table.view')}>
                                   {t('dashboard.table.view')}
                                 </Button>
+                                <a href={`https://wa.me/2${patient.phone}`} target="_blank" rel="noopener noreferrer">
+                                  <Button variant="ghost" size="sm" className="text-green-600 hover:text-green-700 hover:bg-green-50" title="WhatsApp">
+                                    <MessageCircle className="h-4 w-4" />
+                                  </Button>
+                                </a>
+                                <a href={`tel:${patient.phone}`}>
+                                  <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700 hover:bg-blue-50" title={t('dashboard.dialog.phone')}>
+                                    <Phone className="h-4 w-4" />
+                                  </Button>
+                                </a>
                                 <Button variant="ghost" size="sm" onClick={() => handleEditPatient(patient)}>
                                   <Edit className="h-4 w-4" />
                                 </Button>
@@ -760,6 +771,22 @@ const SpecialistDashboard = () => {
                         <div><span className="text-gray-500 text-sm">{t('dashboard.table.next_visit')}:</span><div className="font-medium">{viewingPatient.nextVisit || '-'}</div></div>
                         <div><span className="text-gray-500 text-sm">{t('dashboard.dialog.phone')}:</span><div className="font-medium">{viewingPatient.phone}</div></div>
                      </div>
+                  </div>
+
+                  {/* Quick Contact Buttons */}
+                  <div className="space-y-2 mt-4">
+                    <a href={`https://wa.me/2${viewingPatient.phone}`} target="_blank" rel="noopener noreferrer" className="block">
+                      <Button className="w-full bg-green-600 hover:bg-green-700 text-white rounded-lg">
+                        <MessageCircle className="h-4 w-4 me-2" />
+                        {i18n.language === 'ar' ? 'تواصل واتساب' : 'WhatsApp'}
+                      </Button>
+                    </a>
+                    <a href={`tel:${viewingPatient.phone}`} className="block">
+                      <Button variant="outline" className="w-full border-blue-200 text-blue-700 hover:bg-blue-50 rounded-lg">
+                        <Phone className="h-4 w-4 me-2" />
+                        {i18n.language === 'ar' ? 'اتصال هاتفي' : 'Phone Call'}
+                      </Button>
+                    </a>
                   </div>
                 </div>
               </div>

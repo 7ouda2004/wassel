@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useSearchParams } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
@@ -11,7 +12,7 @@ import { format } from 'date-fns';
 import {
   CalendarDays, Clock, User, Phone, Mail, FileText, Upload, X,
   MessageCircle, Send, CheckCircle2, ArrowRight, ArrowLeft,
-  Camera, MapPin, Stethoscope, Info
+  Camera, MapPin, Stethoscope, Info, Building2, UserCheck
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -43,6 +44,13 @@ const governorates = [
 const Booking = () => {
   const { t, i18n } = useTranslation();
   const isRtl = i18n.dir() === 'rtl';
+  const isAr = i18n.language === 'ar';
+  const [searchParams] = useSearchParams();
+
+  // Pre-selected center/specialist from URL
+  const selectedCenter = searchParams.get('centerName') || '';
+  const selectedCenterId = searchParams.get('center') || '';
+  const selectedSpecialist = searchParams.get('specialist') || '';
 
   const translatedTypes = t('booking.appointment_types', { returnObjects: true }) as any[];
   const localizedAppointmentTypes = appointmentTypes.map((type, index) => {
@@ -78,7 +86,7 @@ const Booking = () => {
     phone: '',
     email: '',
     age: '',
-    governorate: '',
+    governorate: selectedCenter || '',
     date: format(new Date(), 'yyyy-MM-dd'),
     time: '09:00',
     type: 'معاينة',
@@ -133,6 +141,8 @@ const Booking = () => {
   const buildWhatsAppMessage = () => {
     const selectedType = appointmentTypes.find(t => t.value === formData.type);
     let msg = `*${t('booking.whatsapp_msg.header')}*\n\n`;
+    if (selectedCenter) msg += ` *${isAr ? 'المركز' : 'Center'}:* ${decodeURIComponent(selectedCenter)}\n`;
+    if (selectedSpecialist) msg += ` *${isAr ? 'الأخصائي' : 'Specialist'}:* ${decodeURIComponent(selectedSpecialist)}\n`;
     msg += ` *${t('booking.whatsapp_msg.name')}:* ${formData.name}\n`;
     msg += ` *${t('booking.whatsapp_msg.phone')}:* ${formData.phone}\n`;
     if (formData.email) msg += ` *${t('booking.whatsapp_msg.email')}:* ${formData.email}\n`;
@@ -267,6 +277,24 @@ const Booking = () => {
             <p className="text-gray-500 text-lg max-w-xl mx-auto">
               {t('booking.desc')}
             </p>
+
+            {/* Center/Specialist Selection Banner */}
+            {(selectedCenter || selectedSpecialist) && (
+              <div className="mt-6 inline-flex flex-col sm:flex-row gap-3">
+                {selectedCenter && (
+                  <div className="flex items-center gap-2 bg-medical-100 text-medical-700 px-5 py-2.5 rounded-full text-sm font-bold border border-medical-200">
+                    <Building2 className="w-4 h-4" />
+                    {isAr ? 'المركز:' : 'Center:'} {decodeURIComponent(selectedCenter)}
+                  </div>
+                )}
+                {selectedSpecialist && (
+                  <div className="flex items-center gap-2 bg-teal-100 text-teal-700 px-5 py-2.5 rounded-full text-sm font-bold border border-teal-200">
+                    <UserCheck className="w-4 h-4" />
+                    {isAr ? 'الأخصائي:' : 'Specialist:'} {decodeURIComponent(selectedSpecialist)}
+                  </div>
+                )}
+              </div>
+            )}
           </motion.div>
         </div>
       </section>
