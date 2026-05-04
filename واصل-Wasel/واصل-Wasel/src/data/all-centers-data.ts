@@ -176,7 +176,21 @@ export const allEgyptCenters: GovernorateCenter[] = [
     services_ar: ['تأهيل أطفال', 'جبائر'],
     services_en: ['Pediatric Rehab', 'Splints'],
     supported_insurers: ['التأمين الصحي الشامل'],
-    specialists: [],
+    specialists: [
+      {
+        id: 'spec-dak-1',
+        name_ar: 'د. ياسمين طارق',
+        name_en: 'Dr. Yasmine Tarek',
+        specialization_ar: 'أخصائي تأهيل أطفال وجبائر',
+        specialization_en: 'Pediatric Rehab & Splints Specialist',
+        experience: 10,
+        rating: 4.7,
+        reviewCount: 156,
+        image: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
+        available: true,
+        portfolio_images: []
+      }
+    ],
     products: []
   },
   {
@@ -198,7 +212,21 @@ export const allEgyptCenters: GovernorateCenter[] = [
     services_ar: ['أجهزة تعويضية', 'أحذية طبية'],
     services_en: ['Prosthetics', 'Medical Shoes'],
     supported_insurers: ['الهيئة العامة للتأمين الصحي'],
-    specialists: [],
+    specialists: [
+      {
+        id: 'spec-qal-1',
+        name_ar: 'د. أحمد سليمان',
+        name_en: 'Dr. Ahmed Soliman',
+        specialization_ar: 'استشاري الأجهزة التعويضية السفلية',
+        specialization_en: 'Lower Prosthetics Consultant',
+        experience: 15,
+        rating: 4.8,
+        reviewCount: 204,
+        image: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
+        available: true,
+        portfolio_images: []
+      }
+    ],
     products: []
   },
   {
@@ -220,7 +248,21 @@ export const allEgyptCenters: GovernorateCenter[] = [
     services_ar: ['أطراف علوية', 'تأهيل رياضي'],
     services_en: ['Upper Prosthetics', 'Sports Rehab'],
     supported_insurers: ['أليانز'],
-    specialists: [],
+    specialists: [
+      {
+        id: 'spec-sha-1',
+        name_ar: 'د. كريم عبد الرحمن',
+        name_en: 'Dr. Karim Abdelrahman',
+        specialization_ar: 'أخصائي الأطراف العلوية وتأهيل الرياضيين',
+        specialization_en: 'Upper Prosthetics & Sports Rehab Specialist',
+        experience: 8,
+        rating: 4.6,
+        reviewCount: 92,
+        image: 'https://images.unsplash.com/photo-1537368910025-700350fe46c7?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
+        available: true,
+        portfolio_images: []
+      }
+    ],
     products: []
   },
   {
@@ -242,7 +284,21 @@ export const allEgyptCenters: GovernorateCenter[] = [
     services_ar: ['جبائر تقويمية', 'قياسات إلكترونية'],
     services_en: ['Orthotic Splints', 'Electronic Measurements'],
     supported_insurers: ['نقابة المعلمين'],
-    specialists: [],
+    specialists: [
+      {
+        id: 'spec-men-1',
+        name_ar: 'د. نورهان سعيد',
+        name_en: 'Dr. Nourhan Said',
+        specialization_ar: 'استشاري الجبائر التقويمية الدقيقة',
+        specialization_en: 'Micro-Orthotics Consultant',
+        experience: 12,
+        rating: 4.9,
+        reviewCount: 310,
+        image: 'https://images.unsplash.com/photo-1594824432258-f9b9ec845a90?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
+        available: true,
+        portfolio_images: []
+      }
+    ],
     products: []
   },
   {
@@ -264,7 +320,21 @@ export const allEgyptCenters: GovernorateCenter[] = [
     services_ar: ['أطراف سفلية', 'علاج القدم السكري'],
     services_en: ['Lower Prosthetics', 'Diabetic Foot Treatment'],
     supported_insurers: ['التأمين الصحي الشامل'],
-    specialists: [],
+    specialists: [
+      {
+        id: 'spec-gha-1',
+        name_ar: 'د. مصطفى كمال',
+        name_en: 'Dr. Mostafa Kamal',
+        specialization_ar: 'أخصائي القدم السكري والأحذية الطبية',
+        specialization_en: 'Diabetic Foot & Medical Shoes Specialist',
+        experience: 22,
+        rating: 4.9,
+        reviewCount: 840,
+        image: 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
+        available: true,
+        portfolio_images: []
+      }
+    ],
     products: []
   },
   {
@@ -286,7 +356,21 @@ export const allEgyptCenters: GovernorateCenter[] = [
     services_ar: ['أحذية طبية', 'جبائر ليلية ونهارية'],
     services_en: ['Medical Shoes', 'Day & Night Splints'],
     supported_insurers: ['نقابة المهندسين'],
-    specialists: [],
+    specialists: [
+      {
+        id: 'spec-kaf-1',
+        name_ar: 'د. هند يوسف',
+        name_en: 'Dr. Hend Youssef',
+        specialization_ar: 'أخصائية الأجهزة التقويمية للأطفال',
+        specialization_en: 'Pediatric Orthotics Specialist',
+        experience: 6,
+        rating: 4.5,
+        reviewCount: 45,
+        image: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
+        available: true,
+        portfolio_images: []
+      }
+    ],
     products: []
   },
   {
@@ -308,7 +392,21 @@ export const allEgyptCenters: GovernorateCenter[] = [
     services_ar: ['أطراف صناعية ذكية', 'تأهيل ما بعد البتر'],
     services_en: ['Smart Prosthetics', 'Post-Amputation Rehab'],
     supported_insurers: ['التأمين الصحي الشامل'],
-    specialists: [],
+    specialists: [
+      {
+        id: 'spec-beh-1',
+        name_ar: 'د. عمر الفاروق',
+        name_en: 'Dr. Omar El Farouk',
+        specialization_ar: 'خبير الأطراف الذكية الإلكترونية',
+        specialization_en: 'Smart Electronic Prosthetics Expert',
+        experience: 16,
+        rating: 4.8,
+        reviewCount: 420,
+        image: 'https://images.unsplash.com/photo-1537368910025-700350fe46c7?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
+        available: true,
+        portfolio_images: []
+      }
+    ],
     products: []
   },
   {
@@ -330,7 +428,21 @@ export const allEgyptCenters: GovernorateCenter[] = [
     services_ar: ['أطراف صناعية', 'تأهيل حركي'],
     services_en: ['Prosthetics', 'Motor Rehabilitation'],
     supported_insurers: ['الهيئة العامة للتأمين الصحي'],
-    specialists: [],
+    specialists: [
+      {
+        id: 'spec-ism-1',
+        name_ar: 'د. رانيا مرسي',
+        name_en: 'Dr. Rania Morsi',
+        specialization_ar: 'أخصائية العلاج الطبيعي والتأهيل الحركي',
+        specialization_en: 'Physical Therapy & Motor Rehab Specialist',
+        experience: 11,
+        rating: 4.6,
+        reviewCount: 180,
+        image: 'https://images.unsplash.com/photo-1594824432258-f9b9ec845a90?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
+        available: true,
+        portfolio_images: []
+      }
+    ],
     products: []
   },
   {
@@ -352,7 +464,21 @@ export const allEgyptCenters: GovernorateCenter[] = [
     services_ar: ['تأهيل كامل', 'أجهزة تقويمية'],
     services_en: ['Full Rehabilitation', 'Orthotic Devices'],
     supported_insurers: ['التأمين الصحي الشامل', 'ميتلايف'],
-    specialists: [],
+    specialists: [
+      {
+        id: 'spec-por-1',
+        name_ar: 'د. حسن شاكر',
+        name_en: 'Dr. Hassan Shaker',
+        specialization_ar: 'استشاري تأهيل وتصميم أطراف تعويضية',
+        specialization_en: 'Rehab & Prosthetics Design Consultant',
+        experience: 25,
+        rating: 4.9,
+        reviewCount: 920,
+        image: 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
+        available: true,
+        portfolio_images: []
+      }
+    ],
     products: []
   },
   {
@@ -418,7 +544,21 @@ export const allEgyptCenters: GovernorateCenter[] = [
     services_ar: ['أطراف صناعية ذكية'],
     services_en: ['Smart Prosthetics'],
     supported_insurers: ['بوبا مصر'],
-    specialists: [],
+    specialists: [
+      {
+        id: 'spec-bns-1',
+        name_ar: 'د. طارق جلال',
+        name_en: 'Dr. Tarek Galal',
+        specialization_ar: 'استشاري جراحات التجميل والأطراف الذكية',
+        specialization_en: 'Plastic Surgery & Smart Limbs Consultant',
+        experience: 19,
+        rating: 4.8,
+        reviewCount: 540,
+        image: 'https://images.unsplash.com/photo-1582750433449-648ed127d09e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
+        available: true,
+        portfolio_images: []
+      }
+    ],
     products: []
   },
   {
@@ -440,7 +580,21 @@ export const allEgyptCenters: GovernorateCenter[] = [
     services_ar: ['أجهزة شلل الأطفال', 'جبائر طبية'],
     services_en: ['Polio Devices', 'Medical Splints'],
     supported_insurers: ['نقابة المعلمين'],
-    specialists: [],
+    specialists: [
+      {
+        id: 'spec-min-1',
+        name_ar: 'د. يوسف النجار',
+        name_en: 'Dr. Youssef El Naggar',
+        specialization_ar: 'أخصائي شلل الأطفال والأجهزة التعويضية',
+        specialization_en: 'Polio & Orthotics Specialist',
+        experience: 13,
+        rating: 4.7,
+        reviewCount: 320,
+        image: 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
+        available: true,
+        portfolio_images: []
+      }
+    ],
     products: []
   },
   {
@@ -462,7 +616,21 @@ export const allEgyptCenters: GovernorateCenter[] = [
     services_ar: ['أطراف صناعية علوية وسفلية', 'تأهيل حركي'],
     services_en: ['Upper & Lower Prosthetics', 'Motor Rehabilitation'],
     supported_insurers: ['العلاج على نفقة الدولة'],
-    specialists: [],
+    specialists: [
+      {
+        id: 'spec-ast-1',
+        name_ar: 'د. إيمان عبد الله',
+        name_en: 'Dr. Eman Abdallah',
+        specialization_ar: 'استشاري التأهيل الحركي المتقدم',
+        specialization_en: 'Advanced Motor Rehab Consultant',
+        experience: 18,
+        rating: 4.9,
+        reviewCount: 410,
+        image: 'https://images.unsplash.com/photo-1594824432258-f9b9ec845a90?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
+        available: true,
+        portfolio_images: []
+      }
+    ],
     products: []
   },
   {
@@ -484,7 +652,21 @@ export const allEgyptCenters: GovernorateCenter[] = [
     services_ar: ['أحذية طبية', 'أجهزة تقويمية'],
     services_en: ['Medical Shoes', 'Orthotic Devices'],
     supported_insurers: ['التأمين الصحي الشامل'],
-    specialists: [],
+    specialists: [
+      {
+        id: 'spec-soh-1',
+        name_ar: 'د. محمود حافظ',
+        name_en: 'Dr. Mahmoud Hafez',
+        specialization_ar: 'خبير الأحذية الطبية التقويمية',
+        specialization_en: 'Orthotic Medical Shoes Expert',
+        experience: 10,
+        rating: 4.5,
+        reviewCount: 220,
+        image: 'https://images.unsplash.com/photo-1537368910025-700350fe46c7?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
+        available: true,
+        portfolio_images: []
+      }
+    ],
     products: []
   },
   {
@@ -506,7 +688,21 @@ export const allEgyptCenters: GovernorateCenter[] = [
     services_ar: ['أطراف صناعية ذكية'],
     services_en: ['Smart Prosthetics'],
     supported_insurers: ['مصر للتأمين'],
-    specialists: [],
+    specialists: [
+      {
+        id: 'spec-qen-1',
+        name_ar: 'د. زينب مصطفى',
+        name_en: 'Dr. Zeinab Mostafa',
+        specialization_ar: 'أخصائية الأطراف الذكية وتأهيلها',
+        specialization_en: 'Smart Prosthetics & Rehab Specialist',
+        experience: 15,
+        rating: 4.8,
+        reviewCount: 380,
+        image: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
+        available: true,
+        portfolio_images: []
+      }
+    ],
     products: []
   },
   {

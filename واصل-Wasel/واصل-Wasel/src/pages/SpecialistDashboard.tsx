@@ -1,8 +1,8 @@
 
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { 
-  Users, FileText, PlusCircle, X, Edit, Trash, Save, 
+import {
+  Users, FileText, PlusCircle, X, Edit, Trash, Save,
   Search, Download, Upload, ChevronDown, FileUp, UserCheck,
   Phone, MessageCircle
 } from 'lucide-react';
@@ -60,7 +60,7 @@ type MeasurementField = {
 
 const SpecialistDashboard = () => {
   const { t, i18n } = useTranslation();
-  
+
   const measurementFields: Record<string, MeasurementField[]> = {
     'AFO': [
       { id: 'footLength', label: t('dashboard.measurements.afo.footLength'), unit: t('dashboard.measurements.units.cm') },
@@ -156,7 +156,7 @@ const SpecialistDashboard = () => {
     const savedPatients = localStorage.getItem('patients');
     return savedPatients ? JSON.parse(savedPatients) : samplePatients;
   });
-  
+
   const [isAddingPatient, setIsAddingPatient] = useState(false);
   const [isEditingPatient, setIsEditingPatient] = useState(false);
   const [viewingPatient, setViewingPatient] = useState<Patient | null>(null);
@@ -175,7 +175,7 @@ const SpecialistDashboard = () => {
     notes: '',
     files: []
   });
-  
+
   const [searchTerm, setSearchTerm] = useState('');
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
   const [uploadingFile, setUploadingFile] = useState(false);
@@ -184,7 +184,7 @@ const SpecialistDashboard = () => {
 
   useEffect(() => {
     document.documentElement.dir = i18n.dir();
-    
+
     // Check if user is logged in
     const isSpecialistLegacy = sessionStorage.getItem('isSpecialist') === 'true';
     if (!isLoading && !isAuthenticated && !isSpecialistLegacy) {
@@ -203,7 +203,7 @@ const SpecialistDashboard = () => {
     localStorage.setItem('patients', JSON.stringify(patients));
   }, [patients]);
 
-  const filteredPatients = patients.filter(patient => 
+  const filteredPatients = patients.filter(patient =>
     patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     patient.condition.toLowerCase().includes(searchTerm.toLowerCase()) ||
     patient.deviceType.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -277,13 +277,13 @@ const SpecialistDashboard = () => {
   ) => {
     const { name, value } = e.target;
     setCurrentPatient({ ...currentPatient, [name]: value });
-    
+
     // Reset measurements if device type changes
     if (name === 'deviceType') {
-      setCurrentPatient(prev => ({ 
-        ...prev, 
+      setCurrentPatient(prev => ({
+        ...prev,
         deviceType: value,
-        measurements: {} 
+        measurements: {}
       }));
     }
   };
@@ -302,7 +302,7 @@ const SpecialistDashboard = () => {
     setUploadingFile(true);
     setTimeout(() => {
       const newFile = `File_${Math.floor(Math.random() * 1000)}.pdf`;
-      
+
       if (viewingPatient) {
         const updatedPatient = {
           ...viewingPatient,
@@ -316,7 +316,7 @@ const SpecialistDashboard = () => {
           files: [...prev.files, newFile]
         }));
       }
-      
+
       setUploadingFile(false);
       toast.success(t('dashboard.dialog.upload_success', { defaultValue: 'تم رفع الملف بنجاح' }));
     }, 1500);
@@ -376,7 +376,7 @@ const SpecialistDashboard = () => {
                 </Button>
               </div>
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
               <div className="bg-medical-50 rounded-lg p-4 border border-medical-100">
                 <div className="flex items-center">
@@ -389,7 +389,7 @@ const SpecialistDashboard = () => {
                   </div>
                 </div>
               </div>
-              
+
               <div className="bg-medical-50 rounded-lg p-4 border border-medical-100">
                 <div className="flex items-center">
                   <div className="h-12 w-12 rounded-full bg-medical-100 flex items-center justify-center mr-4">
@@ -401,7 +401,7 @@ const SpecialistDashboard = () => {
                   </div>
                 </div>
               </div>
-              
+
               <div className="bg-medical-50 rounded-lg p-4 border border-medical-100">
                 <div className="flex items-center">
                   <div className="h-12 w-12 rounded-full bg-medical-100 flex items-center justify-center mr-4">
@@ -413,7 +413,7 @@ const SpecialistDashboard = () => {
                   </div>
                 </div>
               </div>
-              
+
               <div className="bg-medical-50 rounded-lg p-4 border border-medical-100">
                 <div className="flex items-center">
                   <div className="h-12 w-12 rounded-full bg-medical-100 flex items-center justify-center mr-4">
@@ -426,7 +426,7 @@ const SpecialistDashboard = () => {
                 </div>
               </div>
             </div>
-            
+
             <div className="mb-6 relative">
               <div className={`absolute inset-y-0 ${i18n.language === 'ar' ? 'right-0 pr-3' : 'left-0 pl-3'} flex items-center pointer-events-none`}>
                 <Search className="h-5 w-5 text-gray-400" />
@@ -439,7 +439,7 @@ const SpecialistDashboard = () => {
                 className={i18n.language === 'ar' ? "pr-10" : "pl-10"}
               />
             </div>
-            
+
             <Tabs defaultValue="all">
               <TabsList className="grid grid-cols-4 mb-4">
                 <TabsTrigger value="all">{t('dashboard.tabs.all')}</TabsTrigger>
@@ -447,7 +447,7 @@ const SpecialistDashboard = () => {
                 <TabsTrigger value="orthoses">{t('dashboard.tabs.orthoses')}</TabsTrigger>
                 <TabsTrigger value="active">{t('dashboard.tabs.active')}</TabsTrigger>
               </TabsList>
-              
+
               <TabsContent value="all">
                 <div className="overflow-x-auto">
                   <Table>
@@ -472,7 +472,7 @@ const SpecialistDashboard = () => {
                             <TableCell>{patient.condition}</TableCell>
                             <TableCell>{patient.deviceType}</TableCell>
                             <TableCell>
-                              <span 
+                              <span
                                 className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${getStatusBadgeClass(patient.status)}`}
                               >
                                 {translateStatus(patient.status)}
@@ -518,62 +518,62 @@ const SpecialistDashboard = () => {
                   </Table>
                 </div>
               </TabsContent>
-              
+
               {/* Other Tabs omitted for brevity but they follow the same pattern */}
               <TabsContent value="prosthetics">
-                 <div className="overflow-x-auto">
+                <div className="overflow-x-auto">
                   <Table>
                     <TableBody>
                       {filteredPatients.filter(p => p.deviceType.toLowerCase().includes('knee') || p.deviceType.includes('طرف')).map(patient => (
-                         <TableRow key={patient.id}>
-                            <TableCell className="font-medium">{patient.name}</TableCell>
-                            <TableCell>{patient.age}</TableCell>
-                            <TableCell>{patient.condition}</TableCell>
-                            <TableCell>{patient.deviceType}</TableCell>
-                            <TableCell>
-                              <span className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${getStatusBadgeClass(patient.status)}`}>
-                                {translateStatus(patient.status)}
-                              </span>
-                            </TableCell>
-                            <TableCell>{patient.lastVisit}</TableCell>
-                            <TableCell>
-                               <div className="flex space-x-2 rtl:space-x-reverse">
-                                <Button variant="ghost" size="sm" onClick={() => handleViewPatient(patient)}>{t('dashboard.table.view')}</Button>
-                                <Button variant="ghost" size="sm" onClick={() => handleEditPatient(patient)}><Edit className="h-4 w-4" /></Button>
-                                <Button variant="ghost" size="sm" onClick={() => handleDeletePatient(patient.id)}><Trash className="h-4 w-4" /></Button>
-                              </div>
-                            </TableCell>
-                         </TableRow>
+                        <TableRow key={patient.id}>
+                          <TableCell className="font-medium">{patient.name}</TableCell>
+                          <TableCell>{patient.age}</TableCell>
+                          <TableCell>{patient.condition}</TableCell>
+                          <TableCell>{patient.deviceType}</TableCell>
+                          <TableCell>
+                            <span className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${getStatusBadgeClass(patient.status)}`}>
+                              {translateStatus(patient.status)}
+                            </span>
+                          </TableCell>
+                          <TableCell>{patient.lastVisit}</TableCell>
+                          <TableCell>
+                            <div className="flex space-x-2 rtl:space-x-reverse">
+                              <Button variant="ghost" size="sm" onClick={() => handleViewPatient(patient)}>{t('dashboard.table.view')}</Button>
+                              <Button variant="ghost" size="sm" onClick={() => handleEditPatient(patient)}><Edit className="h-4 w-4" /></Button>
+                              <Button variant="ghost" size="sm" onClick={() => handleDeletePatient(patient.id)}><Trash className="h-4 w-4" /></Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
                       ))}
                     </TableBody>
                   </Table>
-                 </div>
+                </div>
               </TabsContent>
-              
+
               <TabsContent value="orthoses">
                 <div className="overflow-x-auto">
                   <Table>
                     <TableBody>
                       {filteredPatients.filter(p => p.deviceType.includes('AFO') || p.deviceType.includes('KAFO') || p.deviceType.includes('جبيرة')).map(patient => (
-                         <TableRow key={patient.id}>
-                            <TableCell className="font-medium">{patient.name}</TableCell>
-                            <TableCell>{patient.age}</TableCell>
-                            <TableCell>{patient.condition}</TableCell>
-                            <TableCell>{patient.deviceType}</TableCell>
-                            <TableCell>
-                              <span className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${getStatusBadgeClass(patient.status)}`}>
-                                {translateStatus(patient.status)}
-                              </span>
-                            </TableCell>
-                            <TableCell>{patient.lastVisit}</TableCell>
-                            <TableCell>
-                               <div className="flex space-x-2 rtl:space-x-reverse">
-                                <Button variant="ghost" size="sm" onClick={() => handleViewPatient(patient)}>{t('dashboard.table.view')}</Button>
-                                <Button variant="ghost" size="sm" onClick={() => handleEditPatient(patient)}><Edit className="h-4 w-4" /></Button>
-                                <Button variant="ghost" size="sm" onClick={() => handleDeletePatient(patient.id)}><Trash className="h-4 w-4" /></Button>
-                              </div>
-                            </TableCell>
-                         </TableRow>
+                        <TableRow key={patient.id}>
+                          <TableCell className="font-medium">{patient.name}</TableCell>
+                          <TableCell>{patient.age}</TableCell>
+                          <TableCell>{patient.condition}</TableCell>
+                          <TableCell>{patient.deviceType}</TableCell>
+                          <TableCell>
+                            <span className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${getStatusBadgeClass(patient.status)}`}>
+                              {translateStatus(patient.status)}
+                            </span>
+                          </TableCell>
+                          <TableCell>{patient.lastVisit}</TableCell>
+                          <TableCell>
+                            <div className="flex space-x-2 rtl:space-x-reverse">
+                              <Button variant="ghost" size="sm" onClick={() => handleViewPatient(patient)}>{t('dashboard.table.view')}</Button>
+                              <Button variant="ghost" size="sm" onClick={() => handleEditPatient(patient)}><Edit className="h-4 w-4" /></Button>
+                              <Button variant="ghost" size="sm" onClick={() => handleDeletePatient(patient.id)}><Trash className="h-4 w-4" /></Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
                       ))}
                     </TableBody>
                   </Table>
@@ -585,25 +585,25 @@ const SpecialistDashboard = () => {
                   <Table>
                     <TableBody>
                       {filteredPatients.filter(p => p.status.includes('active') || p.status.includes('نشط')).map(patient => (
-                         <TableRow key={patient.id}>
-                            <TableCell className="font-medium">{patient.name}</TableCell>
-                            <TableCell>{patient.age}</TableCell>
-                            <TableCell>{patient.condition}</TableCell>
-                            <TableCell>{patient.deviceType}</TableCell>
-                            <TableCell>
-                              <span className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${getStatusBadgeClass(patient.status)}`}>
-                                {translateStatus(patient.status)}
-                              </span>
-                            </TableCell>
-                            <TableCell>{patient.lastVisit}</TableCell>
-                            <TableCell>
-                               <div className="flex space-x-2 rtl:space-x-reverse">
-                                <Button variant="ghost" size="sm" onClick={() => handleViewPatient(patient)}>{t('dashboard.table.view')}</Button>
-                                <Button variant="ghost" size="sm" onClick={() => handleEditPatient(patient)}><Edit className="h-4 w-4" /></Button>
-                                <Button variant="ghost" size="sm" onClick={() => handleDeletePatient(patient.id)}><Trash className="h-4 w-4" /></Button>
-                              </div>
-                            </TableCell>
-                         </TableRow>
+                        <TableRow key={patient.id}>
+                          <TableCell className="font-medium">{patient.name}</TableCell>
+                          <TableCell>{patient.age}</TableCell>
+                          <TableCell>{patient.condition}</TableCell>
+                          <TableCell>{patient.deviceType}</TableCell>
+                          <TableCell>
+                            <span className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${getStatusBadgeClass(patient.status)}`}>
+                              {translateStatus(patient.status)}
+                            </span>
+                          </TableCell>
+                          <TableCell>{patient.lastVisit}</TableCell>
+                          <TableCell>
+                            <div className="flex space-x-2 rtl:space-x-reverse">
+                              <Button variant="ghost" size="sm" onClick={() => handleViewPatient(patient)}>{t('dashboard.table.view')}</Button>
+                              <Button variant="ghost" size="sm" onClick={() => handleEditPatient(patient)}><Edit className="h-4 w-4" /></Button>
+                              <Button variant="ghost" size="sm" onClick={() => handleDeletePatient(patient.id)}><Trash className="h-4 w-4" /></Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
                       ))}
                     </TableBody>
                   </Table>
@@ -615,8 +615,8 @@ const SpecialistDashboard = () => {
       </div>
 
       {/* Add/Edit Patient Dialog */}
-      <Dialog 
-        open={isAddingPatient || isEditingPatient} 
+      <Dialog
+        open={isAddingPatient || isEditingPatient}
         onOpenChange={(open) => {
           if (!open) {
             setIsAddingPatient(false);
@@ -630,7 +630,7 @@ const SpecialistDashboard = () => {
               {isAddingPatient ? t('dashboard.dialog.add_title') : t('dashboard.dialog.edit_title')}
             </DialogTitle>
           </DialogHeader>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[70vh] overflow-y-auto p-1">
             <div className="space-y-4">
               <div>
@@ -670,18 +670,18 @@ const SpecialistDashboard = () => {
                 </select>
               </div>
             </div>
-            
+
             <div className="space-y-4">
-               {currentPatient.deviceType && measurementFields[currentPatient.deviceType] && (
+              {currentPatient.deviceType && measurementFields[currentPatient.deviceType] && (
                 <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
                   <h3 className="font-semibold mb-3">{t('dashboard.dialog.measurements', { defaultValue: 'القياسات' })}</h3>
                   <div className="grid grid-cols-1 gap-3">
                     {measurementFields[currentPatient.deviceType].map(field => (
                       <div key={field.id}>
                         <Label htmlFor={field.id}>{field.label} {field.unit ? `(${field.unit})` : ''}</Label>
-                        <Input 
-                          id={field.id} 
-                          value={currentPatient.measurements[field.id] || ''} 
+                        <Input
+                          id={field.id}
+                          value={currentPatient.measurements[field.id] || ''}
                           onChange={(e) => handleMeasurementChange(field.id, e.target.value)}
                         />
                       </div>
@@ -703,7 +703,7 @@ const SpecialistDashboard = () => {
               </div>
             </div>
           </div>
-          
+
           <DialogFooter>
             <Button variant="outline" onClick={() => { setIsAddingPatient(false); setIsEditingPatient(false); }}>{t('dashboard.dialog.cancel')}</Button>
             <Button onClick={handleSavePatient}>{t('dashboard.dialog.save')}</Button>
@@ -725,10 +725,10 @@ const SpecialistDashboard = () => {
                   {t('dashboard.table.id') || 'ID'}: {viewingPatient.id} | {viewingPatient.age} {t('dashboard.table.years') || 'سنة'} | {viewingPatient.gender}
                 </DialogDescription>
               </DialogHeader>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">
                 <div className="md:col-span-2 space-y-6">
-                   <div className="bg-white p-4 rounded-lg border border-gray-200">
+                  <div className="bg-white p-4 rounded-lg border border-gray-200">
                     <h3 className="font-bold border-b pb-2 mb-3">{t('dashboard.dialog.condition')}</h3>
                     <p>{viewingPatient.condition}</p>
                   </div>
@@ -754,7 +754,7 @@ const SpecialistDashboard = () => {
                 </div>
 
                 <div className="space-y-6">
-                   <div className="bg-medical-50 p-4 rounded-lg border border-medical-100">
+                  <div className="bg-medical-50 p-4 rounded-lg border border-medical-100">
                     <h3 className="font-bold mb-3">{t('dashboard.dialog.files')}</h3>
                     <div className="space-y-2">
                       {viewingPatient.files.map((file, idx) => (
@@ -774,11 +774,11 @@ const SpecialistDashboard = () => {
                   </div>
 
                   <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                     <div className="space-y-3">
-                        <div><span className="text-gray-500 text-sm">{t('dashboard.table.last_visit')}:</span><div className="font-medium">{viewingPatient.lastVisit}</div></div>
-                        <div><span className="text-gray-500 text-sm">{t('dashboard.table.next_visit')}:</span><div className="font-medium">{viewingPatient.nextVisit || '-'}</div></div>
-                        <div><span className="text-gray-500 text-sm">{t('dashboard.dialog.phone')}:</span><div className="font-medium">{viewingPatient.phone}</div></div>
-                     </div>
+                    <div className="space-y-3">
+                      <div><span className="text-gray-500 text-sm">{t('dashboard.table.last_visit')}:</span><div className="font-medium">{viewingPatient.lastVisit}</div></div>
+                      <div><span className="text-gray-500 text-sm">{t('dashboard.table.next_visit')}:</span><div className="font-medium">{viewingPatient.nextVisit || '-'}</div></div>
+                      <div><span className="text-gray-500 text-sm">{t('dashboard.dialog.phone')}:</span><div className="font-medium">{viewingPatient.phone}</div></div>
+                    </div>
                   </div>
 
                   {/* Quick Contact Buttons */}
