@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Menu, X, User, Phone, Moon, Sun, Globe, LogOut, LayoutDashboard } from 'lucide-react';
+import { Menu, X, User, Phone, Moon, Sun, Globe, LogOut, LayoutDashboard, Building } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from "@/providers/theme-provider";
 import { Button } from "@/components/ui/button";
@@ -109,13 +109,14 @@ const Navbar = () => {
               <div className="hidden sm:flex items-center gap-2">
                 <Link to="/login">
                   <Button variant="ghost" className="flex items-center whitespace-nowrap">
-                    {i18n.language === 'ar' ? 'تسجيل الدخول' : 'Login'}
+                    <User className="mr-2 h-4 w-4" />
+                    {i18n.language === 'ar' ? 'تسجيل الدخول / حساب جديد' : 'Login / Register'}
                   </Button>
                 </Link>
-                <Link to="/register">
-                  <Button variant="outline" className="flex items-center whitespace-nowrap border-medical-500 text-medical-600 hover:bg-medical-50">
-                    <User className="mr-2 h-4 w-4" />
-                    {i18n.language === 'ar' ? 'حساب جديد' : 'Register'}
+                <Link to="/specialist-login">
+                  <Button variant="outline" className="flex items-center whitespace-nowrap border-teal-500 text-teal-600 hover:bg-teal-50">
+                    <Building className="mr-2 h-4 w-4" />
+                    {i18n.language === 'ar' ? 'تسجيل كأخصائي' : 'Specialist Login'}
                   </Button>
                 </Link>
               </div>
@@ -170,14 +171,14 @@ const Navbar = () => {
                     className="block py-2 px-3 rounded-md hover:bg-primary/10 text-gray-700 font-medium" 
                     onClick={toggleMenu}
                   >
-                    {i18n.language === 'ar' ? 'تسجيل الدخول' : 'Login'}
+                    {i18n.language === 'ar' ? 'تسجيل الدخول / حساب جديد' : 'Login / Register'}
                   </Link>
                   <Link 
-                    to="/register" 
-                    className="block py-2 px-3 rounded-md hover:bg-primary/10 text-medical-600 font-bold" 
+                    to="/specialist-login" 
+                    className="block py-2 px-3 rounded-md hover:bg-teal-50 text-teal-600 font-bold" 
                     onClick={toggleMenu}
                   >
-                    {i18n.language === 'ar' ? 'حساب جديد' : 'Register'}
+                    {i18n.language === 'ar' ? 'تسجيل كأخصائي' : 'Specialist Login'}
                   </Link>
                 </>
               ) : (

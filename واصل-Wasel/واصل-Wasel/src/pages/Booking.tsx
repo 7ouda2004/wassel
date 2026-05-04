@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
@@ -15,6 +15,8 @@ import {
   Camera, MapPin, Stethoscope, Info, Building2, UserCheck
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '@/providers/auth-provider';
+import { bookingsService } from '@/services/bookings.service';
 
 // EmailJS - سنستخدمه لإرسال الإيميل
 // import emailjs from '@emailjs/browser';
@@ -69,9 +71,20 @@ const Booking = () => {
   const translatedGovernorates = t('booking.governorates', { returnObjects: true }) as string[];
   const localizedGovernorates = Array.isArray(translatedGovernorates) ? translatedGovernorates : governorates;
 
+  const { user, isAuthenticated, isLoading } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
+  useEffect(() => {
+    // If not authenticated, redirect to login
+    if (!isLoading && !isAuthenticated) {
+      navigate('/login', { state: { from: location } });
+    }
+  }, [isAuthenticated, isLoading, navigate, location]);
 
   const formRef = useRef<HTMLFormElement>(null);
   const [step, setStep] = useState(1);
@@ -161,23 +174,34 @@ const Booking = () => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    if (sendMethod === 'whatsapp') {
-      const message = buildWhatsAppMessage();
-      window.open(`https://wa.me/201119056895?text=${message}`, '_blank');
-      setIsSubmitting(false);
-      setSubmitted(true);
-      toast.success(t('booking.toasts.whatsapp_success'));
-    } else {
-      // EmailJS integration
-      try {
-        // When emailjs is installed, uncomment and configure:
-        // await emailjs.sendForm(
-        //   'YOUR_SERVICE_ID',
-        //   'YOUR_TEMPLATE_ID',
-        //   formRef.current!,
-        //   'YOUR_PUBLIC_KEY'
-        // );
+    try {
+      // Save booking to DB if user is authenticated
+      if (user) {
+        await bookingsService.create({
+          user_id: user.id,
+          center_id: selectedCenterId || 'wasel-center', // Default to a Wasel center if none selected
+          booking_date: formData.date,
+          booking_time: formData.time,
+          appointment_type: formData.type,
+          service_type: formData.service,
+          notes: formData.notes,
+          patient_name: formData.name,
+          patient_phone: formData.phone,
+          patient_email: formData.email,
+        }).catch(err => {
+          console.error("Failed to save booking to database", err);
+          // Don't fail the whole process if DB fails
+        });
+      }
 
+      if (sendMethod === 'whatsapp') {
+        const message = buildWhatsAppMessage();
+        window.open(`https://wa.me/201119056895?text=${message}`, '_blank');
+        setIsSubmitting(false);
+        setSubmitted(true);
+        toast.success(t('booking.toasts.whatsapp_success'));
+      } else {
+        // EmailJS integration
         // For now, simulate email sending
         await new Promise(resolve => setTimeout(resolve, 2000));
 
@@ -191,10 +215,10 @@ const Booking = () => {
         setIsSubmitting(false);
         setSubmitted(true);
         toast.success(t('booking.toasts.email_success'));
-      } catch (error) {
-        setIsSubmitting(false);
-        toast.error(t('booking.toasts.error'));
       }
+    } catch (error) {
+      setIsSubmitting(false);
+      toast.error(t('booking.toasts.error'));
     }
   };
 

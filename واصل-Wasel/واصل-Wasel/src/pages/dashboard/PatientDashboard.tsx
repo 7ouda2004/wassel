@@ -14,6 +14,7 @@ import type { Booking, InsuranceRequest } from '@/types/database';
 
 import { insuranceService } from '@/services/insurance.service';
 import { bookingsService } from '@/services/bookings.service';
+import FileManager from '@/components/dashboard/FileManager';
 
 const statusColors: Record<string, string> = {
   pending: 'bg-yellow-100 text-yellow-800',
@@ -145,9 +146,10 @@ const PatientDashboard = () => {
           {/* Tabs */}
           <div className="bg-white rounded-2xl shadow-md p-6 border border-gray-100">
             <Tabs defaultValue="bookings">
-              <TabsList className="grid grid-cols-3 mb-6">
+              <TabsList className="grid grid-cols-4 mb-6">
                 <TabsTrigger value="bookings"><Calendar className="w-4 h-4 me-2" />{isAr ? 'الحجوزات' : 'Bookings'}</TabsTrigger>
                 <TabsTrigger value="insurance"><ShieldCheck className="w-4 h-4 me-2" />{isAr ? 'التأمين' : 'Insurance'}</TabsTrigger>
+                <TabsTrigger value="files"><Package className="w-4 h-4 me-2" />{isAr ? 'الملفات' : 'Files'}</TabsTrigger>
                 <TabsTrigger value="profile"><Settings className="w-4 h-4 me-2" />{isAr ? 'الملف الشخصي' : 'Profile'}</TabsTrigger>
               </TabsList>
 
@@ -215,6 +217,16 @@ const PatientDashboard = () => {
                       })}
                     </div>
                   )}
+              </TabsContent>
+
+              <TabsContent value="files">
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                  <div className="p-6 border-b border-gray-100">
+                    <h3 className="text-lg font-bold text-gray-900">{isAr ? 'ملفاتي وتقاريري الطبية' : 'My Files & Medical Reports'}</h3>
+                    <p className="text-sm text-gray-500 mt-1">{isAr ? 'يمكنك رفع التقارير الطبية، الأشعة، أو أي مستندات أخرى لمشاركتها مع المركز الطبي.' : 'You can upload medical reports, X-rays, or any other documents to share with the medical center.'}</p>
+                  </div>
+                  <FileManager />
+                </div>
               </TabsContent>
 
               <TabsContent value="profile">
