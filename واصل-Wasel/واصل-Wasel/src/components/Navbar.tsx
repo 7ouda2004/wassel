@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Menu, X, User, Phone, Moon, Sun, Globe } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Menu, X, User, Phone, Moon, Sun, Globe, LogOut, LayoutDashboard } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from "@/providers/theme-provider";
 import { Button } from "@/components/ui/button";
@@ -8,12 +8,15 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { useAuth } from '@/providers/auth-provider';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [password, setPassword] = useState('');
   const { theme, setTheme } = useTheme();
   const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
+  const { isAuthenticated, user, signOut } = useAuth();
 
   const toggleLanguage = () => {
     i18n.changeLanguage(i18n.language === 'ar' ? 'en' : 'ar');
@@ -90,40 +93,32 @@ const Navbar = () => {
           </div>
           
           <div className="flex items-center space-x-4 rtl:space-x-reverse">
-            {isLoggedIn ? (
-              <Link to="/specialist-dashboard">
-                <Button variant="outline" className="flex items-center whitespace-nowrap">
-                  <User className="mr-2 h-4 w-4" />
-                  {t('nav.specialist_dashboard')}
-                </Button>
-              </Link>
-            ) : (
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button variant="outline" className="hidden sm:flex items-center whitespace-nowrap">
-                    <User className="mr-2 h-4 w-4" />
-                      {t('nav.login_specialist')}
+            {isAuthenticated ? (
+              <div className="hidden sm:flex items-center gap-2">
+                <Link to={user?.role === 'center' ? '/specialist-dashboard' : '/dashboard'}>
+                  <Button variant="outline" className="flex items-center whitespace-nowrap">
+                    <LayoutDashboard className="mr-2 h-4 w-4" />
+                    {i18n.language === 'ar' ? 'لوحة التحكم' : 'Dashboard'}
                   </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle className="text-center">تسجيل دخول الأخصائي</DialogTitle>
-                  </DialogHeader>
-                  <form onSubmit={handleSpecialistLogin} className="space-y-4">
-                    <div>
-                      <Label htmlFor="password">كلمة المرور</Label>
-                      <Input 
-                        id="password" 
-                        type="password" 
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className="mt-1"
-                      />
-                    </div>
-                    <Button type="submit" className="w-full">تسجيل الدخول</Button>
-                  </form>
-                </DialogContent>
-              </Dialog>
+                </Link>
+                <Button variant="ghost" size="icon" onClick={() => { signOut(); navigate('/'); }} className="text-red-500 hover:text-red-600 hover:bg-red-50">
+                  <LogOut className="h-5 w-5" />
+                </Button>
+              </div>
+            ) : (
+              <div className="hidden sm:flex items-center gap-2">
+                <Link to="/login">
+                  <Button variant="ghost" className="flex items-center whitespace-nowrap">
+                    {i18n.language === 'ar' ? 'تسجيل الدخول' : 'Login'}
+                  </Button>
+                </Link>
+                <Link to="/register">
+                  <Button variant="outline" className="flex items-center whitespace-nowrap border-medical-500 text-medical-600 hover:bg-medical-50">
+                    <User className="mr-2 h-4 w-4" />
+                    {i18n.language === 'ar' ? 'حساب جديد' : 'Register'}
+                  </Button>
+                </Link>
+              </div>
             )}
             
             <a href="https://wa.me/201119056895" target="_blank" rel="noopener noreferrer">
@@ -168,40 +163,39 @@ const Navbar = () => {
                   {link.label}
                 </Link>
               ))}
-              {!isLoggedIn ? (
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <button className="block w-full text-start py-2 px-3 rounded-md hover:bg-primary/10 text-gray-700 font-medium">
-                      {t('nav.login_specialist')}
-                    </button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle className="text-center">تسجيل دخول الأخصائي</DialogTitle>
-                    </DialogHeader>
-                    <form onSubmit={handleSpecialistLogin} className="space-y-4">
-                      <div>
-                        <Label htmlFor="mobile-password">كلمة المرور</Label>
-                        <Input 
-                          id="mobile-password" 
-                          type="password" 
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                          className="mt-1"
-                        />
-                      </div>
-                      <Button type="submit" className="w-full">تسجيل الدخول</Button>
-                    </form>
-                  </DialogContent>
-                </Dialog>
+              {!isAuthenticated ? (
+                <>
+                  <Link 
+                    to="/login" 
+                    className="block py-2 px-3 rounded-md hover:bg-primary/10 text-gray-700 font-medium" 
+                    onClick={toggleMenu}
+                  >
+                    {i18n.language === 'ar' ? 'تسجيل الدخول' : 'Login'}
+                  </Link>
+                  <Link 
+                    to="/register" 
+                    className="block py-2 px-3 rounded-md hover:bg-primary/10 text-medical-600 font-bold" 
+                    onClick={toggleMenu}
+                  >
+                    {i18n.language === 'ar' ? 'حساب جديد' : 'Register'}
+                  </Link>
+                </>
               ) : (
-                <Link 
-                  to="/specialist-dashboard" 
-                  className="block py-2 px-3 rounded-md hover:bg-primary/10 font-bold text-medical-700" 
-                  onClick={toggleMenu}
-                >
-                  {t('nav.specialist_dashboard')}
-                </Link>
+                <>
+                  <Link 
+                    to={user?.role === 'center' ? '/specialist-dashboard' : '/dashboard'}
+                    className="block py-2 px-3 rounded-md hover:bg-primary/10 font-bold text-medical-700" 
+                    onClick={toggleMenu}
+                  >
+                    {i18n.language === 'ar' ? 'لوحة التحكم' : 'Dashboard'}
+                  </Link>
+                  <button 
+                    className="w-full text-start py-2 px-3 rounded-md hover:bg-red-50 text-red-500 font-bold" 
+                    onClick={() => { signOut(); toggleMenu(); navigate('/'); }}
+                  >
+                    {i18n.language === 'ar' ? 'تسجيل الخروج' : 'Logout'}
+                  </button>
+                </>
               )}
               <a 
                 href="https://wa.me/201119056895" 

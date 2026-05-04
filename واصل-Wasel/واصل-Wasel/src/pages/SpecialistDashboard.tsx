@@ -33,6 +33,7 @@ import { toast } from "sonner";
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '@/providers/auth-provider';
 
 // Types
 type Patient = {
@@ -179,16 +180,23 @@ const SpecialistDashboard = () => {
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
   const [uploadingFile, setUploadingFile] = useState(false);
 
+  const { user, isAuthenticated, isLoading } = useAuth();
+
   useEffect(() => {
     document.documentElement.dir = i18n.dir();
     
     // Check if user is logged in
-    const isSpecialist = sessionStorage.getItem('isSpecialist');
-    if (isSpecialist !== 'true') {
+    const isSpecialistLegacy = sessionStorage.getItem('isSpecialist') === 'true';
+    if (!isLoading && !isAuthenticated && !isSpecialistLegacy) {
       window.location.href = '/login';
       return;
     }
-  }, [i18n.language]);
+
+    if (!isLoading && isAuthenticated && user?.role === 'patient') {
+      window.location.href = '/dashboard';
+      return;
+    }
+  }, [i18n.language, isAuthenticated, isLoading, user]);
 
   // Save patients to localStorage when they change
   useEffect(() => {
@@ -359,7 +367,7 @@ const SpecialistDashboard = () => {
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">{t('dashboard.title')}</h1>
-                <p className="text-gray-600">{t('dashboard.welcome', { name: sessionStorage.getItem('username') || 'Specialist' })}</p>
+                <p className="text-gray-600">{t('dashboard.welcome', { name: user?.full_name || sessionStorage.getItem('username') || 'Specialist' })}</p>
               </div>
               <div className="mt-4 md:mt-0">
                 <Button onClick={handleAddPatient} className="medical-btn">

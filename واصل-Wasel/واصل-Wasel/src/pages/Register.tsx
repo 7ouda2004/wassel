@@ -27,21 +27,30 @@ const Register = () => {
   const [step, setStep] = useState(1);
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState({ fullName: '', email: '', phone: '', password: '', confirmPassword: '', role: 'patient' as UserRole });
+  const [formData, setFormData] = useState({ fullName: '', email: '', phone: '', password: '', confirmPassword: '', role: 'patient' as UserRole, insuranceNumber: '', authCode: '' });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
   const validate = (s: number) => {
-    if (s === 1 && (!formData.fullName || !formData.email || !formData.phone)) { toast.error(isAr ? 'يرجى ملء جميع الحقول' : 'Fill all fields'); return false; }
-    if (s === 1 && !/\S+@\S+\.\S+/.test(formData.email)) { toast.error(isAr ? 'بريد إلكتروني غير صحيح' : 'Invalid email'); return false; }
-    if (s === 2 && formData.password.length < 6) { toast.error(isAr ? 'كلمة المرور 6 أحرف على الأقل' : 'Min 6 characters'); return false; }
-    if (s === 2 && formData.password !== formData.confirmPassword) { toast.error(isAr ? 'كلمتا المرور غير متطابقتين' : 'Passwords mismatch'); return false; }
+    if (s === 1 && (formData.role === 'center' || formData.role === 'insurance') && formData.authCode !== 'daizer2004') {
+      toast.error(isAr ? 'رمز التحقق غير صحيح' : 'Invalid authorization code');
+      return false;
+    }
+    if (s === 2 && (!formData.fullName || !formData.email || !formData.phone)) { toast.error(isAr ? 'يرجى ملء جميع الحقول الأساسية' : 'Fill all basic fields'); return false; }
+    if (s === 2 && !/\S+@\S+\.\S+/.test(formData.email)) { toast.error(isAr ? 'بريد إلكتروني غير صحيح' : 'Invalid email'); return false; }
+    if (s === 3 && formData.password.length < 6) { toast.error(isAr ? 'كلمة المرور 6 أحرف على الأقل' : 'Min 6 characters'); return false; }
+    if (s === 3 && formData.password !== formData.confirmPassword) { toast.error(isAr ? 'كلمتا المرور غير متطابقتين' : 'Passwords mismatch'); return false; }
     return true;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validate(2)) return;
+    if (step < 3) {
+      if (validate(step)) setStep(step + 1);
+      return;
+    }
+    if (!validate(3)) return;
+
     setIsSubmitting(true);
     try {
       await signUp(formData.email, formData.password, formData.fullName, formData.role);
@@ -78,23 +87,8 @@ const Register = () => {
               <form onSubmit={handleSubmit}>
                 <AnimatePresence mode="wait">
                   {step === 1 && (
-                    <motion.div key="s1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
-                      <div><Label className="text-sm font-semibold text-gray-700 mb-1 block">{isAr ? 'الاسم الكامل' : 'Full Name'} *</Label><Input name="fullName" value={formData.fullName} onChange={handleChange} className="rounded-xl h-12" required /></div>
-                      <div><Label className="text-sm font-semibold text-gray-700 mb-1 block">{isAr ? 'البريد الإلكتروني' : 'Email'} *</Label><Input name="email" type="email" value={formData.email} onChange={handleChange} className="rounded-xl h-12" required /></div>
-                      <div><Label className="text-sm font-semibold text-gray-700 mb-1 block">{isAr ? 'رقم الهاتف' : 'Phone'} *</Label><Input name="phone" value={formData.phone} onChange={handleChange} placeholder="01xxxxxxxxx" className="rounded-xl h-12" required /></div>
-                    </motion.div>
-                  )}
-                  {step === 2 && (
-                    <motion.div key="s2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
-                      <div><Label className="text-sm font-semibold text-gray-700 mb-1 block">{isAr ? 'كلمة المرور' : 'Password'} *</Label>
-                        <div className="relative"><Input name="password" type={showPassword ? 'text' : 'password'} value={formData.password} onChange={handleChange} className="rounded-xl h-12" required />
-                          <button type="button" onClick={() => setShowPassword(!showPassword)} className={`absolute ${isRtl ? 'left-3' : 'right-3'} top-3.5 text-gray-400`}>{showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}</button></div></div>
-                      <div><Label className="text-sm font-semibold text-gray-700 mb-1 block">{isAr ? 'تأكيد كلمة المرور' : 'Confirm Password'} *</Label><Input name="confirmPassword" type="password" value={formData.confirmPassword} onChange={handleChange} className="rounded-xl h-12" required /></div>
-                    </motion.div>
-                  )}
-                  {step === 3 && (
-                    <motion.div key="s3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
-                      <p className="text-sm font-semibold text-gray-700 mb-4">{isAr ? 'نوع الحساب' : 'Account Type'} *</p>
+                    <motion.div key="s1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
+                      <p className="text-sm font-semibold text-gray-700 mb-4">{isAr ? 'اختر نوع الحساب' : 'Select Account Type'} *</p>
                       <div className="space-y-3">
                         {roles.map(r => (
                           <button key={r.value} type="button" onClick={() => setFormData({ ...formData, role: r.value })}
@@ -105,6 +99,33 @@ const Register = () => {
                           </button>
                         ))}
                       </div>
+
+                      {(formData.role === 'center' || formData.role === 'insurance') && (
+                        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="mt-4 p-4 bg-medical-50 border border-medical-100 rounded-xl">
+                          <Label className="text-sm font-semibold text-medical-700 mb-1 block">
+                            {isAr ? 'رمز التحقق للصلاحية ' : 'Authorization Code (daizer2004) *'}
+                          </Label>
+                          <Input name="authCode" type="password" value={formData.authCode} onChange={handleChange} className="rounded-xl h-12 border-medical-200 focus-visible:ring-medical-500 bg-white" placeholder={isAr ? "أدخل رمز التحقق" : "Enter authorization code"} required />
+                        </motion.div>
+                      )}
+                    </motion.div>
+                  )}
+                  {step === 2 && (
+                    <motion.div key="s2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
+                      <div><Label className="text-sm font-semibold text-gray-700 mb-1 block">{isAr ? 'الاسم الكامل' : 'Full Name'} *</Label><Input name="fullName" value={formData.fullName} onChange={handleChange} className="rounded-xl h-12" required /></div>
+                      <div><Label className="text-sm font-semibold text-gray-700 mb-1 block">{isAr ? 'البريد الإلكتروني' : 'Email'} *</Label><Input name="email" type="email" value={formData.email} onChange={handleChange} className="rounded-xl h-12" required /></div>
+                      <div><Label className="text-sm font-semibold text-gray-700 mb-1 block">{isAr ? 'رقم الهاتف' : 'Phone'} *</Label><Input name="phone" value={formData.phone} onChange={handleChange} placeholder="01xxxxxxxxx" className="rounded-xl h-12" required /></div>
+                      {formData.role === 'patient' && (
+                        <div><Label className="text-sm font-semibold text-gray-700 mb-1 block">{isAr ? 'رقم التأمين (اختياري)' : 'Insurance Number (Optional)'}</Label><Input name="insuranceNumber" value={formData.insuranceNumber} onChange={handleChange} placeholder={isAr ? "للاستفادة من التغطية التأمينية" : "For insurance coverage"} className="rounded-xl h-12 border-medical-200 focus-visible:ring-medical-500" /></div>
+                      )}
+                    </motion.div>
+                  )}
+                  {step === 3 && (
+                    <motion.div key="s3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="space-y-4">
+                      <div><Label className="text-sm font-semibold text-gray-700 mb-1 block">{isAr ? 'كلمة المرور' : 'Password'} *</Label>
+                        <div className="relative"><Input name="password" type={showPassword ? 'text' : 'password'} value={formData.password} onChange={handleChange} className="rounded-xl h-12" required />
+                          <button type="button" onClick={() => setShowPassword(!showPassword)} className={`absolute ${isRtl ? 'left-3' : 'right-3'} top-3.5 text-gray-400`}>{showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}</button></div></div>
+                      <div><Label className="text-sm font-semibold text-gray-700 mb-1 block">{isAr ? 'تأكيد كلمة المرور' : 'Confirm Password'} *</Label><Input name="confirmPassword" type="password" value={formData.confirmPassword} onChange={handleChange} className="rounded-xl h-12" required /></div>
                     </motion.div>
                   )}
                 </AnimatePresence>

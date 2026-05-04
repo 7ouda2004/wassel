@@ -12,6 +12,9 @@ import { LoadingSkeleton } from '@/components/shared/LoadingSkeleton';
 import EmptyState from '@/components/shared/EmptyState';
 import type { Booking, InsuranceRequest } from '@/types/database';
 
+import { insuranceService } from '@/services/insurance.service';
+import { bookingsService } from '@/services/bookings.service';
+
 const statusColors: Record<string, string> = {
   pending: 'bg-yellow-100 text-yellow-800',
   approved: 'bg-green-100 text-green-800',
@@ -38,12 +41,49 @@ const PatientDashboard = () => {
   const [insuranceRequests, setInsuranceRequests] = useState<InsuranceRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  const insuranceProvidersList = insuranceService.getInsuranceProviders();
+  const getProviderName = (providerId: string) => {
+    const provider = insuranceProvidersList.find(p => p.id === providerId);
+    return provider ? (isAr ? provider.name_ar : provider.name_en) : providerId;
+  };
+
   useEffect(() => {
     window.scrollTo(0, 0);
-    // Simulate loading - replace with actual API calls
-    const timer = setTimeout(() => setIsLoading(false), 1000);
-    return () => clearTimeout(timer);
-  }, []);
+
+    // Skip redirect if we're still checking auth status
+    const authIsLoading = typeof user === 'undefined'; // Handle depending on how useAuth works
+    if (!user) {
+      // Small timeout to allow auth to load from local storage if needed
+      const t = setTimeout(() => {
+        if (!user) window.location.href = '/login';
+      }, 500);
+      return () => clearTimeout(t);
+    }
+
+    if (user.role === 'center' || user.role === 'insurance') {
+      window.location.href = '/specialist-dashboard';
+      return;
+    }
+    
+    const fetchData = async () => {
+      if (!user) return;
+      setIsLoading(true);
+      try {
+        const [userBookings, userInsurance] = await Promise.all([
+          bookingsService.getByUser(user.id).catch(() => []),
+          insuranceService.getByPatient(user.id).catch(() => [])
+        ]);
+        setBookings(userBookings);
+        setInsuranceRequests(userInsurance);
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchData();
+  }, [user]);
 
   const statusLabel = (status: string) => {
     const labels: Record<string, { ar: string; en: string }> = {
@@ -124,8 +164,19 @@ const PatientDashboard = () => {
                             className="flex items-center gap-4 p-4 rounded-xl border border-gray-100 hover:shadow-md transition-shadow">
                             <div className="w-12 h-12 rounded-xl bg-medical-50 flex items-center justify-center"><Calendar className="w-6 h-6 text-medical-600" /></div>
                             <div className="flex-1">
-                              <p className="font-bold text-gray-900">{booking.appointment_type}</p>
-                              <p className="text-sm text-gray-500">{booking.booking_date} - {booking.booking_time}</p>
+                              <p className="font-bold text-gray-900">
+                                {booking.centers ? (isAr ? booking.centers.name_ar : booking.centers.name_en) : (isAr ? 'حجز بمركز واصل' : 'Booking with Wasel Center')}
+                              </p>
+                              <div className="flex items-center text-sm text-gray-500 gap-2 mt-1">
+                                <Calendar className="w-3 h-3" />
+                                <span>{booking.booking_date} {booking.booking_time ? `- ${booking.booking_time}` : ''}</span>
+                                {booking.appointment_type && (
+                                  <>
+                                    <span className="w-1 h-1 bg-gray-300 rounded-full mx-1"></span>
+                                    <span>{booking.appointment_type === 'consultation' ? (isAr ? 'استشارة طبية' : 'Medical Consultation') : (isAr ? 'جلسة قياس' : 'Measurement Session')}</span>
+                                  </>
+                                )}
+                              </div>
                             </div>
                             <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold ${statusColors[booking.status]}`}>
                               <StatusIcon className="w-3 h-3" />{statusLabel(booking.status)}
@@ -150,12 +201,15 @@ const PatientDashboard = () => {
                             className="flex items-center gap-4 p-4 rounded-xl border border-gray-100 hover:shadow-md transition-shadow">
                             <div className="w-12 h-12 rounded-xl bg-purple-50 flex items-center justify-center"><ShieldCheck className="w-6 h-6 text-purple-600" /></div>
                             <div className="flex-1">
-                              <p className="font-bold text-gray-900">{req.insurance_provider}</p>
+                              <p className="font-bold text-gray-900">{getProviderName(req.insurance_provider)}</p>
                               <p className="text-sm text-gray-500">{new Date(req.created_at).toLocaleDateString()}</p>
                             </div>
-                            <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold ${statusColors[req.status]}`}>
-                              <StatusIcon className="w-3 h-3" />{statusLabel(req.status)}
-                            </span>
+                            <div className="flex flex-col items-end gap-2">
+                              <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold ${statusColors[req.status]}`}>
+                                <StatusIcon className="w-3 h-3" />{statusLabel(req.status)}
+                              </span>
+                              {req.policy_number && <span className="text-xs text-gray-400 font-medium">#{req.policy_number}</span>}
+                            </div>
                           </motion.div>
                         );
                       })}

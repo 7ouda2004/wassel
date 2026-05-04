@@ -1,146 +1,58 @@
-import { supabase } from '@/lib/supabase';
-import type { Profile, PatientProfile, UserRole } from '@/types/database';
+import { apiClient } from './api';
+import { Specialist } from '@/data/centers-database';
+
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: 'super_admin' | 'center_admin' | 'specialist';
+  center_id: string | null;
+}
+
+export interface AuthResponse {
+  message: string;
+  token: string;
+  user: User;
+}
 
 export const authService = {
-  /**
-   * Sign up a new user with email and password
-   */
-  async signUp(email: string, password: string, fullName: string, role: UserRole = 'patient') {
-    const { data: authData, error: authError } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: { full_name: fullName, role },
-      },
+  // Login to get token
+  login: async (email: string, password: string): Promise<AuthResponse> => {
+    const response = await apiClient('/auth/login', {
+      method: 'POST',
+      body: { email, password },
     });
-
-    if (authError) throw authError;
-
-    // Create profile
-    if (authData.user) {
-      const { error: profileError } = await supabase.from('profiles').insert({
-        id: authData.user.id,
-        full_name: fullName,
-        email,
-        role,
-      });
-
-      if (profileError) throw profileError;
+    
+    // Store token
+    if (response.token) {
+      localStorage.setItem('wasel_auth_token', response.token);
+      localStorage.setItem('wasel_user', JSON.stringify(response.user));
     }
-
-    return authData;
+    
+    return response;
   },
 
-  /**
-   * Sign in with email and password
-   */
-  async signIn(email: string, password: string) {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
+  // Logout and clear token
+  logout: () => {
+    localStorage.removeItem('wasel_auth_token');
+    localStorage.removeItem('wasel_user');
+  },
+
+  // Get current user from token
+  getMe: async (): Promise<{ user: User }> => {
+    return apiClient('/auth/me', {
+      useAuth: true,
     });
-
-    if (error) throw error;
-    return data;
   },
 
-  /**
-   * Sign out
-   */
-  async signOut() {
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
+  // Check if logged in locally
+  isAuthenticated: (): boolean => {
+    return !!localStorage.getItem('wasel_auth_token');
   },
 
-  /**
-   * Get the current session
-   */
-  async getSession() {
-    const { data, error } = await supabase.auth.getSession();
-    if (error) throw error;
-    return data.session;
-  },
-
-  /**
-   * Get user profile from profiles table
-   */
-  async getProfile(userId: string): Promise<Profile | null> {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .single();
-
-    if (error) {
-      if (error.code === 'PGRST116') return null;
-      throw error;
-    }
-    return data;
-  },
-
-  /**
-   * Update user profile
-   */
-  async updateProfile(userId: string, updates: Partial<Profile>) {
-    const { data, error } = await supabase
-      .from('profiles')
-      .update(updates)
-      .eq('id', userId)
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
-  },
-
-  /**
-   * Get patient profile
-   */
-  async getPatientProfile(userId: string): Promise<PatientProfile | null> {
-    const { data, error } = await supabase
-      .from('patient_profiles')
-      .select('*')
-      .eq('user_id', userId)
-      .single();
-
-    if (error) {
-      if (error.code === 'PGRST116') return null;
-      throw error;
-    }
-    return data;
-  },
-
-  /**
-   * Create or update patient profile
-   */
-  async upsertPatientProfile(userId: string, profile: Partial<PatientProfile>) {
-    const { data, error } = await supabase
-      .from('patient_profiles')
-      .upsert({
-        user_id: userId,
-        ...profile,
-      })
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
-  },
-
-  /**
-   * Listen for auth state changes
-   */
-  onAuthStateChange(callback: (event: string, session: any) => void) {
-    return supabase.auth.onAuthStateChange(callback);
-  },
-
-  /**
-   * Reset password
-   */
-  async resetPassword(email: string) {
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
-    });
-    if (error) throw error;
-  },
+  // Get current user from local storage
+  getCurrentUser: (): User | null => {
+    const userStr = localStorage.getItem('wasel_user');
+    return userStr ? JSON.parse(userStr) : null;
+  }
 };

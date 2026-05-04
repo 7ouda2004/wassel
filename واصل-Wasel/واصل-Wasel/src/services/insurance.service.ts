@@ -130,16 +130,19 @@ export const insuranceService = {
    * Get available insurance providers
    */
   getInsuranceProviders() {
+    // Import from the shared database
     return [
-      { id: 'metlife', name_ar: 'ميتلايف', name_en: 'MetLife' },
-      { id: 'axa', name_ar: 'أكسا', name_en: 'AXA' },
-      { id: 'allianz', name_ar: 'أليانز', name_en: 'Allianz' },
-      { id: 'bupa', name_ar: 'بوبا', name_en: 'Bupa' },
-      { id: 'nile_family', name_ar: 'النيل فاميلي تكافل', name_en: 'Nile Family Takaful' },
-      { id: 'misr_insurance', name_ar: 'مصر للتأمين', name_en: 'Misr Insurance' },
-      { id: 'gig', name_ar: 'جي آي جي', name_en: 'GIG' },
-      { id: 'oriental_weavers', name_ar: 'أورينتال', name_en: 'Oriental' },
-      { id: 'qnb_alahli', name_ar: 'QNB الأهلي', name_en: 'QNB Al Ahli' },
+      { id: 'hio', name_ar: 'الهيئة العامة للتأمين الصحي', name_en: 'Health Insurance Organization (HIO)' },
+      { id: 'uhis', name_ar: 'التأمين الصحي الشامل', name_en: 'Universal Health Insurance System' },
+      { id: 'nfq', name_ar: 'العلاج على نفقة الدولة', name_en: 'State-Funded Treatment' },
+      { id: 'bupa', name_ar: 'بوبا مصر', name_en: 'Bupa Egypt' },
+      { id: 'allianz', name_ar: 'أليانز مصر', name_en: 'Allianz Egypt' },
+      { id: 'metlife', name_ar: 'ميتلايف مصر', name_en: 'MetLife Egypt' },
+      { id: 'misr_insurance', name_ar: 'شركة مصر للتأمين', name_en: 'Misr Insurance Company' },
+      { id: 'gig', name_ar: 'جي آي جي', name_en: 'GIG Egypt' },
+      { id: 'eng_syndicate', name_ar: 'نقابة المهندسين المصرية', name_en: 'Egyptian Engineers Syndicate' },
+      { id: 'doctors_syndicate', name_ar: 'نقابة الأطباء', name_en: 'Doctors Syndicate' },
+      { id: 'lawyers_syndicate', name_ar: 'نقابة المحامين', name_en: 'Lawyers Syndicate' },
       { id: 'other', name_ar: 'أخرى', name_en: 'Other' },
     ];
   },

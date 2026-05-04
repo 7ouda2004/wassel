@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { MapPin, Phone, Clock, Calendar, ShieldCheck, CheckCircle2, User, Users, Star, Award, MessageCircle, ChevronRight } from 'lucide-react';
+import { MapPin, Phone, Clock, Calendar, ShieldCheck, CheckCircle2, User, Users, Star, Award, MessageCircle, ChevronRight, Navigation } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useTranslation } from 'react-i18next';
 import { egyptCenters } from '@/data/centers-database';
 import type { GovernorateCenter, Specialist } from '@/data/centers-database';
+import { toast } from 'sonner';
 
 const StarRating = ({ rating, size = 'sm' }: { rating: number; size?: string }) => {
   const sz = size === 'sm' ? 'w-4 h-4' : 'w-5 h-5';
@@ -56,8 +57,8 @@ const CenterDetails = () => {
 
   const name = isAr ? center.name_ar : center.name_en;
   const address = isAr ? center.address_ar : center.address_en;
-  const workingHours = isAr ? center.workingHours_ar : center.workingHours_en;
-  const services = isAr ? center.services_ar : center.services_en;
+  const workingHours = center.workingHours_ar ? (isAr ? center.workingHours_ar : center.workingHours_en) : (isAr ? 'السبت - الخميس: ٩ ص - ٥ م' : 'Sat - Thu: 9 AM - 5 PM');
+  const services = center.services_ar ? (isAr ? center.services_ar : center.services_en) : [];
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -146,7 +147,7 @@ const CenterDetails = () => {
                       <img src={spec.image} alt={isAr ? spec.name_ar : spec.name_en} className="w-16 h-16 rounded-xl object-cover shadow-md" />
                       <div className="flex-1 min-w-0">
                         <h3 className="font-bold text-gray-900 text-lg">{isAr ? spec.name_ar : spec.name_en}</h3>
-                        <p className="text-medical-600 text-sm font-medium">{isAr ? spec.title_ar : spec.title_en}</p>
+                        <p className="text-medical-600 text-sm font-medium">{isAr ? spec.specialization_ar : spec.specialization_en}</p>
                       </div>
                     </div>
 
@@ -179,8 +180,65 @@ const CenterDetails = () => {
             </div>
           </div>
 
+          {/* Products Section */}
+          {center.products && center.products.length > 0 && (
+            <div className="mb-12">
+              <div className="flex items-center gap-3 mb-8">
+                <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                  <Award className="w-6 h-6 text-blue-600" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">{isAr ? 'منتجات وأجهزة المركز' : 'Center Products & Devices'}</h2>
+                  <p className="text-gray-500 text-sm">{isAr ? 'تصفح أحدث الأجهزة المتوفرة' : 'Browse latest available devices'}</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {center.products.map((prod, idx) => (
+                  <motion.div key={prod.id} initial={{opacity: 0, y: 20}} animate={{opacity: 1, y: 0}} transition={{delay: idx * 0.1}} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-lg transition-all duration-300">
+                    <img src={prod.image} alt={isAr ? prod.name_ar : prod.name_en} className="w-full h-48 object-cover" />
+                    <div className="p-5">
+                      <h3 className="font-bold text-gray-900 mb-2">{isAr ? prod.name_ar : prod.name_en}</h3>
+                      <p className="text-sm text-gray-500 leading-relaxed">{isAr ? prod.description_ar : prod.description_en}</p>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Reviews & Ratings Section */}
+          <div className="mb-12 bg-white rounded-3xl p-8 border border-gray-100 shadow-sm">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center">
+                <Star className="w-6 h-6 text-amber-500" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">{isAr ? 'التقييمات والمراجعات' : 'Ratings & Reviews'}</h2>
+                <p className="text-gray-500 text-sm">{isAr ? 'شارك تجربتك مع المركز والأخصائيين' : 'Share your experience with the center and specialists'}</p>
+              </div>
+            </div>
+            
+            <div className="flex flex-col md:flex-row items-center gap-8 bg-gray-50 p-6 rounded-2xl border border-gray-100">
+              <div className="text-center md:text-start">
+                <p className="text-4xl font-bold text-gray-900 mb-2">{center.rating.toFixed(1)}</p>
+                <div className="mb-2"><StarRating rating={center.rating} size="lg" /></div>
+                <p className="text-sm text-gray-500">{isAr ? 'بناءً على التقييمات' : 'Based on ratings'}</p>
+              </div>
+              
+              <div className="flex-1 flex flex-col gap-4 border-t md:border-t-0 md:border-s border-gray-200 pt-6 md:pt-0 md:ps-8 w-full">
+                <p className="text-gray-700 font-medium">{isAr ? 'لإضافة تقييم يرجى تسجيل الدخول' : 'To add a review please login'}</p>
+                <Button 
+                  onClick={() => toast.info(isAr ? 'سيتم تفعيل تسجيل الدخول بجوجل قريباً' : 'Google sign-in will be enabled soon')}
+                  className="w-full md:w-auto bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 rounded-xl flex items-center justify-center shadow-sm py-6">
+                  <svg className="w-5 h-5 me-2" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+                  {isAr ? 'تسجيل الدخول باستخدام Google' : 'Sign in with Google'}
+                </Button>
+              </div>
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Left: Info + Insurance */}
+            {/* Left: Info + Insurance + Map */}
             <div className="lg:col-span-2 space-y-8">
               {/* Contact Info */}
               <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100">
@@ -210,6 +268,33 @@ const CenterDetails = () => {
                 </div>
               </div>
 
+              {/* Google Maps */}
+              {center.google_maps_url && (
+                <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center">
+                      <Navigation className="w-6 h-6 text-blue-600" />
+                    </div>
+                    <div>
+                      <h2 className="text-2xl font-bold text-gray-900">{isAr ? 'الموقع على الخريطة' : 'Location on Map'}</h2>
+                      <p className="text-sm text-gray-500">{isAr ? 'اضغط لفتح الموقع في خرائط جوجل' : 'Click to open in Google Maps'}</p>
+                    </div>
+                  </div>
+                  <div className="rounded-2xl overflow-hidden border border-gray-200">
+                    <iframe
+                      src={center.google_maps_url}
+                      width="100%"
+                      height="350"
+                      style={{ border: 0 }}
+                      allowFullScreen
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
+                      title={`${name} location`}
+                    />
+                  </div>
+                </div>
+              )}
+
               {/* Insurance Coverage */}
               <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100">
                 <div className="flex items-center gap-3 mb-6">
@@ -218,7 +303,7 @@ const CenterDetails = () => {
                   </div>
                   <div>
                     <h2 className="text-2xl font-bold text-gray-900">{isAr ? 'التغطية التأمينية' : 'Insurance Coverage'}</h2>
-                    <p className="text-sm text-gray-500">{isAr ? 'مربوط بمنظومة الشراء الموحد' : 'Connected to Unified Procurement'}</p>
+                    <p className="text-sm text-gray-500">{isAr ? 'شركات التأمين المعتمدة في هذا المركز' : 'Approved insurance providers at this center'}</p>
                   </div>
                 </div>
                 <p className="text-gray-600 mb-6">
@@ -227,7 +312,7 @@ const CenterDetails = () => {
                     : 'This center is approved by the unified procurement system and the following insurance companies.'}
                 </p>
                 <div className="flex flex-wrap gap-3">
-                  {center.supported_insurers.map((insurer, idx) => (
+                  {(center.supported_insurers || []).map((insurer, idx) => (
                     <div key={idx} className="flex items-center gap-2 bg-green-50 border border-green-200 px-4 py-2 rounded-full">
                       <CheckCircle2 className="w-4 h-4 text-green-500" />
                       <span className="font-semibold text-gray-800 text-sm">{insurer}</span>
@@ -267,17 +352,19 @@ const CenterDetails = () => {
                   </Button>
                 </a>
 
-                <div className="mt-6 pt-6 border-t border-gray-100">
-                  <h3 className="font-bold text-lg text-gray-900 mb-4">{isAr ? 'الخدمات' : 'Services'}</h3>
-                  <ul className="space-y-2">
-                    {services.map((service, idx) => (
-                      <li key={idx} className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg transition-colors text-sm">
-                        <div className="w-2 h-2 rounded-full bg-medical-500" />
-                        <span className="text-gray-700 font-medium">{service}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                {services && services.length > 0 && (
+                  <div className="mt-6 pt-6 border-t border-gray-100">
+                    <h3 className="font-bold text-lg text-gray-900 mb-4">{isAr ? 'الخدمات' : 'Services'}</h3>
+                    <ul className="space-y-2">
+                      {services.map((service, idx) => (
+                        <li key={idx} className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg transition-colors text-sm">
+                          <div className="w-2 h-2 rounded-full bg-medical-500" />
+                          <span className="text-gray-700 font-medium">{service}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
             </div>
           </div>

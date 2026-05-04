@@ -1,218 +1,197 @@
-// ========================================
-// Wasel Platform - 28 Prosthetic Centers Database
-// Connected to Egypt's Unified Procurement System (الشراء الموحد)
-// One integrated center per governorate
-// ========================================
+import { allEgyptCenters } from './all-centers-data';
+
+export interface Product {
+  id: string;
+  name_ar: string;
+  name_en: string;
+  description_ar: string;
+  description_en: string;
+  image: string;
+}
 
 export interface Specialist {
   id: string;
   name_ar: string;
   name_en: string;
-  title_ar: string;
-  title_en: string;
   specialization_ar: string;
   specialization_en: string;
+  experience: number;
   rating: number;
   reviewCount: number;
-  experience: number;
   image: string;
   available: boolean;
+  portfolio_images?: string[];
 }
 
 export interface GovernorateCenter {
   id: string;
-  name_ar: string;
-  name_en: string;
   governorate_ar: string;
   governorate_en: string;
   region_ar: string;
   region_en: string;
+  name_ar: string;
+  name_en: string;
   address_ar: string;
   address_en: string;
   phone: string;
   whatsapp: string;
-  workingHours_ar: string;
-  workingHours_en: string;
+  rating: number;
   image: string;
   insurance_supported: boolean;
-  supported_insurers: string[];
-  rating: number;
   specialists: Specialist[];
-  services_ar: string[];
-  services_en: string[];
+  google_maps_url?: string;
+  workingHours_ar?: string;
+  workingHours_en?: string;
+  services_ar?: string[];
+  services_en?: string[];
+  supported_insurers?: string[];
+  title_ar?: string;
+  title_en?: string;
+  products?: Product[];
 }
-
-const specialistImages = [
-  '../images/mahmoud.jpg',
-  '../images/mahmoud.jpg',
-  '../images/nader.jpeg',
-  '../images/bassel.jpg',
-  '../images/mahmoud.jpg',
-  '../images/youssef.jpg',
-];
-
-const centerImages = [
-  'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=800&q=80',
-  'https://images.unsplash.com/photo-1586773860418-d37222d8fce3?w=800&q=80',
-  'https://images.unsplash.com/photo-1629909613654-28e377c37b09?w=800&q=80',
-  'https://images.unsplash.com/photo-1551190822-a9333d879b1f?w=800&q=80',
-  'https://images.unsplash.com/photo-1538108149393-fbbd81895907?w=800&q=80',
-  'https://images.unsplash.com/photo-1631217868264-e5b90bb7e133?w=800&q=80',
-  'https://images.unsplash.com/photo-1516549655169-df83a0774514?w=800&q=80',
-];
-
-const insurers = [
-  'التأمين الصحي الشامل',
-  'الشراء الموحد',
-  'هيئة التأمين الصحي',
-  'مصر للتأمين',
-  'أليانز مصر',
-  'بوبا',
-  'متلايف',
-];
-
-const servicesAr = [
-  'أطراف صناعية تحت الركبة',
-  'أطراف صناعية فوق الركبة',
-  'أطراف صناعية للطرف العلوي',
-  'جبائر طبية AFO',
-  'جبائر طبية KAFO',
-  'جبائر عمود فقري',
-  'أحذية طبية ونعال',
-  'إعادة تأهيل',
-  'صيانة وإصلاح الأجهزة',
-];
-
-const servicesEn = [
-  'Below-Knee Prosthetics',
-  'Above-Knee Prosthetics',
-  'Upper Limb Prosthetics',
-  'AFO Orthoses',
-  'KAFO Orthoses',
-  'Spinal Orthoses',
-  'Medical Shoes & Insoles',
-  'Rehabilitation',
-  'Device Maintenance & Repair',
-];
-
-interface GovData {
-  gov_ar: string;
-  gov_en: string;
-  region_ar: string;
-  region_en: string;
-  address_ar: string;
-  address_en: string;
-  phone: string;
-}
-
-const governorates: GovData[] = [
-  { gov_ar: 'القاهرة', gov_en: 'Cairo', region_ar: 'القاهرة الكبرى', region_en: 'Greater Cairo', address_ar: 'شارع القصر العيني، وسط البلد', address_en: 'Qasr El Ainy St, Downtown', phone: '02-2345-6789' },
-  { gov_ar: 'الجيزة', gov_en: 'Giza', region_ar: 'القاهرة الكبرى', region_en: 'Greater Cairo', address_ar: 'شارع الهرم، الجيزة', address_en: 'Haram St, Giza', phone: '02-3456-7890' },
-  { gov_ar: 'الإسكندرية', gov_en: 'Alexandria', region_ar: 'الإسكندرية', region_en: 'Alexandria', address_ar: 'شارع الكورنيش، سموحة', address_en: 'Corniche Rd, Smouha', phone: '03-4567-8901' },
-  { gov_ar: 'القليوبية', gov_en: 'Qalyubia', region_ar: 'القاهرة الكبرى', region_en: 'Greater Cairo', address_ar: 'شارع أحمد عرابي، بنها', address_en: 'Ahmed Orabi St, Banha', phone: '013-234-5678' },
-  { gov_ar: 'الدقهلية', gov_en: 'Dakahlia', region_ar: 'الدلتا', region_en: 'Delta', address_ar: 'شارع الجمهورية، المنصورة', address_en: 'El Gomhoria St, Mansoura', phone: '050-234-5678' },
-  { gov_ar: 'الشرقية', gov_en: 'Sharqia', region_ar: 'الدلتا', region_en: 'Delta', address_ar: 'شارع الجيش، الزقازيق', address_en: 'El Geish St, Zagazig', phone: '055-234-5678' },
-  { gov_ar: 'الغربية', gov_en: 'Gharbia', region_ar: 'الدلتا', region_en: 'Delta', address_ar: 'شارع البحر، طنطا', address_en: 'El Bahr St, Tanta', phone: '040-234-5678' },
-  { gov_ar: 'كفر الشيخ', gov_en: 'Kafr El Sheikh', region_ar: 'الدلتا', region_en: 'Delta', address_ar: 'شارع الجمهورية، كفر الشيخ', address_en: 'El Gomhoria St, Kafr El Sheikh', phone: '047-234-5678' },
-  { gov_ar: 'المنوفية', gov_en: 'Menoufia', region_ar: 'الدلتا', region_en: 'Delta', address_ar: 'شارع جمال عبد الناصر، شبين الكوم', address_en: 'Gamal Abdel Nasser St, Shebin El Kom', phone: '048-234-5678' },
-  { gov_ar: 'البحيرة', gov_en: 'Beheira', region_ar: 'الدلتا', region_en: 'Delta', address_ar: 'شارع التحرير، دمنهور', address_en: 'Tahrir St, Damanhour', phone: '045-234-5678' },
-  { gov_ar: 'دمياط', gov_en: 'Damietta', region_ar: 'الدلتا', region_en: 'Delta', address_ar: 'شارع كورنيش النيل، دمياط', address_en: 'Nile Corniche, Damietta', phone: '057-234-5678' },
-  { gov_ar: 'بورسعيد', gov_en: 'Port Said', region_ar: 'القناة', region_en: 'Canal', address_ar: 'شارع 23 يوليو، بورسعيد', address_en: '23 July St, Port Said', phone: '066-234-5678' },
-  { gov_ar: 'الإسماعيلية', gov_en: 'Ismailia', region_ar: 'القناة', region_en: 'Canal', address_ar: 'شارع محمد علي، الإسماعيلية', address_en: 'Mohamed Ali St, Ismailia', phone: '064-234-5678' },
-  { gov_ar: 'السويس', gov_en: 'Suez', region_ar: 'القناة', region_en: 'Canal', address_ar: 'شارع الجيش، السويس', address_en: 'El Geish St, Suez', phone: '062-234-5678' },
-  { gov_ar: 'الفيوم', gov_en: 'Fayoum', region_ar: 'الصعيد', region_en: 'Upper Egypt', address_ar: 'شارع الحرية، الفيوم', address_en: 'El Horriya St, Fayoum', phone: '084-234-5678' },
-  { gov_ar: 'بني سويف', gov_en: 'Beni Suef', region_ar: 'الصعيد', region_en: 'Upper Egypt', address_ar: 'شارع النيل، بني سويف', address_en: 'Nile St, Beni Suef', phone: '082-234-5678' },
-  { gov_ar: 'المنيا', gov_en: 'Minya', region_ar: 'الصعيد', region_en: 'Upper Egypt', address_ar: 'شارع كورنيش النيل، المنيا', address_en: 'Nile Corniche, Minya', phone: '086-234-5678' },
-  { gov_ar: 'أسيوط', gov_en: 'Asyut', region_ar: 'الصعيد', region_en: 'Upper Egypt', address_ar: 'شارع الجمهورية، أسيوط', address_en: 'El Gomhoria St, Asyut', phone: '088-234-5678' },
-  { gov_ar: 'سوهاج', gov_en: 'Sohag', region_ar: 'الصعيد', region_en: 'Upper Egypt', address_ar: 'شارع النيل، سوهاج', address_en: 'Nile St, Sohag', phone: '093-234-5678' },
-  { gov_ar: 'قنا', gov_en: 'Qena', region_ar: 'الصعيد', region_en: 'Upper Egypt', address_ar: 'شارع بورسعيد، قنا', address_en: 'Port Said St, Qena', phone: '096-234-5678' },
-  { gov_ar: 'الأقصر', gov_en: 'Luxor', region_ar: 'الصعيد', region_en: 'Upper Egypt', address_ar: 'شارع خالد بن الوليد، الأقصر', address_en: 'Khalid Ibn El Walid St, Luxor', phone: '095-234-5678' },
-  { gov_ar: 'أسوان', gov_en: 'Aswan', region_ar: 'الصعيد', region_en: 'Upper Egypt', address_ar: 'شارع كورنيش النيل، أسوان', address_en: 'Nile Corniche, Aswan', phone: '097-234-5678' },
-  { gov_ar: 'البحر الأحمر', gov_en: 'Red Sea', region_ar: 'البحر الأحمر', region_en: 'Red Sea', address_ar: 'شارع النصر، الغردقة', address_en: 'El Nasr St, Hurghada', phone: '065-234-5678' },
-  { gov_ar: 'الوادي الجديد', gov_en: 'New Valley', region_ar: 'الصعيد', region_en: 'Upper Egypt', address_ar: 'شارع الوادي، الخارجة', address_en: 'El Wadi St, Kharga', phone: '092-234-5678' },
-  { gov_ar: 'مطروح', gov_en: 'Matrouh', region_ar: 'الساحل الشمالي', region_en: 'North Coast', address_ar: 'شارع الإسكندرية، مرسى مطروح', address_en: 'Alexandria St, Marsa Matrouh', phone: '046-234-5678' },
-  { gov_ar: 'شمال سيناء', gov_en: 'North Sinai', region_ar: 'سيناء', region_en: 'Sinai', address_ar: 'شارع الجيش، العريش', address_en: 'El Geish St, Arish', phone: '068-234-5678' },
-  { gov_ar: 'جنوب سيناء', gov_en: 'South Sinai', region_ar: 'سيناء', region_en: 'Sinai', address_ar: 'شارع السلام، الطور', address_en: 'El Salam St, El Tur', phone: '069-234-5678' },
-  { gov_ar: 'الأقصر', gov_en: 'Luxor 2', region_ar: 'الصعيد', region_en: 'Upper Egypt', address_ar: 'شارع التلفزيون، الأقصر', address_en: 'Television St, Luxor', phone: '095-345-6789' },
-];
-
-// Remove duplicate Luxor, use 28 unique entries
-const uniqueGovernorates = governorates.slice(0, 28);
-// Replace last duplicate with proper entry
-uniqueGovernorates[27] = {
-  gov_ar: 'أسوان الجديدة',
-  gov_en: 'New Aswan',
-  region_ar: 'الصعيد',
-  region_en: 'Upper Egypt',
-  address_ar: 'المدينة الجديدة، أسوان',
-  address_en: 'New City, Aswan',
-  phone: '097-345-6789',
-};
-
-const specialistNames = [
-  { ar: 'د. محمود إبراهيم', en: 'Dr. Mahmoud Ebrahim', spec_ar: 'أطراف صناعية تحت الركبة', spec_en: 'Below-Knee Prosthetics' },
-  { ar: 'د. محمد سلطان', en: 'Dr. Mohammed Sultan ', spec_ar: 'أطراف صناعية فوق الركبة', spec_en: 'Above-Knee Prosthetics' },
-  { ar: 'د. نادر ابراهيم', en: 'Dr. Nader Ibrahim ', spec_ar: 'جبائر طبية وأجهزة تقويمية', spec_en: 'Orthotics & Braces' },
-  { ar: 'د. باسل هاني', en: 'Dr. Bassel Hany', spec_ar: 'أطراف صناعية للطرف العلوي', spec_en: 'Upper Limb Prosthetics' },
-  { ar: 'د. محمد احمد', en: 'Dr. Mohammed Ahmed ', spec_ar: 'أحذية طبية وتقويم القدم', spec_en: 'Medical Footwear & Orthotics' },
-  { ar: 'د. يوسف احمد', en: 'Dr. Youssef Ahmed', spec_ar: 'إعادة تأهيل وعلاج طبيعي', spec_en: 'Rehabilitation & Physiotherapy' },
-];
-
-export const egyptCenters: GovernorateCenter[] = uniqueGovernorates.map((gov, idx) => {
-  const numSpecialists = 3 + (idx % 3); // 3-5 specialists per center
-  const specialists: Specialist[] = [];
-
-  for (let i = 0; i < numSpecialists; i++) {
-    const sIdx = (idx + i) % specialistNames.length;
-    const s = specialistNames[sIdx];
-    specialists.push({
-      id: `spec-${idx}-${i}`,
-      name_ar: s.ar,
-      name_en: s.en,
-      title_ar: 'أخصائي أطراف صناعية وأجهزة تقويمية',
-      title_en: 'Prosthetics & Orthotics Specialist',
-      specialization_ar: s.spec_ar,
-      specialization_en: s.spec_en,
-      rating: 4.2 + Math.round((idx * 0.1 + i * 0.15) % 0.8 * 10) / 10,
-      reviewCount: 15 + (idx * 3 + i * 7) % 85,
-      experience: 5 + (idx + i) % 15,
-      image: specialistImages[sIdx],
-      available: true,
-    });
-  }
-
-  return {
-    id: `center-${idx + 1}`,
-    name_ar: `مركز واصل للأطراف الصناعية - ${gov.gov_ar}`,
-    name_en: `Wasel Prosthetics Center - ${gov.gov_en}`,
-    governorate_ar: gov.gov_ar,
-    governorate_en: gov.gov_en,
-    region_ar: gov.region_ar,
-    region_en: gov.region_en,
-    address_ar: gov.address_ar,
-    address_en: gov.address_en,
-    phone: gov.phone,
-    whatsapp: '201119056895',
-    workingHours_ar: 'السبت - الخميس: 9 صباحاً - 9 مساءً',
-    workingHours_en: 'Sat - Thu: 9 AM - 9 PM',
-    image: centerImages[idx % centerImages.length],
-    insurance_supported: true,
-    supported_insurers: insurers.slice(0, 3 + (idx % 4)),
-    rating: 4.3 + (idx % 7) * 0.1,
-    specialists,
-    services_ar: servicesAr,
-    services_en: servicesEn,
-  };
-});
 
 export const regions = [
   { ar: 'الكل', en: 'All' },
   { ar: 'القاهرة الكبرى', en: 'Greater Cairo' },
-  { ar: 'الإسكندرية', en: 'Alexandria' },
+  { ar: 'الإسكندرية ومطروح', en: 'Alexandria & Matrouh' },
   { ar: 'الدلتا', en: 'Delta' },
   { ar: 'القناة', en: 'Canal' },
-  { ar: 'الصعيد', en: 'Upper Egypt' },
-  { ar: 'البحر الأحمر', en: 'Red Sea' },
-  { ar: 'الساحل الشمالي', en: 'North Coast' },
-  { ar: 'سيناء', en: 'Sinai' },
+  { ar: 'شمال الصعيد', en: 'North Upper Egypt' },
+  { ar: 'جنوب الصعيد', en: 'South Upper Egypt' }
 ];
+
+export interface InsuranceProvider {
+  id: string;
+  name_ar: string;
+  name_en: string;
+  type: 'government' | 'private' | 'syndicate';
+  logo_color: string;
+  phone: string;
+  address_ar: string;
+  address_en: string;
+  google_maps_url: string;
+  coverage_ar: string[];
+  coverage_en: string[];
+}
+
+export const insuranceProviders: InsuranceProvider[] = [
+  {
+    id: 'hio',
+    name_ar: 'الهيئة العامة للتأمين الصحي',
+    name_en: 'Health Insurance Organization (HIO)',
+    type: 'government',
+    logo_color: '#1a5276',
+    phone: '0227921700',
+    address_ar: 'شارع الشيخ ريحان، باب اللوق، القاهرة',
+    address_en: 'Sheikh Rihan St., Bab El Louq, Cairo',
+    google_maps_url: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3453.8!2d31.24!3d30.04!5e0!3m2!1sar!2seg!4v1',
+    coverage_ar: ['أطراف صناعية', 'أجهزة تقويمية', 'جبائر طبية', 'تأهيل حركي'],
+    coverage_en: ['Prosthetics', 'Orthotics', 'Medical Splints', 'Rehabilitation']
+  },
+  {
+    id: 'uhis',
+    name_ar: 'التأمين الصحي الشامل',
+    name_en: 'Universal Health Insurance System (UHIS)',
+    type: 'government',
+    logo_color: '#148f77',
+    phone: '15344',
+    address_ar: 'بورسعيد - الأقصر - أسوان - الإسماعيلية - جنوب سيناء',
+    address_en: 'Port Said - Luxor - Aswan - Ismailia - South Sinai',
+    google_maps_url: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3453.8!2d31.24!3d30.04!5e0!3m2!1sar!2seg!4v1',
+    coverage_ar: ['تغطية شاملة لكل الأجهزة التعويضية', 'تأهيل كامل', 'متابعة دورية'],
+    coverage_en: ['Full prosthetic device coverage', 'Complete rehabilitation', 'Regular follow-up']
+  },
+  {
+    id: 'nfq',
+    name_ar: 'العلاج على نفقة الدولة',
+    name_en: 'State-Funded Treatment',
+    type: 'government',
+    logo_color: '#2c3e50',
+    phone: '0227921800',
+    address_ar: 'المجالس الطبية المتخصصة، القصر العيني، القاهرة',
+    address_en: 'Specialized Medical Councils, Qasr Al Ainy, Cairo',
+    google_maps_url: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3454.5!2d31.23!3d30.03!5e0!3m2!1sar!2seg!4v1',
+    coverage_ar: ['أطراف صناعية بالكامل', 'أجهزة تعويضية', 'عمليات جراحية'],
+    coverage_en: ['Full prosthetics coverage', 'Assistive devices', 'Surgical operations']
+  },
+  {
+    id: 'bupa',
+    name_ar: 'بوبا مصر',
+    name_en: 'Bupa Egypt',
+    type: 'private',
+    logo_color: '#005bbb',
+    phone: '19931',
+    address_ar: 'سيتي ستارز، الدور ٣٤، مدينة نصر، القاهرة',
+    address_en: 'City Stars, 34th Floor, Nasr City, Cairo',
+    google_maps_url: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3452.8!2d31.35!3d30.07!5e0!3m2!1sar!2seg!4v1',
+    coverage_ar: ['أطراف صناعية حتى ٥٠٠,٠٠٠ جنيه', 'أجهزة تقويمية', 'جلسات تأهيل'],
+    coverage_en: ['Prosthetics up to 500,000 EGP', 'Orthotic devices', 'Rehabilitation sessions']
+  },
+  {
+    id: 'allianz',
+    name_ar: 'أليانز مصر',
+    name_en: 'Allianz Egypt',
+    type: 'private',
+    logo_color: '#003781',
+    phone: '19909',
+    address_ar: '٥٣ شارع الحجاز، مصر الجديدة، القاهرة',
+    address_en: '53 Al Hegaz St., Heliopolis, Cairo',
+    google_maps_url: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3452.3!2d31.33!3d30.08!5e0!3m2!1sar!2seg!4v1',
+    coverage_ar: ['أطراف صناعية', 'أجهزة طبية تعويضية', 'علاج طبيعي'],
+    coverage_en: ['Prosthetics', 'Medical assistive devices', 'Physiotherapy']
+  },
+  {
+    id: 'metlife',
+    name_ar: 'ميتلايف مصر',
+    name_en: 'MetLife Egypt',
+    type: 'private',
+    logo_color: '#00a8e1',
+    phone: '19844',
+    address_ar: 'نايل سيتي تاورز، كورنيش النيل، القاهرة',
+    address_en: 'Nile City Towers, Corniche El Nil, Cairo',
+    google_maps_url: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3453.2!2d31.22!3d30.06!5e0!3m2!1sar!2seg!4v1',
+    coverage_ar: ['أطراف صناعية', 'تأمين ضد الحوادث', 'تأهيل طبي'],
+    coverage_en: ['Prosthetics', 'Accident insurance', 'Medical rehabilitation']
+  },
+  {
+    id: 'misr_insurance',
+    name_ar: 'شركة مصر للتأمين',
+    name_en: 'Misr Insurance Company',
+    type: 'private',
+    logo_color: '#c0392b',
+    phone: '0227921500',
+    address_ar: '٥ ميدان طلعت حرب، وسط البلد، القاهرة',
+    address_en: '5 Talaat Harb Square, Downtown, Cairo',
+    google_maps_url: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3453.8!2d31.24!3d30.05!5e0!3m2!1sar!2seg!4v1',
+    coverage_ar: ['أطراف صناعية', 'أجهزة تعويضية', 'علاج طبيعي وتأهيل'],
+    coverage_en: ['Prosthetics', 'Assistive devices', 'Physiotherapy & rehabilitation']
+  },
+  {
+    id: 'eng_syndicate',
+    name_ar: 'نقابة المهندسين المصرية',
+    name_en: 'Egyptian Engineers Syndicate',
+    type: 'syndicate',
+    logo_color: '#27ae60',
+    phone: '0227921600',
+    address_ar: '٢٨ شارع رمسيس، وسط البلد، القاهرة',
+    address_en: '28 Ramses St., Downtown, Cairo',
+    google_maps_url: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3453.5!2d31.24!3d30.06!5e0!3m2!1sar!2seg!4v1',
+    coverage_ar: ['أطراف صناعية لأعضاء النقابة', 'خصومات على الأجهزة التقويمية'],
+    coverage_en: ['Prosthetics for syndicate members', 'Discounts on orthotic devices']
+  },
+  {
+    id: 'doctors_syndicate',
+    name_ar: 'نقابة الأطباء',
+    name_en: 'Doctors Syndicate',
+    type: 'syndicate',
+    logo_color: '#8e44ad',
+    phone: '0227921650',
+    address_ar: 'دار الحكمة، شارع القصر العيني، القاهرة',
+    address_en: 'Dar El Hekma, Qasr El Ainy St., Cairo',
+    google_maps_url: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3454.2!2d31.23!3d30.04!5e0!3m2!1sar!2seg!4v1',
+    coverage_ar: ['تغطية كاملة للأطراف الصناعية', 'تأهيل حركي'],
+    coverage_en: ['Full prosthetics coverage', 'Motor rehabilitation']
+  }
+];
+
+export const egyptCenters: GovernorateCenter[] = allEgyptCenters;

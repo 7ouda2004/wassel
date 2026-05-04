@@ -57,7 +57,17 @@ const Login = () => {
       // Supabase auth login
       await signIn(formData.email, formData.password);
       toast.success(isAr ? 'تم تسجيل الدخول بنجاح' : 'Login successful');
-      navigate(from, { replace: true });
+      
+      // Retrieve the role from the mock since we are running locally without Supabase configured
+      const role = sessionStorage.getItem('mockRole') || 'patient';
+      
+      if (from !== '/dashboard' && from !== '/') {
+        navigate(from, { replace: true });
+      } else if (role === 'center' || role === 'insurance') {
+        navigate('/specialist-dashboard', { replace: true });
+      } else {
+        navigate('/dashboard', { replace: true });
+      }
     } catch (error: any) {
       toast.error(error.message || (isAr ? 'حدث خطأ أثناء تسجيل الدخول' : 'Login error'));
     } finally {

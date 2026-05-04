@@ -1,13 +1,14 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { MapPin, Phone, Clock, ChevronRight, Search, Star, Users, ShieldCheck, Building2 } from 'lucide-react';
+import { MapPin, Phone, Clock, ChevronRight, Search, Star, Users, ShieldCheck, Building2, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useTranslation } from 'react-i18next';
-import { egyptCenters, regions } from '@/data/centers-database';
+import { regions, egyptCenters } from '@/data/centers-database';
+import { centersApi } from '@/services/centers.api';
 
 const Centers = () => {
   const { t, i18n } = useTranslation();
@@ -16,11 +17,43 @@ const Centers = () => {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRegion, setSelectedRegion] = useState('الكل');
+  
+  const [centers, setCenters] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => { window.scrollTo(0, 0); }, []);
+  useEffect(() => { 
+    window.scrollTo(0, 0); 
+    const fetchCenters = async () => {
+      try {
+        setLoading(true);
+        const data = await centersApi.getAllCenters();
+        if (data && data.length > 0) {
+          setCenters(data);
+        } else {
+          // Fallback to local data
+          setCenters(egyptCenters.map(c => ({
+            ...c,
+            image_url: c.image,
+            specialists_count: c.specialists.length
+          })));
+        }
+      } catch (error) {
+        console.error('Failed to fetch centers, using local data:', error);
+        // Fallback to local data
+        setCenters(egyptCenters.map(c => ({
+          ...c,
+          image_url: c.image,
+          specialists_count: c.specialists.length
+        })));
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCenters();
+  }, []);
 
   const filteredCenters = useMemo(() => {
-    return egyptCenters.filter(center => {
+    return centers.filter(center => {
       const name = isAr ? center.name_ar : center.name_en;
       const gov = isAr ? center.governorate_ar : center.governorate_en;
       const matchesSearch = name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -31,7 +64,7 @@ const Centers = () => {
         regions.find(r => (isAr ? r.ar : r.en) === selectedRegion && (r.ar === center.region_ar || r.en === center.region_en));
       return matchesSearch && matchesRegion;
     });
-  }, [searchTerm, selectedRegion, isAr]);
+  }, [centers, searchTerm, selectedRegion, isAr]);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -156,17 +189,29 @@ const Centers = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-7xl mx-auto">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredCenters.map((center, index) => (
-                <motion.div
-                  key={center.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: index * 0.05 }}
-                  className="bg-white rounded-2xl shadow-md overflow-hidden border border-gray-100 hover:shadow-xl hover:border-medical-200 transition-all duration-300 group"
-                >
+              {loading ? (
+                <div className="col-span-full flex flex-col items-center justify-center py-20 text-medical-600">
+                  <Loader2 className="w-10 h-10 animate-spin mb-4" />
+                  <p className="font-bold text-lg">{isAr ? 'جاري تحميل المراكز...' : 'Loading centers...'}</p>
+                </div>
+              ) : filteredCenters.length === 0 ? (
+                <div className="col-span-full flex flex-col items-center justify-center py-20 text-gray-500">
+                  <Building2 className="w-16 h-16 mb-4 text-gray-300" />
+                  <p className="font-bold text-xl mb-2">{isAr ? 'لا توجد مراكز مطابقة' : 'No centers found'}</p>
+                  <p>{isAr ? 'جرب البحث بكلمات مختلفة أو تغيير المنطقة' : 'Try searching with different terms or changing region'}</p>
+                </div>
+              ) : (
+                filteredCenters.map((center, index) => (
+                  <motion.div
+                    key={center.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: index * 0.05 }}
+                    className="bg-white rounded-2xl shadow-md overflow-hidden border border-gray-100 hover:shadow-xl hover:border-medical-200 transition-all duration-300 group"
+                  >
                   <div className="relative h-48 overflow-hidden">
                     <img
-                      src={center.image}
+                      src={center.image_url || center.image}
                       alt={isAr ? center.name_ar : center.name_en}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
@@ -176,12 +221,11 @@ const Centers = () => {
                         {isAr ? center.governorate_ar : center.governorate_en}
                       </h3>
                     </div>
-                    {center.insurance_supported && (
-                      <div className="absolute top-3 left-3 bg-green-500/90 text-white text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1 backdrop-blur-sm">
-                        <ShieldCheck className="w-3 h-3" />
-                        {isAr ? 'معتمد تأمينياً' : 'Insured'}
-                      </div>
-                    )}
+                    {/* Assume insurance supported for all centers based on project requirements */}
+                    <div className="absolute top-3 left-3 bg-green-500/90 text-white text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1 backdrop-blur-sm">
+                      <ShieldCheck className="w-3 h-3" />
+                      {isAr ? 'معتمد تأمينياً' : 'Insured'}
+                    </div>
                     <div className="absolute top-3 right-3 bg-white/90 text-amber-600 text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1 backdrop-blur-sm">
                       <Star className="w-3 h-3 fill-amber-500" />
                       {center.rating.toFixed(1)}
@@ -202,7 +246,7 @@ const Centers = () => {
                       </div>
                       <div className="flex items-center text-gray-600 gap-2">
                         <Users className="h-4 w-4 text-medical-500 flex-shrink-0" />
-                        <span>{center.specialists.length} {isAr ? 'أخصائي' : 'specialists'}</span>
+                        <span>{center.specialists_count || center.specialists?.length || 0} {isAr ? 'أخصائي' : 'specialists'}</span>
                       </div>
                     </div>
                     <Link to={`/center/${center.id}`}>
@@ -213,7 +257,8 @@ const Centers = () => {
                     </Link>
                   </div>
                 </motion.div>
-              ))}
+              ))
+              )}
             </div>
           </div>
         </div>
