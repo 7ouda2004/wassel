@@ -75,24 +75,24 @@ const Navbar = () => {
               <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-medical-500 to-medical-700 flex items-center justify-center">
                 <span className="text-white font-bold text-lg">W</span>
               </div>
-              <span className="mx-3 font-bold text-xl text-medical-800">واصــــل</span>
+              <span className="mx-2 font-bold text-xl text-medical-800">واصــل</span>
             </Link>
           </div>
           
           {/* Desktop menu */}
-          <div className="hidden lg:flex lg:items-center lg:space-x-4 lg:rtl:space-x-reverse flex-1 justify-center px-4">
+          <div className="hidden lg:flex lg:items-center lg:space-x-3 lg:rtl:space-x-reverse flex-1 justify-center px-3">
             {navLinks.map((link) => (
               <Link 
                 key={link.path} 
                 to={link.path} 
-                className="text-gray-700 hover:text-primary font-medium text-sm xl:text-base whitespace-nowrap"
+                className="text-gray-700 hover:text-primary font-medium text-sm whitespace-nowrap"
               >
                 {link.label}
               </Link>
             ))}
           </div>
           
-          <div className="flex items-center space-x-4 rtl:space-x-reverse">
+          <div className="flex items-center space-x-2 rtl:space-x-reverse flex-shrink-0">
             {isAuthenticated ? (
               <div className="hidden sm:flex items-center gap-2">
                 <Link to={user?.role === 'center' ? '/specialist-dashboard' : '/dashboard'}>
@@ -108,23 +108,23 @@ const Navbar = () => {
             ) : (
               <div className="hidden sm:flex items-center gap-2">
                 <Link to="/login">
-                  <Button variant="ghost" className="flex items-center whitespace-nowrap">
-                    <User className="mr-2 h-4 w-4" />
-                    {i18n.language === 'ar' ? 'تسجيل الدخول / حساب جديد' : 'Login / Register'}
+                  <Button variant="ghost" size="sm" className="flex items-center whitespace-nowrap">
+                    <User className="mr-1.5 h-4 w-4" />
+                    {i18n.language === 'ar' ? 'تسجيل الدخول' : 'Login'}
                   </Button>
                 </Link>
                 <Link to="/specialist-login">
-                  <Button variant="outline" className="flex items-center whitespace-nowrap border-teal-500 text-teal-600 hover:bg-teal-50">
-                    <Building className="mr-2 h-4 w-4" />
-                    {i18n.language === 'ar' ? 'تسجيل كأخصائي' : 'Specialist Login'}
+                  <Button variant="outline" size="sm" className="flex items-center whitespace-nowrap border-teal-500 text-teal-600 hover:bg-teal-50">
+                    <Building className="mr-1.5 h-4 w-4" />
+                    {i18n.language === 'ar' ? 'أخصائي' : 'Specialist'}
                   </Button>
                 </Link>
               </div>
             )}
             
             <a href="https://wa.me/201119056895" target="_blank" rel="noopener noreferrer">
-              <Button variant="default" className="hidden sm:flex items-center medical-btn whitespace-nowrap">
-                <Phone className="mr-2 h-4 w-4" />
+              <Button variant="default" size="sm" className="hidden sm:flex items-center medical-btn whitespace-nowrap">
+                <Phone className="mr-1.5 h-4 w-4" />
                 {t('nav.contact_us')}
               </Button>
             </a>
