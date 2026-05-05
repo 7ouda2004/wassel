@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { egyptCenters } from '@/data/centers-database';
 import type { GovernorateCenter, Specialist } from '@/data/centers-database';
 import { toast } from 'sonner';
+import { useAdminStore } from '@/stores/admin-store';
 
 const StarRating = ({ rating, size = 'sm' }: { rating: number; size?: string }) => {
   const sz = size === 'sm' ? 'w-4 h-4' : 'w-5 h-5';
@@ -27,13 +28,60 @@ const CenterDetails = () => {
   const isAr = i18n.language === 'ar';
   const isRtl = i18n.dir() === 'rtl';
 
+  const { centers: adminCenters, specialists: adminSpecialists } = useAdminStore();
+  
   const [center, setCenter] = useState<GovernorateCenter | null>(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    const found = egyptCenters.find(c => c.id === id);
-    setCenter(found || null);
-  }, [id]);
+    const foundAdmin = adminCenters.find(c => c.id === id);
+    if (foundAdmin) {
+      // Find specialists for this center
+      const centerSpecs = adminSpecialists.filter(s => s.centerId === id).map(s => ({
+        id: s.id,
+        name_ar: s.fullName,
+        name_en: s.name_en || s.fullName,
+        specialization_ar: s.specialization || '',
+        specialization_en: s.specialization_en || '',
+        experience: s.experience || 5,
+        rating: s.rating || 5,
+        reviewCount: 12,
+        image: s.image || 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?q=80&w=2070&auto=format&fit=crop',
+        available: true
+      }));
+
+      // Combine admin data with some defaults for missing detailed static data (like products)
+      // Fallback to static db to keep products/services if they aren't fully modeled in admin store yet
+      const staticCenter = egyptCenters.find(c => c.id === id);
+
+      setCenter({
+        id: foundAdmin.id,
+        name_ar: foundAdmin.name,
+        name_en: foundAdmin.name_en || foundAdmin.name,
+        governorate_ar: foundAdmin.governorate_ar || staticCenter?.governorate_ar || '',
+        governorate_en: foundAdmin.governorate_en || staticCenter?.governorate_en || '',
+        region_ar: staticCenter?.region_ar || '',
+        region_en: staticCenter?.region_en || '',
+        address_ar: foundAdmin.address || staticCenter?.address_ar || '',
+        address_en: foundAdmin.address_en || staticCenter?.address_en || '',
+        phone: foundAdmin.phone,
+        whatsapp: staticCenter?.whatsapp || foundAdmin.phone,
+        rating: foundAdmin.rating || staticCenter?.rating || 5,
+        image: foundAdmin.image || staticCenter?.image || 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?q=80&w=2053&auto=format&fit=crop',
+        insurance_supported: foundAdmin.insurance_supported ?? staticCenter?.insurance_supported ?? true,
+        specialists: centerSpecs as any[],
+        workingHours_ar: staticCenter?.workingHours_ar,
+        workingHours_en: staticCenter?.workingHours_en,
+        services_ar: foundAdmin.services_ar || staticCenter?.services_ar || [],
+        services_en: staticCenter?.services_en,
+        supported_insurers: staticCenter?.supported_insurers,
+        products: foundAdmin.products || staticCenter?.products || [],
+        google_maps_url: staticCenter?.google_maps_url
+      });
+    } else {
+      setCenter(null);
+    }
+  }, [id, adminCenters, adminSpecialists]);
 
   if (!center) {
     return (
@@ -195,10 +243,30 @@ const CenterDetails = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {center.products.map((prod, idx) => (
                   <motion.div key={prod.id} initial={{opacity: 0, y: 20}} animate={{opacity: 1, y: 0}} transition={{delay: idx * 0.1}} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-lg transition-all duration-300">
-                    <img src={prod.image} alt={isAr ? prod.name_ar : prod.name_en} className="w-full h-48 object-cover" />
+                    <div className="w-full h-48 relative overflow-hidden flex items-center justify-center border-b border-gray-100">
+                      {/* Blurred Background */}
+                      <div 
+                        className="absolute inset-0 bg-cover bg-center blur-xl opacity-20 scale-110"
+                        style={{ backgroundImage: `url(${prod.image})` }}
+                      ></div>
+                      
+                      {/* Actual Image */}
+                      <img 
+                        src={prod.image} 
+                        alt={isAr ? prod.name_ar : prod.name_en} 
+                        className="relative z-10 max-w-full max-h-full object-contain transform transition-transform duration-500 hover:scale-105" 
+                      />
+                    </div>
                     <div className="p-5">
-                      <h3 className="font-bold text-gray-900 mb-2">{isAr ? prod.name_ar : prod.name_en}</h3>
-                      <p className="text-sm text-gray-500 leading-relaxed">{isAr ? prod.description_ar : prod.description_en}</p>
+                      <div className="flex justify-between items-start mb-2">
+                        <h3 className="font-bold text-gray-900">{isAr ? prod.name_ar : prod.name_en}</h3>
+                        {prod.price > 0 && (
+                          <span className="bg-teal-50 text-teal-700 px-2 py-1 rounded-md text-sm font-bold whitespace-nowrap">
+                            {prod.price} {isAr ? 'ج.م' : 'EGP'}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm text-gray-500 leading-relaxed line-clamp-3">{isAr ? prod.description_ar : prod.description_en}</p>
                     </div>
                   </motion.div>
                 ))}

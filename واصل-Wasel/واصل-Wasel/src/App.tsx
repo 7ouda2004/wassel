@@ -29,6 +29,7 @@ const CenterDetails = lazy(() => import("./pages/CenterDetails"));
 const Login = lazy(() => import("./pages/Login"));
 const Register = lazy(() => import("./pages/Register"));
 const SpecialistLogin = lazy(() => import("./pages/SpecialistLogin"));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const InsuranceRequest = lazy(() => import("./pages/InsuranceRequest"));
 const SmartRecommendation = lazy(() => import("./pages/SmartRecommendation"));
 const PatientDashboard = lazy(() => import("./pages/dashboard/PatientDashboard"));
@@ -69,6 +70,7 @@ const AnimatedRoutes = () => {
           <Route path="/locations" element={<Locations />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/specialist-dashboard" element={<SpecialistDashboard />} />
+          <Route path="/admin-dashboard" element={<AdminDashboard />} />
           <Route path="/booking" element={<Booking />} />
           <Route path="/centers" element={<Centers />} />
           <Route path="/center/:id" element={<CenterDetails />} />

@@ -34,6 +34,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/providers/auth-provider';
+import { useAdminStore } from '@/stores/admin-store';
 
 // Types
 type Patient = {
@@ -181,6 +182,10 @@ const SpecialistDashboard = () => {
   const [uploadingFile, setUploadingFile] = useState(false);
 
   const { user, isAuthenticated, isLoading } = useAuth();
+  
+  // Center Management State
+  const { centers, specialists: adminSpecialists, updateCenter } = useAdminStore();
+  const [centerData, setCenterData] = useState<any>(null);
 
   useEffect(() => {
     document.documentElement.dir = i18n.dir();
@@ -197,6 +202,17 @@ const SpecialistDashboard = () => {
       return;
     }
   }, [i18n.language, isAuthenticated, isLoading, user]);
+
+  useEffect(() => {
+    const role = sessionStorage.getItem('mockRole');
+    const username = sessionStorage.getItem('username');
+    if (role === 'center' && username) {
+      const foundCenter = centers.find(c => c.username === username);
+      if (foundCenter) {
+        setCenterData(foundCenter);
+      }
+    }
+  }, [centers]);
 
   // Save patients to localStorage when they change
   useEffect(() => {
@@ -441,11 +457,14 @@ const SpecialistDashboard = () => {
             </div>
 
             <Tabs defaultValue="all">
-              <TabsList className="grid grid-cols-4 mb-4">
+              <TabsList className={`grid ${sessionStorage.getItem('mockRole') === 'center' ? 'grid-cols-5' : 'grid-cols-4'} mb-4`}>
                 <TabsTrigger value="all">{t('dashboard.tabs.all')}</TabsTrigger>
                 <TabsTrigger value="prosthetics">{t('dashboard.tabs.prosthetics')}</TabsTrigger>
                 <TabsTrigger value="orthoses">{t('dashboard.tabs.orthoses')}</TabsTrigger>
                 <TabsTrigger value="active">{t('dashboard.tabs.active')}</TabsTrigger>
+                {sessionStorage.getItem('mockRole') === 'center' && (
+                  <TabsTrigger value="center_management">{i18n.language === 'ar' ? 'إدارة المركز' : 'Center Management'}</TabsTrigger>
+                )}
               </TabsList>
 
               <TabsContent value="all">
@@ -608,6 +627,127 @@ const SpecialistDashboard = () => {
                     </TableBody>
                   </Table>
                 </div>
+              </TabsContent>
+              <TabsContent value="center_management">
+                {centerData ? (
+                  <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+                    <h2 className="text-xl font-bold mb-4">{i18n.language === 'ar' ? 'إدارة المركز: ' : 'Center Management: '} {centerData.name}</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                      <div>
+                        <Label>{i18n.language === 'ar' ? 'اسم المركز' : 'Center Name'}</Label>
+                        <Input value={centerData.name} onChange={(e) => setCenterData({...centerData, name: e.target.value})} />
+                      </div>
+                      <div>
+                        <Label>{i18n.language === 'ar' ? 'رقم الهاتف' : 'Phone'}</Label>
+                        <Input value={centerData.phone} onChange={(e) => setCenterData({...centerData, phone: e.target.value})} />
+                      </div>
+                      <div>
+                        <Label>{i18n.language === 'ar' ? 'العنوان' : 'Address'}</Label>
+                        <Input value={centerData.address || ''} onChange={(e) => setCenterData({...centerData, address: e.target.value})} />
+                      </div>
+                      <div>
+                        <Label>{i18n.language === 'ar' ? 'أخصائيين المركز' : 'Center Specialists'}</Label>
+                        <div className="text-sm font-semibold text-gray-700 mt-2">
+                          {adminSpecialists.filter(s => s.centerId === centerData.id).length} {i18n.language === 'ar' ? 'أخصائي' : 'Specialist(s)'}
+                        </div>
+                      </div>
+                      <div>
+                        <Label>{i18n.language === 'ar' ? 'الخدمات (مفصولة بفاصلة)' : 'Services (Comma separated)'}</Label>
+                        <Textarea 
+                          value={centerData.services_ar?.join(', ') || ''} 
+                          onChange={(e) => setCenterData({...centerData, services_ar: e.target.value.split(',').map(s => s.trim())})} 
+                          placeholder={i18n.language === 'ar' ? 'مثال: أطراف صناعية, جبائر طبية' : 'Example: Prosthetics, Orthotics'}
+                        />
+                      </div>
+                    </div>
+                    <div className="pt-4 border-t mt-6 mb-6">
+                      <div className="flex justify-between items-center mb-4">
+                        <Label className="text-lg font-bold text-teal-700">{i18n.language === 'ar' ? 'المنتجات والأسعار' : 'Products & Prices'}</Label>
+                        <Button variant="outline" size="sm" onClick={() => setCenterData({...centerData, products: [...(centerData.products || []), {id: Math.random().toString(), name_ar: '', name_en: '', description_ar: '', description_en: '', image: '', price: 0}]})}>
+                          <PlusCircle className="w-4 h-4 me-1" /> {i18n.language === 'ar' ? 'إضافة منتج' : 'Add Product'}
+                        </Button>
+                      </div>
+                      <div className="space-y-4">
+                        {(centerData.products || []).map((prod: any, i: number) => (
+                          <div key={i} className="p-4 border border-gray-200 rounded-xl bg-white shadow-sm flex flex-col gap-3 relative transition-all hover:border-teal-300">
+                            <Button variant="ghost" size="sm" className="absolute top-2 left-2 text-red-500 hover:bg-red-50 h-8 w-8 p-0 rounded-full" onClick={() => setCenterData({...centerData, products: centerData.products.filter((_: any, idx: number) => idx !== i)})}>
+                              <X className="w-4 h-4" />
+                            </Button>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pr-8">
+                              <div>
+                                <Label className="text-xs text-gray-500">{i18n.language === 'ar' ? 'اسم المنتج' : 'Product Name'}</Label>
+                                <Input placeholder={i18n.language === 'ar' ? 'اسم المنتج' : 'Product Name'} value={prod.name_ar} onChange={(e) => {
+                                  const newProds = [...centerData.products];
+                                  newProds[i].name_ar = e.target.value;
+                                  setCenterData({...centerData, products: newProds});
+                                }} />
+                              </div>
+                              <div>
+                                <Label className="text-xs text-gray-500">{i18n.language === 'ar' ? 'السعر' : 'Price'}</Label>
+                                <Input placeholder={i18n.language === 'ar' ? 'السعر' : 'Price'} type="number" value={prod.price || ''} onChange={(e) => {
+                                  const newProds = [...centerData.products];
+                                  newProds[i].price = parseInt(e.target.value) || 0;
+                                  setCenterData({...centerData, products: newProds});
+                                }} />
+                              </div>
+                            </div>
+
+                            <div>
+                              <Label className="text-xs text-gray-500">{i18n.language === 'ar' ? 'الوصف' : 'Description'}</Label>
+                              <Input placeholder={i18n.language === 'ar' ? 'الوصف' : 'Description'} value={prod.description_ar || ''} onChange={(e) => {
+                                const newProds = [...centerData.products];
+                                newProds[i].description_ar = e.target.value;
+                                setCenterData({...centerData, products: newProds});
+                              }} />
+                            </div>
+
+                            <div>
+                              <Label className="text-xs text-gray-500">{i18n.language === 'ar' ? 'صورة المنتج' : 'Product Image'}</Label>
+                              <div className="mt-1 flex items-center gap-3">
+                                {prod.image && (
+                                  <img src={prod.image} alt="Preview" className="w-12 h-12 rounded object-cover border" />
+                                )}
+                                <Input 
+                                  type="file" 
+                                  accept="image/*"
+                                  className="text-sm cursor-pointer"
+                                  onChange={(e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) {
+                                      const reader = new FileReader();
+                                      reader.onloadend = () => {
+                                        const newProds = [...centerData.products];
+                                        newProds[i].image = reader.result as string;
+                                        setCenterData({...centerData, products: newProds});
+                                      };
+                                      reader.readAsDataURL(file);
+                                    }
+                                  }} 
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                        {(!centerData.products || centerData.products.length === 0) && (
+                          <div className="text-center py-6 text-gray-400 bg-gray-50 rounded-xl border border-dashed">
+                            {i18n.language === 'ar' ? 'لا يوجد منتجات، اضغط على إضافة لإنشاء منتج جديد' : 'No products. Click Add to create one.'}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <Button onClick={() => {
+                      updateCenter(centerData.id, centerData);
+                      toast.success(i18n.language === 'ar' ? 'تم حفظ التغييرات' : 'Changes saved');
+                    }} className="bg-teal-600 hover:bg-teal-700">
+                      <Save className="w-4 h-4 mr-2" /> {i18n.language === 'ar' ? 'حفظ التغييرات' : 'Save Changes'}
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="p-8 text-center text-gray-500">
+                    {i18n.language === 'ar' ? 'جاري تحميل بيانات المركز...' : 'Loading center data...'}
+                  </div>
+                )}
               </TabsContent>
             </Tabs>
           </div>

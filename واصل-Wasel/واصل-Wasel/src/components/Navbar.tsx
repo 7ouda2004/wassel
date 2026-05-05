@@ -36,11 +36,11 @@ const Navbar = () => {
       }
       
       // محاكاة طلب API
-      const isValid = password === 'daizer';
+      const isValid = password === 'daizer616';
       if (isValid) {
         // استخدام sessionStorage بدلاً من localStorage للأمان
         sessionStorage.setItem('isSpecialist', 'true');
-        sessionStorage.setItem('username', 'mahmoud');
+        sessionStorage.setItem('username', '616');
         toast.success('تم تسجيل الدخول بنجاح');
         window.location.href = '/specialist-dashboard';
       } else {
@@ -95,7 +95,13 @@ const Navbar = () => {
           <div className="flex items-center space-x-2 rtl:space-x-reverse flex-shrink-0">
             {isAuthenticated ? (
               <div className="hidden sm:flex items-center gap-2">
-                <Link to={user?.role === 'center' ? '/specialist-dashboard' : '/dashboard'}>
+                <Link 
+                  to={
+                    user?.role === 'admin' ? '/admin-dashboard' : 
+                    (user?.role === 'center' || user?.role === 'specialist' || sessionStorage.getItem('isSpecialist') === 'true') ? '/specialist-dashboard' : 
+                    '/dashboard'
+                  }
+                >
                   <Button variant="outline" className="flex items-center whitespace-nowrap">
                     <LayoutDashboard className="mr-2 h-4 w-4" />
                     {i18n.language === 'ar' ? 'لوحة التحكم' : 'Dashboard'}
@@ -184,7 +190,11 @@ const Navbar = () => {
               ) : (
                 <>
                   <Link 
-                    to={user?.role === 'center' ? '/specialist-dashboard' : '/dashboard'}
+                    to={
+                      user?.role === 'admin' ? '/admin-dashboard' : 
+                      (user?.role === 'center' || user?.role === 'specialist' || sessionStorage.getItem('isSpecialist') === 'true') ? '/specialist-dashboard' : 
+                      '/dashboard'
+                    }
                     className="block py-2 px-3 rounded-md hover:bg-primary/10 font-bold text-medical-700" 
                     onClick={toggleMenu}
                   >

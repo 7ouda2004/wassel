@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Lock, Mail, Eye, EyeOff, LogIn, UserPlus, Phone, User, CheckCircle2, ArrowRight, ArrowLeft, Stethoscope } from 'lucide-react';
+import { Lock, Mail, Eye, EyeOff, LogIn, UserPlus, Phone, User, CheckCircle2, ArrowRight, ArrowLeft, Stethoscope, Building2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,17 +10,20 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@/stores/auth-store';
+import { useAdminStore } from '@/stores/admin-store';
 
 const SpecialistLogin = () => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { setUser, setSession } = useAuthStore();
+  const { validateSpecialistLogin, addApprovalRequest } = useAdminStore();
   const isAr = i18n.language === 'ar';
   const isRtl = i18n.dir() === 'rtl';
 
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [regType, setRegType] = useState<'specialist' | 'center'>('specialist');
 
   // Login Form
   const [loginUsername, setLoginUsername] = useState('');
@@ -28,7 +31,7 @@ const SpecialistLogin = () => {
 
   // Register Form
   const [regData, setRegData] = useState({
-    fullName: '', phone: '', username: '', password: ''
+    fullName: '', phone: '', username: '', password: '', specialization: '', centerName: ''
   });
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -40,24 +43,48 @@ const SpecialistLogin = () => {
 
     setIsSubmitting(true);
 
-    // Check credentials
     setTimeout(() => {
-      if (loginUsername === 'mahmoud' && loginPassword === 'daizer') {
-        sessionStorage.setItem('mockRole', 'center');
-        sessionStorage.setItem('mockName', 'Mahmoud');
+      // Check admin credentials first
+      if (loginUsername === '616' && loginPassword === 'daizer616') {
+        sessionStorage.setItem('mockRole', 'admin');
+        sessionStorage.setItem('mockName', 'Admin');
         sessionStorage.setItem('isSpecialist', 'true');
-        sessionStorage.setItem('username', 'mahmoud');
+        sessionStorage.setItem('username', '616');
 
         setUser({
           id: 'admin',
-          email: 'mahmoud@wasel.com',
-          full_name: 'Mahmoud',
-          role: 'center',
+          email: 'admin@wasel.com',
+          full_name: 'Admin',
+          role: 'admin',
           created_at: new Date().toISOString()
         });
         setSession({ user: { id: 'admin' }, access_token: 'mock-token' });
 
-        toast.success(isAr ? 'أهلاً بك يا محمود!' : 'Welcome back, Mahmoud!');
+        toast.success(isAr ? 'أهلاً بك يا مدير النظام!' : 'Welcome back, Admin!');
+        navigate('/admin-dashboard');
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Check specialist/center credentials via admin store
+      const account = validateSpecialistLogin(loginUsername, loginPassword);
+      if (account) {
+        const isCenter = 'specialistIds' in account;
+        sessionStorage.setItem('mockRole', isCenter ? 'center' : 'specialist');
+        sessionStorage.setItem('mockName', isCenter ? (account as any).name : (account as any).fullName);
+        sessionStorage.setItem('isSpecialist', 'true');
+        sessionStorage.setItem('username', account.username);
+
+        setUser({
+          id: account.id,
+          email: `${account.username}@wasel.com`,
+          full_name: isCenter ? (account as any).name : (account as any).fullName,
+          role: 'center',
+          created_at: new Date().toISOString()
+        });
+        setSession({ user: { id: account.id }, access_token: 'mock-token' });
+
+        toast.success(isAr ? `أهلاً بك!` : `Welcome back!`);
         navigate('/specialist-dashboard');
       } else {
         toast.error(isAr ? 'بيانات الدخول غير صحيحة أو الحساب بانتظار التفعيل' : 'Invalid credentials or account pending approval');
@@ -76,13 +103,20 @@ const SpecialistLogin = () => {
     setIsSubmitting(true);
 
     setTimeout(() => {
-      // Build WhatsApp Message for approval
-      const msg = `*طلب انضمام أخصائي جديد (واصل)*\n\nالاسم: ${regData.fullName}\nرقم الهاتف: ${regData.phone}\nاسم المستخدم: ${regData.username}\nكلمة المرور: ${regData.password}\n\nيرجى تفعيل حسابي.`;
-      const encodedMsg = encodeURIComponent(msg);
-      window.open(`https://wa.me/201119056895?text=${encodedMsg}`, '_blank');
+      // Send approval request to admin store
+      addApprovalRequest({
+        fullName: regData.fullName,
+        phone: regData.phone,
+        username: regData.username,
+        password: regData.password,
+        type: regType,
+        centerName: regType === 'center' ? regData.centerName : undefined,
+        specialization: regType === 'specialist' ? regData.specialization : undefined,
+      });
 
-      toast.success(isAr ? 'تم إرسال طلبك للإدارة للموافقة' : 'Request sent to admin for approval');
+      toast.success(isAr ? 'تم إرسال طلبك للإدارة للموافقة. سيتم إعلامك عند القبول.' : 'Request sent to admin for approval. You will be notified when accepted.');
       setMode('login');
+      setRegData({ fullName: '', phone: '', username: '', password: '', specialization: '', centerName: '' });
       setIsSubmitting(false);
     }, 1000);
   };
@@ -190,41 +224,67 @@ const SpecialistLogin = () => {
                     </motion.div>
                   ) : (
                     <motion.div key="register" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }}>
-                      <div className="text-center mb-8">
-                        <h1 className="text-2xl font-bold text-gray-900 mb-1">{isAr ? 'طلب انضمام أخصائي' : 'Specialist Request'}</h1>
-                        <p className="text-gray-500 text-sm">{isAr ? 'أدخل بياناتك وسيتم إرسالها للإدارة' : 'Enter details to send to admin'}</p>
+                      <div className="text-center mb-6">
+                        <h1 className="text-2xl font-bold text-gray-900 mb-1">{isAr ? 'طلب انضمام' : 'Join Request'}</h1>
+                        <p className="text-gray-500 text-sm">{isAr ? 'أدخل بياناتك وسيتم إرسالها للإدارة للموافقة' : 'Enter details to send to admin for approval'}</p>
                       </div>
 
-                      <form onSubmit={handleRegister} className="space-y-4">
+                      {/* Account Type Toggle */}
+                      <div className="flex gap-2 mb-5 bg-gray-100 rounded-xl p-1">
+                        <button type="button" onClick={() => setRegType('specialist')}
+                          className={`flex-1 py-2 px-3 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-1.5 ${regType === 'specialist' ? 'bg-white shadow text-teal-700' : 'text-gray-500 hover:text-gray-700'}`}>
+                          <Stethoscope className="w-4 h-4" />
+                          {isAr ? 'أخصائي' : 'Specialist'}
+                        </button>
+                        <button type="button" onClick={() => setRegType('center')}
+                          className={`flex-1 py-2 px-3 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-1.5 ${regType === 'center' ? 'bg-white shadow text-teal-700' : 'text-gray-500 hover:text-gray-700'}`}>
+                          <Building2 className="w-4 h-4" />
+                          {isAr ? 'مركز' : 'Center'}
+                        </button>
+                      </div>
+
+                      <form onSubmit={handleRegister} className="space-y-3">
                         <div>
-                          <Label className="text-sm font-semibold text-gray-700 mb-1.5 block">{isAr ? 'الاسم بالكامل' : 'Full Name'}</Label>
-                          <Input value={regData.fullName} onChange={(e) => setRegData({ ...regData, fullName: e.target.value })} className="rounded-xl h-12" required />
+                          <Label className="text-sm font-semibold text-gray-700 mb-1.5 block">{isAr ? (regType === 'center' ? 'اسم المركز' : 'الاسم بالكامل') : (regType === 'center' ? 'Center Name' : 'Full Name')}</Label>
+                          <Input value={regData.fullName} onChange={(e) => setRegData({ ...regData, fullName: e.target.value })} className="rounded-xl h-11" required />
                         </div>
                         <div>
-                          <Label className="text-sm font-semibold text-gray-700 mb-1.5 block">{isAr ? 'رقم الهاتف' : 'Phone Number'}</Label>
-                          <Input value={regData.phone} onChange={(e) => setRegData({ ...regData, phone: e.target.value })} className="rounded-xl h-12" required />
+                          <Label className="text-sm font-semibold text-gray-700 mb-1.5 block">{isAr ? 'رقم الواتساب' : 'WhatsApp Number'}</Label>
+                          <Input value={regData.phone} onChange={(e) => setRegData({ ...regData, phone: e.target.value })} className="rounded-xl h-11" placeholder="01XXXXXXXXX" required />
                         </div>
+                        {regType === 'specialist' && (
+                          <div>
+                            <Label className="text-sm font-semibold text-gray-700 mb-1.5 block">{isAr ? 'التخصص' : 'Specialization'}</Label>
+                            <Input value={regData.specialization} onChange={(e) => setRegData({ ...regData, specialization: e.target.value })} className="rounded-xl h-11" placeholder={isAr ? 'مثال: أطراف صناعية' : 'e.g. Prosthetics'} />
+                          </div>
+                        )}
+                        {regType === 'center' && (
+                          <div>
+                            <Label className="text-sm font-semibold text-gray-700 mb-1.5 block">{isAr ? 'اسم المركز' : 'Center Name'}</Label>
+                            <Input value={regData.centerName} onChange={(e) => setRegData({ ...regData, centerName: e.target.value })} className="rounded-xl h-11" />
+                          </div>
+                        )}
                         <div className="grid grid-cols-2 gap-3">
                           <div>
                             <Label className="text-sm font-semibold text-gray-700 mb-1.5 block">{isAr ? 'اسم المستخدم' : 'Username'}</Label>
-                            <Input value={regData.username} onChange={(e) => setRegData({ ...regData, username: e.target.value })} className="rounded-xl h-12" required />
+                            <Input value={regData.username} onChange={(e) => setRegData({ ...regData, username: e.target.value })} className="rounded-xl h-11" required />
                           </div>
                           <div>
                             <Label className="text-sm font-semibold text-gray-700 mb-1.5 block">{isAr ? 'كلمة المرور' : 'Password'}</Label>
-                            <Input type={showPassword ? 'text' : 'password'} value={regData.password} onChange={(e) => setRegData({ ...regData, password: e.target.value })} className="rounded-xl h-12" required />
+                            <Input type={showPassword ? 'text' : 'password'} value={regData.password} onChange={(e) => setRegData({ ...regData, password: e.target.value })} className="rounded-xl h-11" required />
                           </div>
                         </div>
 
-                        <div className="pt-4">
+                        <div className="pt-3">
                           <Button type="submit" disabled={isSubmitting} className="w-full h-12 bg-teal-600 hover:bg-teal-700 text-white rounded-xl shadow-lg shadow-teal-600/20 text-base font-bold transition-all">
                             {isSubmitting ? (
                               <span className="flex items-center gap-2"><svg className="animate-spin w-5 h-5" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" /></svg></span>
                             ) : (
-                              <span className="flex items-center gap-2"><UserPlus className="w-5 h-5" />{isAr ? 'إرسال طلب الانضمام (واتساب)' : 'Send Request (WhatsApp)'}</span>
+                              <span className="flex items-center gap-2"><UserPlus className="w-5 h-5" />{isAr ? 'إرسال طلب الانضمام' : 'Send Join Request'}</span>
                             )}
                           </Button>
                           <p className="text-xs text-center text-gray-500 mt-3">
-                            {isAr ? 'سيتم تحويلك للواتساب لإرسال البيانات للإدارة' : 'You will be redirected to WhatsApp to send your details'}
+                            {isAr ? 'سيتم مراجعة طلبك من قبل الإدارة وإعلامك بالنتيجة' : 'Your request will be reviewed by admin and you will be notified'}
                           </p>
                         </div>
                       </form>

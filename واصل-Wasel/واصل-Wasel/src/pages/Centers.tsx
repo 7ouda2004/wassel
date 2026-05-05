@@ -7,8 +7,8 @@ import { Input } from '@/components/ui/input';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useTranslation } from 'react-i18next';
-import { regions, egyptCenters } from '@/data/centers-database';
-import { centersApi } from '@/services/centers.api';
+import { regions } from '@/data/centers-database';
+import { useAdminStore } from '@/stores/admin-store';
 
 const Centers = () => {
   const { t, i18n } = useTranslation();
@@ -18,38 +18,32 @@ const Centers = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRegion, setSelectedRegion] = useState('الكل');
   
-  const [centers, setCenters] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { centers: adminCenters } = useAdminStore();
+  
+  const centers = useMemo(() => {
+    return adminCenters.map(c => ({
+      ...c,
+      id: c.id,
+      name_ar: c.name,
+      name_en: c.name_en || c.name,
+      governorate_ar: c.governorate_ar || '',
+      governorate_en: c.governorate_en || '',
+      region_ar: c.governorate_ar || '', // Simplified for search
+      region_en: c.governorate_en || '',
+      address_ar: c.address || '',
+      address_en: c.address_en || '',
+      image_url: c.image || 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?q=80&w=2053&auto=format&fit=crop',
+      rating: c.rating || 5,
+      insurance_supported: c.insurance_supported || true,
+      specialists_count: c.specialistIds?.length || 0,
+      phone: c.phone
+    }));
+  }, [adminCenters]);
+
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => { 
     window.scrollTo(0, 0); 
-    const fetchCenters = async () => {
-      try {
-        setLoading(true);
-        const data = await centersApi.getAllCenters();
-        if (data && data.length > 0) {
-          setCenters(data);
-        } else {
-          // Fallback to local data
-          setCenters(egyptCenters.map(c => ({
-            ...c,
-            image_url: c.image,
-            specialists_count: c.specialists.length
-          })));
-        }
-      } catch (error) {
-        console.error('Failed to fetch centers, using local data:', error);
-        // Fallback to local data
-        setCenters(egyptCenters.map(c => ({
-          ...c,
-          image_url: c.image,
-          specialists_count: c.specialists.length
-        })));
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchCenters();
   }, []);
 
   const filteredCenters = useMemo(() => {
