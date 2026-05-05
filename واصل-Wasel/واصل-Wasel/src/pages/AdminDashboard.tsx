@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAdminStore, SpecialistAccount, CenterAccount } from '@/stores/admin-store';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -12,7 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from 'sonner';
 import { Textarea } from '@/components/ui/textarea';
-import { Building2, Stethoscope, Users, CheckCircle, XCircle, Edit, Trash2, UserPlus, Save, PlusCircle, X } from 'lucide-react';
+import { Building2, Stethoscope, Users, CheckCircle, XCircle, Edit, Trash2, UserPlus, Save, PlusCircle, X, CheckCircle2, Database, Loader2 } from 'lucide-react';
 
 const AdminDashboard = () => {
   const { t, i18n } = useTranslation();
@@ -35,6 +36,9 @@ const AdminDashboard = () => {
 
   const [editUser, setEditUser] = useState<any>(null);
   const [editType, setEditType] = useState<'specialist' | 'center' | null>(null);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [approvalSuccess, setApprovalSuccess] = useState<string | null>(null);
   
   const [isAddingSpecialist, setIsAddingSpecialist] = useState(false);
   const [newSpecialist, setNewSpecialist] = useState({
@@ -66,34 +70,78 @@ const AdminDashboard = () => {
 
   const handleSaveEdit = () => {
     if (!editUser) return;
+    setIsSaving(true);
     
-    if (editType === 'specialist') {
-      updateSpecialist(editUser.id, {
-        username: editUser.username,
-        password: editUser.password,
-        fullName: editUser.fullName,
-        image: editUser.image,
-        specialization: editUser.specialization,
-        experience: editUser.experience,
-        centerId: editUser.centerId,
-        centerName: centers.find(c => c.id === editUser.centerId)?.name
-      });
-      toast.success(isAr ? 'تم تحديث بيانات الأخصائي بنجاح' : 'Specialist updated successfully');
-    } else if (editType === 'center') {
-      updateCenter(editUser.id, {
-        username: editUser.username,
-        password: editUser.password,
-        name: editUser.name,
-        address: editUser.address,
-        governorate_ar: editUser.governorate_ar,
-        image: editUser.image,
-        services_ar: editUser.services_ar,
-        products: editUser.products
-      });
-      toast.success(isAr ? 'تم تحديث بيانات المركز بنجاح' : 'Center updated successfully');
-    }
-    setEditUser(null);
-    setEditType(null);
+    // Simulate save delay for visual feedback
+    setTimeout(() => {
+      if (editType === 'specialist') {
+        updateSpecialist(editUser.id, {
+          username: editUser.username,
+          password: editUser.password,
+          fullName: editUser.fullName,
+          image: editUser.image,
+          specialization: editUser.specialization,
+          experience: editUser.experience,
+          centerId: editUser.centerId,
+          centerName: centers.find(c => c.id === editUser.centerId)?.name
+        });
+      } else if (editType === 'center') {
+        updateCenter(editUser.id, {
+          username: editUser.username,
+          password: editUser.password,
+          name: editUser.name,
+          address: editUser.address,
+          governorate_ar: editUser.governorate_ar,
+          image: editUser.image,
+          services_ar: editUser.services_ar,
+          products: editUser.products
+        });
+      }
+      
+      setIsSaving(false);
+      setSaveSuccess(true);
+      
+      toast.success(
+        isAr 
+          ? `✅ تم حفظ البيانات في قاعدة البيانات بنجاح!` 
+          : `✅ Data saved to database successfully!`,
+        {
+          description: isAr 
+            ? `تم تحديث بيانات ${editType === 'center' ? 'المركز' : 'الأخصائي'} وحفظها تلقائياً`
+            : `${editType === 'center' ? 'Center' : 'Specialist'} data has been updated and auto-saved`,
+          duration: 4000,
+        }
+      );
+      
+      // Show success animation for 1.5 seconds then close
+      setTimeout(() => {
+        setSaveSuccess(false);
+        setEditUser(null);
+        setEditType(null);
+      }, 1500);
+    }, 600);
+  };
+
+  const handleApproveRequest = (id: string) => {
+    const request = approvalRequests.find(r => r.id === id);
+    if (!request) return;
+    
+    approveRequest(id);
+    setApprovalSuccess(request.fullName);
+    
+    toast.success(
+      isAr 
+        ? `🎉 تم قبول طلب "${request.fullName}" وحفظه في قاعدة البيانات!`
+        : `🎉 "${request.fullName}" approved and saved to database!`,
+      {
+        description: isAr
+          ? `تم إنشاء حساب ${request.type === 'specialist' ? 'أخصائي' : 'مركز'} جديد تلقائياً وحفظه في النظام`
+          : `A new ${request.type} account has been automatically created and saved`,
+        duration: 5000,
+      }
+    );
+    
+    setTimeout(() => setApprovalSuccess(null), 3000);
   };
 
   const handleAddSpecialist = () => {
@@ -329,12 +377,18 @@ const AdminDashboard = () => {
                       <TableCell>
                         {req.status === 'pending' && (
                           <div className="flex gap-2">
-                            <Button size="sm" className="bg-green-600 hover:bg-green-700" onClick={() => approveRequest(req.id)}>
-                              <CheckCircle className="w-4 h-4 mr-1" /> {isAr ? 'قبول' : 'Approve'}
+                            <Button size="sm" className="bg-green-600 hover:bg-green-700" onClick={() => handleApproveRequest(req.id)}>
+                              <CheckCircle className="w-4 h-4 mr-1" /> {isAr ? 'قبول وحفظ' : 'Approve & Save'}
                             </Button>
                             <Button size="sm" variant="destructive" onClick={() => rejectRequest(req.id)}>
                               <XCircle className="w-4 h-4 mr-1" /> {isAr ? 'رفض' : 'Reject'}
                             </Button>
+                          </div>
+                        )}
+                        {req.status === 'approved' && (
+                          <div className="flex items-center gap-1 text-green-600 text-sm font-medium">
+                            <Database className="w-4 h-4" />
+                            {isAr ? 'محفوظ في قاعدة البيانات' : 'Saved to DB'}
                           </div>
                         )}
                       </TableCell>
@@ -364,6 +418,46 @@ const AdminDashboard = () => {
               {isAr ? `تعديل بيانات ${editType === 'center' ? 'المركز' : 'الأخصائي'}` : `Edit ${editType === 'center' ? 'Center' : 'Specialist'}`}
             </DialogTitle>
           </DialogHeader>
+          {/* Save Success Overlay */}
+          <AnimatePresence>
+            {saveSuccess && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                className="absolute inset-0 z-50 flex items-center justify-center bg-white/90 backdrop-blur-sm rounded-xl"
+              >
+                <div className="text-center">
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: 'spring', stiffness: 200, damping: 15 }}
+                    className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4"
+                  >
+                    <CheckCircle2 className="w-10 h-10 text-green-600" />
+                  </motion.div>
+                  <motion.p
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="text-lg font-bold text-green-700"
+                  >
+                    {isAr ? 'تم الحفظ بنجاح!' : 'Saved Successfully!'}
+                  </motion.p>
+                  <motion.p
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4 }}
+                    className="text-sm text-gray-500 mt-1 flex items-center justify-center gap-1"
+                  >
+                    <Database className="w-4 h-4" />
+                    {isAr ? 'تم حفظ البيانات في قاعدة البيانات تلقائياً' : 'Data auto-saved to database'}
+                  </motion.p>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           {editUser && (
             <div className="space-y-4 py-4">
               <div>
@@ -535,9 +629,13 @@ const AdminDashboard = () => {
             </div>
           )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setEditUser(null)}>{isAr ? 'إلغاء' : 'Cancel'}</Button>
-            <Button onClick={handleSaveEdit} className="bg-teal-600 hover:bg-teal-700">
-              <Save className="w-4 h-4 mr-2" /> {isAr ? 'حفظ التغييرات' : 'Save Changes'}
+            <Button variant="outline" onClick={() => setEditUser(null)} disabled={isSaving}>{isAr ? 'إلغاء' : 'Cancel'}</Button>
+            <Button onClick={handleSaveEdit} className="bg-teal-600 hover:bg-teal-700" disabled={isSaving}>
+              {isSaving ? (
+                <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> {isAr ? 'جاري الحفظ...' : 'Saving...'}</>
+              ) : (
+                <><Save className="w-4 h-4 mr-2" /> {isAr ? 'حفظ في قاعدة البيانات' : 'Save to Database'}</>
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>

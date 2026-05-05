@@ -1,10 +1,10 @@
 
 import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Users, FileText, PlusCircle, X, Edit, Trash, Save,
   Search, Download, Upload, ChevronDown, FileUp, UserCheck,
-  Phone, MessageCircle
+  Phone, MessageCircle, Camera, CheckCircle2, Database, Loader2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -35,6 +35,7 @@ import Footer from '@/components/Footer';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/providers/auth-provider';
 import { useAdminStore } from '@/stores/admin-store';
+
 
 // Types
 type Patient = {
@@ -184,8 +185,11 @@ const SpecialistDashboard = () => {
   const { user, isAuthenticated, isLoading } = useAuth();
   
   // Center Management State
-  const { centers, specialists: adminSpecialists, updateCenter } = useAdminStore();
+  const { centers, specialists: adminSpecialists, updateCenter, updateSpecialist: updateSpecialistStore } = useAdminStore();
   const [centerData, setCenterData] = useState<any>(null);
+  const [specialistProfile, setSpecialistProfile] = useState<any>(null);
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const [photoSaveSuccess, setPhotoSaveSuccess] = useState(false);
 
   useEffect(() => {
     document.documentElement.dir = i18n.dir();
@@ -212,7 +216,13 @@ const SpecialistDashboard = () => {
         setCenterData(foundCenter);
       }
     }
-  }, [centers]);
+    if ((role === 'specialist') && username) {
+      const foundSpec = adminSpecialists.find(s => s.username === username);
+      if (foundSpec) {
+        setSpecialistProfile(foundSpec);
+      }
+    }
+  }, [centers, adminSpecialists]);
 
   // Save patients to localStorage when they change
   useEffect(() => {
@@ -373,6 +383,39 @@ const SpecialistDashboard = () => {
     return status;
   };
 
+  const handleSpecialistPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !specialistProfile) return;
+    
+    setIsUploadingPhoto(true);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64 = reader.result as string;
+      
+      // Update in store (database)
+      updateSpecialistStore(specialistProfile.id, { image: base64 });
+      setSpecialistProfile({ ...specialistProfile, image: base64 });
+      
+      setIsUploadingPhoto(false);
+      setPhotoSaveSuccess(true);
+      
+      toast.success(
+        i18n.language === 'ar' 
+          ? '✅ تم تغيير الصورة الشخصية وحفظها بنجاح!' 
+          : '✅ Profile photo updated and saved!',
+        {
+          description: i18n.language === 'ar'
+            ? 'تم حفظ الصورة الجديدة في قاعدة البيانات تلقائياً'
+            : 'New photo has been auto-saved to database',
+          duration: 3000,
+        }
+      );
+      
+      setTimeout(() => setPhotoSaveSuccess(false), 2500);
+    };
+    reader.readAsDataURL(file);
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -385,7 +428,45 @@ const SpecialistDashboard = () => {
                 <h1 className="text-2xl font-bold text-gray-900">{t('dashboard.title')}</h1>
                 <p className="text-gray-600">{t('dashboard.welcome', { name: user?.full_name || sessionStorage.getItem('username') || 'Specialist' })}</p>
               </div>
-              <div className="mt-4 md:mt-0">
+              <div className="mt-4 md:mt-0 flex items-center gap-3">
+                {/* Specialist Profile Photo */}
+                {specialistProfile && sessionStorage.getItem('mockRole') === 'specialist' && (
+                  <div className="relative group">
+                    <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-teal-400 shadow-md relative">
+                      <img 
+                        src={specialistProfile.image || 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?q=80&w=200&auto=format&fit=crop'}
+                        alt="Profile"
+                        className="w-full h-full object-cover"
+                      />
+                      <label className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer">
+                        {isUploadingPhoto ? (
+                          <Loader2 className="w-5 h-5 text-white animate-spin" />
+                        ) : (
+                          <Camera className="w-5 h-5 text-white" />
+                        )}
+                        <input 
+                          type="file" 
+                          accept="image/*" 
+                          className="hidden" 
+                          onChange={handleSpecialistPhotoUpload}
+                          disabled={isUploadingPhoto}
+                        />
+                      </label>
+                    </div>
+                    <AnimatePresence>
+                      {photoSaveSuccess && (
+                        <motion.div
+                          initial={{ scale: 0, opacity: 0 }}
+                          animate={{ scale: 1, opacity: 1 }}
+                          exit={{ scale: 0, opacity: 0 }}
+                          className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full flex items-center justify-center shadow"
+                        >
+                          <CheckCircle2 className="w-3 h-3 text-white" />
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                )}
                 <Button onClick={handleAddPatient} className="medical-btn">
                   <PlusCircle className="h-5 w-5 mr-2" />
                   {t('dashboard.add_patient')}
@@ -457,13 +538,16 @@ const SpecialistDashboard = () => {
             </div>
 
             <Tabs defaultValue="all">
-              <TabsList className={`grid ${sessionStorage.getItem('mockRole') === 'center' ? 'grid-cols-5' : 'grid-cols-4'} mb-4`}>
+              <TabsList className={`grid ${sessionStorage.getItem('mockRole') === 'center' || (sessionStorage.getItem('mockRole') === 'specialist' && specialistProfile) ? 'grid-cols-5' : 'grid-cols-4'} mb-4`}>
                 <TabsTrigger value="all">{t('dashboard.tabs.all')}</TabsTrigger>
                 <TabsTrigger value="prosthetics">{t('dashboard.tabs.prosthetics')}</TabsTrigger>
                 <TabsTrigger value="orthoses">{t('dashboard.tabs.orthoses')}</TabsTrigger>
                 <TabsTrigger value="active">{t('dashboard.tabs.active')}</TabsTrigger>
                 {sessionStorage.getItem('mockRole') === 'center' && (
                   <TabsTrigger value="center_management">{i18n.language === 'ar' ? 'إدارة المركز' : 'Center Management'}</TabsTrigger>
+                )}
+                {sessionStorage.getItem('mockRole') === 'specialist' && specialistProfile && (
+                  <TabsTrigger value="my_profile">{i18n.language === 'ar' ? 'ملفي الشخصي' : 'My Profile'}</TabsTrigger>
                 )}
               </TabsList>
 
@@ -738,14 +822,130 @@ const SpecialistDashboard = () => {
                     </div>
                     <Button onClick={() => {
                       updateCenter(centerData.id, centerData);
-                      toast.success(i18n.language === 'ar' ? 'تم حفظ التغييرات' : 'Changes saved');
+                      toast.success(
+                        i18n.language === 'ar' ? '✅ تم حفظ التغييرات في قاعدة البيانات!' : '✅ Changes saved to database!',
+                        {
+                          description: i18n.language === 'ar'
+                            ? 'تم تحديث بيانات المركز وحفظها تلقائياً'
+                            : 'Center data has been updated and auto-saved',
+                          duration: 4000,
+                        }
+                      );
                     }} className="bg-teal-600 hover:bg-teal-700">
-                      <Save className="w-4 h-4 mr-2" /> {i18n.language === 'ar' ? 'حفظ التغييرات' : 'Save Changes'}
+                      <Save className="w-4 h-4 mr-2" /> {i18n.language === 'ar' ? 'حفظ في قاعدة البيانات' : 'Save to Database'}
                     </Button>
                   </div>
                 ) : (
                   <div className="p-8 text-center text-gray-500">
                     {i18n.language === 'ar' ? 'جاري تحميل بيانات المركز...' : 'Loading center data...'}
+                  </div>
+                )}
+              </TabsContent>
+              
+              {/* My Profile Tab for Specialists */}
+              <TabsContent value="my_profile">
+                {specialistProfile ? (
+                  <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+                    <h2 className="text-xl font-bold mb-6 text-gray-900">
+                      {i18n.language === 'ar' ? 'ملفي الشخصي' : 'My Profile'}
+                    </h2>
+                    
+                    {/* Profile Photo Section */}
+                    <div className="flex flex-col items-center mb-8">
+                      <div className="relative group mb-4">
+                        <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-teal-400 shadow-xl relative">
+                          <img 
+                            src={specialistProfile.image || 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?q=80&w=400&auto=format&fit=crop'}
+                            alt="Profile"
+                            className="w-full h-full object-cover"
+                          />
+                          <label className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col items-center justify-center cursor-pointer gap-1">
+                            {isUploadingPhoto ? (
+                              <Loader2 className="w-8 h-8 text-white animate-spin" />
+                            ) : (
+                              <>
+                                <Camera className="w-8 h-8 text-white" />
+                                <span className="text-white text-xs font-medium">
+                                  {i18n.language === 'ar' ? 'تغيير الصورة' : 'Change Photo'}
+                                </span>
+                              </>
+                            )}
+                            <input 
+                              type="file" 
+                              accept="image/*" 
+                              className="hidden" 
+                              onChange={handleSpecialistPhotoUpload}
+                              disabled={isUploadingPhoto}
+                            />
+                          </label>
+                        </div>
+                        <AnimatePresence>
+                          {photoSaveSuccess && (
+                            <motion.div
+                              initial={{ scale: 0, opacity: 0 }}
+                              animate={{ scale: 1, opacity: 1 }}
+                              exit={{ scale: 0, opacity: 0 }}
+                              className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg flex items-center gap-1"
+                            >
+                              <CheckCircle2 className="w-3 h-3" />
+                              {i18n.language === 'ar' ? 'تم الحفظ!' : 'Saved!'}
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                      <h3 className="text-lg font-bold text-gray-900">{specialistProfile.fullName}</h3>
+                      <p className="text-sm text-teal-600 font-medium">{specialistProfile.specialization || (i18n.language === 'ar' ? 'أخصائي' : 'Specialist')}</p>
+                      {specialistProfile.centerName && (
+                        <p className="text-sm text-gray-500 mt-1">{specialistProfile.centerName}</p>
+                      )}
+                    </div>
+
+                    {/* Profile Details */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                      <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                        <p className="text-xs text-gray-500 mb-1">{i18n.language === 'ar' ? 'الاسم بالكامل' : 'Full Name'}</p>
+                        <p className="font-semibold text-gray-800">{specialistProfile.fullName}</p>
+                      </div>
+                      <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                        <p className="text-xs text-gray-500 mb-1">{i18n.language === 'ar' ? 'التخصص' : 'Specialization'}</p>
+                        <p className="font-semibold text-gray-800">{specialistProfile.specialization || '-'}</p>
+                      </div>
+                      <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                        <p className="text-xs text-gray-500 mb-1">{i18n.language === 'ar' ? 'سنوات الخبرة' : 'Years of Experience'}</p>
+                        <p className="font-semibold text-gray-800">{specialistProfile.experience || 0} {i18n.language === 'ar' ? 'سنوات' : 'years'}</p>
+                      </div>
+                      <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                        <p className="text-xs text-gray-500 mb-1">{i18n.language === 'ar' ? 'المركز التابع له' : 'Center'}</p>
+                        <p className="font-semibold text-gray-800">{specialistProfile.centerName || (i18n.language === 'ar' ? 'مستقل' : 'Independent')}</p>
+                      </div>
+                      <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                        <p className="text-xs text-gray-500 mb-1">{i18n.language === 'ar' ? 'اسم المستخدم' : 'Username'}</p>
+                        <p className="font-semibold text-gray-800 font-mono">{specialistProfile.username}</p>
+                      </div>
+                      <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                        <p className="text-xs text-gray-500 mb-1">{i18n.language === 'ar' ? 'الحالة' : 'Status'}</p>
+                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700">
+                          <CheckCircle2 className="w-3 h-3" />
+                          {i18n.language === 'ar' ? 'نشط' : 'Active'}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="bg-teal-50 border border-teal-200 rounded-xl p-4 text-sm text-teal-700">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Camera className="w-4 h-4" />
+                        <span className="font-bold">{i18n.language === 'ar' ? 'تغيير الصورة الشخصية' : 'Change Profile Photo'}</span>
+                      </div>
+                      <p className="text-teal-600">
+                        {i18n.language === 'ar' 
+                          ? 'يمكنك تغيير صورتك الشخصية في أي وقت بالضغط على الصورة أعلاه. سيتم حفظ التغييرات تلقائياً في قاعدة البيانات.'
+                          : 'You can change your profile photo anytime by clicking on the photo above. Changes will be auto-saved to the database.'}
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-8 text-center text-gray-500">
+                    {i18n.language === 'ar' ? 'جاري تحميل البيانات...' : 'Loading data...'}
                   </div>
                 )}
               </TabsContent>
