@@ -14,6 +14,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { toast } from 'sonner';
 import { Textarea } from '@/components/ui/textarea';
 import { Building2, Stethoscope, Users, CheckCircle, XCircle, Edit, Trash2, UserPlus, Save, PlusCircle, X, CheckCircle2, Database, Loader2 } from 'lucide-react';
+import { compressProfilePhoto, compressProductImage } from '@/lib/image-utils';
 
 const AdminDashboard = () => {
   const { t, i18n } = useTranslation();
@@ -52,14 +53,21 @@ const AdminDashboard = () => {
     name: '', governorate: '', address: '', phone: '', username: '', password: '', image: ''
   });
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, callback: (base64: string) => void) => {
+  const handleImageUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>, 
+    callback: (base64: string) => void,
+    type: 'profile' | 'product' = 'profile'
+  ) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        callback(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      try {
+        const compressed = type === 'product' 
+          ? await compressProductImage(file) 
+          : await compressProfilePhoto(file);
+        callback(compressed);
+      } catch (err) {
+        console.error('Failed to compress image:', err);
+      }
     }
   };
 
@@ -583,7 +591,7 @@ const AdminDashboard = () => {
                                   const newProds = [...editUser.products];
                                   newProds[i].image = base64;
                                   setEditUser({...editUser, products: newProds});
-                                })} 
+                                }, 'product')} 
                               />
                             </div>
                           </div>

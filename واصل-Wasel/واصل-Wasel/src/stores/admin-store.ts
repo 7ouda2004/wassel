@@ -159,9 +159,9 @@ export const useAdminStore = create<AdminState>()((set, get) => ({
     set({ isLoading: true });
     try {
       const [centersRes, specsRes, reqsRes] = await Promise.all([
-        supabase.from('centers').select('*'),
-        supabase.from('specialists').select('*, centers(name_ar)'),
-        supabase.from('approval_requests').select('*')
+        supabase.from('centers').select('id, name_ar, name_en, phone, username, password, address_ar, address_en, governorate_ar, governorate_en, image, rating, insurance_supported, services_ar, services_en, working_hours_ar, working_hours_en, is_active, created_at'),
+        supabase.from('specialists').select('id, full_name, phone, username, password, specialization, center_id, image, rating, experience, is_active, created_at, centers(name_ar)'),
+        supabase.from('approval_requests').select('id, full_name, phone, username, password, type, center_name, specialization, status, submitted_at, reviewed_at')
       ]);
 
       set({
@@ -177,17 +177,17 @@ export const useAdminStore = create<AdminState>()((set, get) => ({
   },
 
   fetchSpecialists: async () => {
-    const { data } = await supabase.from('specialists').select('*, centers(name_ar)');
+    const { data } = await supabase.from('specialists').select('id, full_name, phone, username, password, specialization, center_id, image, rating, experience, is_active, created_at, centers(name_ar)');
     if (data) set({ specialists: data.map(mapSpecialist) });
   },
 
   fetchCenters: async () => {
-    const { data } = await supabase.from('centers').select('*');
+    const { data } = await supabase.from('centers').select('id, name_ar, name_en, phone, username, password, address_ar, address_en, governorate_ar, governorate_en, image, rating, insurance_supported, services_ar, services_en, working_hours_ar, working_hours_en, is_active, created_at');
     if (data) set({ centers: data.map(mapCenter) });
   },
 
   fetchRequests: async () => {
-    const { data } = await supabase.from('approval_requests').select('*');
+    const { data } = await supabase.from('approval_requests').select('id, full_name, phone, username, password, type, center_name, specialization, status, submitted_at, reviewed_at');
     if (data) set({ approvalRequests: data.map(mapRequest) });
   },
 

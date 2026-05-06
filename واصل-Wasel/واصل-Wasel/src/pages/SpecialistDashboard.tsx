@@ -35,6 +35,7 @@ import Footer from '@/components/Footer';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/providers/auth-provider';
 import { useAdminStore } from '@/stores/admin-store';
+import { compressProfilePhoto, compressProductImage } from '@/lib/image-utils';
 
 
 // Types
@@ -388,49 +389,44 @@ const SpecialistDashboard = () => {
     return status;
   };
 
-  const handleSpecialistPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSpecialistPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !specialistProfile) return;
     
     setIsUploadingPhoto(true);
-    const reader = new FileReader();
-    reader.onloadend = async () => {
-      const base64 = reader.result as string;
+    
+    try {
+      // Compress image to ~15KB WebP before saving
+      const compressed = await compressProfilePhoto(file);
       
-      try {
-        // Update in store (database)
-        await updateSpecialistStore(specialistProfile.id, { image: base64 });
-        setSpecialistProfile({ ...specialistProfile, image: base64 });
-        
-        // Resync all data from database to keep everything in sync
-        await fetchAll();
-        
-        setIsUploadingPhoto(false);
-        setPhotoSaveSuccess(true);
-        
-        toast.success(
-          i18n.language === 'ar' 
-            ? '✅ تم تغيير الصورة الشخصية وحفظها بنجاح!' 
-            : '✅ Profile photo updated and saved!',
-          {
-            description: i18n.language === 'ar'
-              ? 'تم حفظ الصورة الجديدة في قاعدة البيانات تلقائياً'
-              : 'New photo has been auto-saved to database',
-            duration: 3000,
-          }
-        );
-        
-        setTimeout(() => setPhotoSaveSuccess(false), 2500);
-      } catch (error) {
-        setIsUploadingPhoto(false);
-        toast.error(
-          i18n.language === 'ar' 
-            ? '❌ فشل في حفظ الصورة الشخصية' 
-            : '❌ Failed to save profile photo!'
-        );
-      }
-    };
-    reader.readAsDataURL(file);
+      // Update in store (database)
+      await updateSpecialistStore(specialistProfile.id, { image: compressed });
+      setSpecialistProfile({ ...specialistProfile, image: compressed });
+      
+      setIsUploadingPhoto(false);
+      setPhotoSaveSuccess(true);
+      
+      toast.success(
+        i18n.language === 'ar' 
+          ? '✅ تم تغيير الصورة الشخصية وحفظها بنجاح!' 
+          : '✅ Profile photo updated and saved!',
+        {
+          description: i18n.language === 'ar'
+            ? 'تم حفظ الصورة الجديدة في قاعدة البيانات تلقائياً'
+            : 'New photo has been auto-saved to database',
+          duration: 3000,
+        }
+      );
+      
+      setTimeout(() => setPhotoSaveSuccess(false), 2500);
+    } catch (error) {
+      setIsUploadingPhoto(false);
+      toast.error(
+        i18n.language === 'ar' 
+          ? '❌ فشل في حفظ الصورة الشخصية' 
+          : '❌ Failed to save profile photo!'
+      );
+    }
   };
 
   return (
@@ -813,16 +809,17 @@ const SpecialistDashboard = () => {
                                   type="file" 
                                   accept="image/*"
                                   className="text-sm cursor-pointer"
-                                  onChange={(e) => {
+                                  onChange={async (e) => {
                                     const file = e.target.files?.[0];
                                     if (file) {
-                                      const reader = new FileReader();
-                                      reader.onloadend = () => {
+                                      try {
+                                        const compressed = await compressProductImage(file);
                                         const newProds = [...centerData.products];
-                                        newProds[i].image = reader.result as string;
+                                        newProds[i].image = compressed;
                                         setCenterData({...centerData, products: newProds});
-                                      };
-                                      reader.readAsDataURL(file);
+                                      } catch (err) {
+                                        console.error('Failed to compress image:', err);
+                                      }
                                     }
                                   }} 
                                 />
@@ -840,8 +837,6 @@ const SpecialistDashboard = () => {
                     <Button onClick={async () => {
                       try {
                         await updateCenter(centerData.id, centerData);
-                        // Resync all data from database
-                        await fetchAll();
                         toast.success(
                           i18n.language === 'ar' ? '✅ تم حفظ التغييرات في قاعدة البيانات!' : '✅ Changes saved to database!',
                           {
