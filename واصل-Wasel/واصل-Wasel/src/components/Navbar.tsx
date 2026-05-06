@@ -54,6 +54,14 @@ const Navbar = () => {
 
   const isLoggedIn = sessionStorage.getItem('isSpecialist') === 'true';
 
+  // Determine correct dashboard route based on role
+  const getDashboardRoute = () => {
+    const mockRole = sessionStorage.getItem('mockRole');
+    if (user?.role === 'admin' || mockRole === 'admin') return '/admin-dashboard';
+    if (user?.role === 'center' || user?.role === 'specialist' || mockRole === 'center' || mockRole === 'specialist' || sessionStorage.getItem('isSpecialist') === 'true') return '/specialist-dashboard';
+    return '/dashboard';
+  };
+
   // Define navigation links once to avoid duplication
   const navLinks = [
     { path: "/", label: t('nav.home') },
@@ -95,13 +103,7 @@ const Navbar = () => {
           <div className="flex items-center space-x-2 rtl:space-x-reverse flex-shrink-0">
             {isAuthenticated ? (
               <div className="hidden sm:flex items-center gap-2">
-                <Link 
-                  to={
-                    user?.role === 'admin' ? '/admin-dashboard' : 
-                    (user?.role === 'center' || user?.role === 'specialist' || sessionStorage.getItem('isSpecialist') === 'true') ? '/specialist-dashboard' : 
-                    '/dashboard'
-                  }
-                >
+                <Link to={getDashboardRoute()}>
                   <Button variant="outline" className="flex items-center whitespace-nowrap">
                     <LayoutDashboard className="mr-2 h-4 w-4" />
                     {i18n.language === 'ar' ? 'لوحة التحكم' : 'Dashboard'}
@@ -190,11 +192,7 @@ const Navbar = () => {
               ) : (
                 <>
                   <Link 
-                    to={
-                      user?.role === 'admin' ? '/admin-dashboard' : 
-                      (user?.role === 'center' || user?.role === 'specialist' || sessionStorage.getItem('isSpecialist') === 'true') ? '/specialist-dashboard' : 
-                      '/dashboard'
-                    }
+                    to={getDashboardRoute()}
                     className="block py-2 px-3 rounded-md hover:bg-primary/10 font-bold text-medical-700" 
                     onClick={toggleMenu}
                   >

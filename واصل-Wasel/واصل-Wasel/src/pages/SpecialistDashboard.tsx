@@ -197,8 +197,16 @@ const SpecialistDashboard = () => {
 
     // Check if user is logged in
     const isSpecialistLegacy = sessionStorage.getItem('isSpecialist') === 'true';
+    const mockRole = sessionStorage.getItem('mockRole');
+    
     if (!isLoading && !isAuthenticated && !isSpecialistLegacy) {
       window.location.href = '/login';
+      return;
+    }
+
+    // Redirect admin to admin dashboard
+    if (!isLoading && (user?.role === 'admin' || mockRole === 'admin')) {
+      window.location.href = '/admin-dashboard';
       return;
     }
 
