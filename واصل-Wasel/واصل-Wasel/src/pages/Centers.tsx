@@ -25,7 +25,7 @@ const Centers = () => {
     
     const fetchCenters = async () => {
       try {
-        const { data, error } = await supabase.from('centers').select('*, specialists(id)').order('display_order', { ascending: true, nullsFirst: false });
+        const { data, error } = await supabase.from('centers').select('*, specialists(id)').order('created_at', { ascending: true });
         if (!error && data) {
           setDbCenters(data);
         }

@@ -51,7 +51,6 @@ export interface CenterAccount {
   workingHours_ar?: string;
   workingHours_en?: string;
   isActive: boolean;
-  displayOrder?: number;
   createdAt: string;
 }
 
@@ -116,7 +115,6 @@ const mapCenter = (row: any): CenterAccount => ({
   workingHours_ar: row.working_hours_ar,
   workingHours_en: row.working_hours_en,
   isActive: row.is_active,
-  displayOrder: row.display_order ?? 999,
   createdAt: row.created_at,
 });
 
@@ -162,13 +160,13 @@ export const useAdminStore = create<AdminState>()((set, get) => ({
     set({ isLoading: true });
     try {
       const [centersRes, specsRes, reqsRes] = await Promise.all([
-        supabase.from('centers').select('id, name_ar, name_en, phone, username, password, address_ar, address_en, governorate_ar, governorate_en, image, rating, insurance_supported, services_ar, services_en, working_hours_ar, working_hours_en, is_active, display_order, created_at'),
+        supabase.from('centers').select('id, name_ar, name_en, phone, username, password, address_ar, address_en, governorate_ar, governorate_en, image, rating, insurance_supported, services_ar, services_en, working_hours_ar, working_hours_en, is_active, created_at'),
         supabase.from('specialists').select('id, full_name, phone, username, password, specialization, center_id, image, rating, experience, is_active, created_at, centers(name_ar)'),
         supabase.from('approval_requests').select('id, full_name, phone, username, password, type, center_name, specialization, status, submitted_at, reviewed_at')
       ]);
 
       set({
-        centers: centersRes.data ? centersRes.data.map(mapCenter).sort((a, b) => (a.displayOrder ?? 999) - (b.displayOrder ?? 999)) : [],
+        centers: centersRes.data ? centersRes.data.map(mapCenter).sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()) : [],
         specialists: specsRes.data ? specsRes.data.map(mapSpecialist) : [],
         approvalRequests: reqsRes.data ? reqsRes.data.map(mapRequest) : [],
         isLoading: false
@@ -185,8 +183,8 @@ export const useAdminStore = create<AdminState>()((set, get) => ({
   },
 
   fetchCenters: async () => {
-    const { data } = await supabase.from('centers').select('id, name_ar, name_en, phone, username, password, address_ar, address_en, governorate_ar, governorate_en, image, rating, insurance_supported, services_ar, services_en, working_hours_ar, working_hours_en, is_active, display_order, created_at');
-    if (data) set({ centers: data.map(mapCenter).sort((a, b) => (a.displayOrder ?? 999) - (b.displayOrder ?? 999)) });
+    const { data } = await supabase.from('centers').select('id, name_ar, name_en, phone, username, password, address_ar, address_en, governorate_ar, governorate_en, image, rating, insurance_supported, services_ar, services_en, working_hours_ar, working_hours_en, is_active, created_at');
+    if (data) set({ centers: data.map(mapCenter).sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()) });
   },
 
   fetchRequests: async () => {
@@ -295,11 +293,16 @@ export const useAdminStore = create<AdminState>()((set, get) => ({
     // Optimistically update the state
     set({ centers: reorderedCenters });
 
-    // Prepare batch update array
-    const updates = reorderedCenters.map((center, index) => ({
-      id: center.id,
-      display_order: index,
-    }));
+    // Prepare batch update array using created_at to sort
+    const now = new Date();
+    const updates = reorderedCenters.map((center, index) => {
+      // Set timestamp spaced by 1 second each to ensure order is maintained
+      const orderedDate = new Date(now.getTime() + index * 1000).toISOString();
+      return {
+        id: center.id,
+        created_at: orderedDate,
+      };
+    });
 
     try {
       // Supabase doesn't have a single query bulk update, so we'll run them concurrently
@@ -307,7 +310,7 @@ export const useAdminStore = create<AdminState>()((set, get) => ({
         updates.map(update => 
           supabase
             .from('centers')
-            .update({ display_order: update.display_order })
+            .update({ created_at: update.created_at })
             .eq('id', update.id)
         )
       );
