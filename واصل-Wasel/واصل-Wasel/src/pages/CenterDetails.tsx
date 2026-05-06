@@ -9,7 +9,6 @@ import { useTranslation } from 'react-i18next';
 import { egyptCenters } from '@/data/centers-database';
 import type { GovernorateCenter, Specialist } from '@/data/centers-database';
 import { toast } from 'sonner';
-import { useAdminStore } from '@/stores/admin-store';
 
 const StarRating = ({ rating, size = 'sm' }: { rating: number; size?: string }) => {
   const sz = size === 'sm' ? 'w-4 h-4' : 'w-5 h-5';
@@ -28,60 +27,17 @@ const CenterDetails = () => {
   const isAr = i18n.language === 'ar';
   const isRtl = i18n.dir() === 'rtl';
 
-  const { centers: adminCenters, specialists: adminSpecialists } = useAdminStore();
-  
   const [center, setCenter] = useState<GovernorateCenter | null>(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    const foundAdmin = adminCenters.find(c => c.id === id);
-    if (foundAdmin) {
-      // Find specialists for this center
-      const centerSpecs = adminSpecialists.filter(s => s.centerId === id).map(s => ({
-        id: s.id,
-        name_ar: s.fullName,
-        name_en: s.name_en || s.fullName,
-        specialization_ar: s.specialization || '',
-        specialization_en: s.specialization_en || '',
-        experience: s.experience || 5,
-        rating: s.rating || 5,
-        reviewCount: 12,
-        image: s.image || 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?q=80&w=2070&auto=format&fit=crop',
-        available: true
-      }));
-
-      // Combine admin data with some defaults for missing detailed static data (like products)
-      // Fallback to static db to keep products/services if they aren't fully modeled in admin store yet
-      const staticCenter = egyptCenters.find(c => c.id === id);
-
-      setCenter({
-        id: foundAdmin.id,
-        name_ar: foundAdmin.name,
-        name_en: foundAdmin.name_en || foundAdmin.name,
-        governorate_ar: foundAdmin.governorate_ar || staticCenter?.governorate_ar || '',
-        governorate_en: foundAdmin.governorate_en || staticCenter?.governorate_en || '',
-        region_ar: staticCenter?.region_ar || '',
-        region_en: staticCenter?.region_en || '',
-        address_ar: foundAdmin.address || staticCenter?.address_ar || '',
-        address_en: foundAdmin.address_en || staticCenter?.address_en || '',
-        phone: foundAdmin.phone,
-        whatsapp: staticCenter?.whatsapp || foundAdmin.phone,
-        rating: foundAdmin.rating || staticCenter?.rating || 5,
-        image: foundAdmin.image || staticCenter?.image || 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?q=80&w=2053&auto=format&fit=crop',
-        insurance_supported: foundAdmin.insurance_supported ?? staticCenter?.insurance_supported ?? true,
-        specialists: centerSpecs as any[],
-        workingHours_ar: staticCenter?.workingHours_ar,
-        workingHours_en: staticCenter?.workingHours_en,
-        services_ar: foundAdmin.services_ar || staticCenter?.services_ar || [],
-        services_en: staticCenter?.services_en,
-        supported_insurers: staticCenter?.supported_insurers,
-        products: foundAdmin.products || staticCenter?.products || [],
-        google_maps_url: staticCenter?.google_maps_url
-      });
+    const foundCenter = egyptCenters.find(c => c.id === id);
+    if (foundCenter) {
+      setCenter(foundCenter);
     } else {
       setCenter(null);
     }
-  }, [id, adminCenters, adminSpecialists]);
+  }, [id]);
 
   if (!center) {
     return (

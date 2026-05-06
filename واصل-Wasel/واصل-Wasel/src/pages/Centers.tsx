@@ -7,8 +7,7 @@ import { Input } from '@/components/ui/input';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useTranslation } from 'react-i18next';
-import { regions } from '@/data/centers-database';
-import { useAdminStore } from '@/stores/admin-store';
+import { regions, egyptCenters } from '@/data/centers-database';
 
 const Centers = () => {
   const { t, i18n } = useTranslation();
@@ -18,33 +17,31 @@ const Centers = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRegion, setSelectedRegion] = useState('الكل');
   
-  const { centers: adminCenters } = useAdminStore();
-  
   const centers = useMemo(() => {
-    return adminCenters.map(c => ({
+    return egyptCenters.map(c => ({
       ...c,
       id: c.id,
-      name_ar: c.name,
-      name_en: c.name_en || c.name,
-      governorate_ar: c.governorate_ar || '',
-      governorate_en: c.governorate_en || '',
-      region_ar: c.governorate_ar || '', // Simplified for search
-      region_en: c.governorate_en || '',
-      address_ar: c.address || '',
-      address_en: c.address_en || '',
-      image_url: c.image || 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?q=80&w=2053&auto=format&fit=crop',
-      rating: c.rating || 5,
-      insurance_supported: c.insurance_supported || true,
-      specialists_count: c.specialistIds?.length || 0,
+      name_ar: c.name_ar,
+      name_en: c.name_en,
+      governorate_ar: c.governorate_ar,
+      governorate_en: c.governorate_en,
+      region_ar: c.region_ar,
+      region_en: c.region_en,
+      address_ar: c.address_ar,
+      address_en: c.address_en,
+      image_url: c.image,
+      rating: c.rating,
+      insurance_supported: c.insurance_supported,
+      specialists_count: c.specialists?.length || 0,
       phone: c.phone
     }));
-  }, [adminCenters]);
-
-  const [loading, setLoading] = useState(false);
+  }, []);
 
   useEffect(() => { 
     window.scrollTo(0, 0); 
   }, []);
+
+  const isLoading = false;
 
   const filteredCenters = useMemo(() => {
     return centers.filter(center => {
@@ -183,7 +180,7 @@ const Centers = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-7xl mx-auto">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {loading ? (
+              {isLoading ? (
                 <div className="col-span-full flex flex-col items-center justify-center py-20 text-medical-600">
                   <Loader2 className="w-10 h-10 animate-spin mb-4" />
                   <p className="font-bold text-lg">{isAr ? 'جاري تحميل المراكز...' : 'Loading centers...'}</p>

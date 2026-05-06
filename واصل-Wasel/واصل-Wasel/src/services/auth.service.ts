@@ -1,58 +1,72 @@
-import { apiClient } from './api';
-import { Specialist } from '@/data/centers-database';
-
-export interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: 'super_admin' | 'center_admin' | 'specialist';
-  center_id: string | null;
-}
-
-export interface AuthResponse {
-  message: string;
-  token: string;
-  user: User;
-}
+import { supabase } from '@/lib/supabase';
+import type { Profile, UserRole, PatientProfile } from '@/types/database';
 
 export const authService = {
-  // Login to get token
-  login: async (email: string, password: string): Promise<AuthResponse> => {
-    const response = await apiClient('/auth/login', {
-      method: 'POST',
-      body: { email, password },
+  // Session & Auth state
+  getSession: async () => {
+    const { data: { session }, error } = await supabase.auth.getSession();
+    if (error) throw error;
+    return session;
+  },
+
+  onAuthStateChange: (callback: (event: string, session: any) => void) => {
+    return supabase.auth.onAuthStateChange(callback);
+  },
+
+  // Auth actions
+  signIn: async (email: string, password: string) => {
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+    return data;
+  },
+
+  signUp: async (email: string, password: string, fullName: string, role: UserRole = 'patient') => {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          full_name: fullName,
+          role: role,
+        }
+      }
     });
-    
-    // Store token
-    if (response.token) {
-      localStorage.setItem('wasel_auth_token', response.token);
-      localStorage.setItem('wasel_user', JSON.stringify(response.user));
+    if (error) throw error;
+
+    // After signup, we might need to manually insert the profile if trigger doesn't exist
+    if (data.user) {
+      const { error: profileError } = await supabase.from('profiles').insert({
+        id: data.user.id,
+        email: email,
+        full_name: fullName,
+        role: role
+      });
+      if (profileError) console.error('Error creating profile:', profileError);
     }
-    
-    return response;
+    return data;
   },
 
-  // Logout and clear token
-  logout: () => {
-    localStorage.removeItem('wasel_auth_token');
-    localStorage.removeItem('wasel_user');
+  signOut: async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
   },
 
-  // Get current user from token
-  getMe: async (): Promise<{ user: User }> => {
-    return apiClient('/auth/me', {
-      useAuth: true,
-    });
+  // Profiles
+  getProfile: async (userId: string): Promise<Profile | null> => {
+    const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).single();
+    if (error) {
+      console.error('Error fetching profile:', error);
+      return null;
+    }
+    return data;
   },
 
-  // Check if logged in locally
-  isAuthenticated: (): boolean => {
-    return !!localStorage.getItem('wasel_auth_token');
-  },
-
-  // Get current user from local storage
-  getCurrentUser: (): User | null => {
-    const userStr = localStorage.getItem('wasel_user');
-    return userStr ? JSON.parse(userStr) : null;
+  getPatientProfile: async (userId: string): Promise<PatientProfile | null> => {
+    const { data, error } = await supabase.from('patient_profiles').select('*').eq('id', userId).single();
+    if (error) {
+      console.error('Error fetching patient profile:', error);
+      return null;
+    }
+    return data;
   }
 };

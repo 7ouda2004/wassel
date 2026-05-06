@@ -34,6 +34,7 @@ const InsuranceRequest = lazy(() => import("./pages/InsuranceRequest"));
 const SmartRecommendation = lazy(() => import("./pages/SmartRecommendation"));
 const PatientDashboard = lazy(() => import("./pages/dashboard/PatientDashboard"));
 const Blog = lazy(() => import("./pages/Blog"));
+const SeedDatabase = lazy(() => import("./pages/SeedDatabase"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -82,6 +83,7 @@ const AnimatedRoutes = () => {
           <Route path="/smart-recommendation" element={<SmartRecommendation />} />
           <Route path="/dashboard" element={<PatientDashboard />} />
           <Route path="/blog" element={<Blog />} />
+          <Route path="/seed" element={<SeedDatabase />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>

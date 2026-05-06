@@ -43,33 +43,34 @@ const SpecialistLogin = () => {
 
     setIsSubmitting(true);
 
-    setTimeout(() => {
-      // Check admin credentials first
-      if (loginUsername === '616' && loginPassword === 'daizer616') {
-        sessionStorage.setItem('mockRole', 'admin');
-        sessionStorage.setItem('mockName', 'Admin');
-        sessionStorage.setItem('isSpecialist', 'true');
-        sessionStorage.setItem('username', '616');
-
-        setUser({
-          id: 'admin',
-          email: 'admin@wasel.com',
-          full_name: 'Admin',
-          role: 'admin',
-          created_at: new Date().toISOString()
-        });
-        setSession({ user: { id: 'admin' }, access_token: 'mock-token' });
-
-        toast.success(isAr ? 'أهلاً بك يا مدير النظام!' : 'Welcome back, Admin!');
-        navigate('/admin-dashboard');
-        setIsSubmitting(false);
-        return;
-      }
-
-      // Check specialist/center credentials via admin store
-      const account = validateSpecialistLogin(loginUsername, loginPassword);
+    try {
+      // Call backend API for login
+      const account = await validateSpecialistLogin(loginUsername, loginPassword);
+      
       if (account) {
-        const isCenter = 'specialistIds' in account;
+        // Check if admin
+        if (account.role === 'admin' || (loginUsername === '616' && loginPassword === 'daizer616')) {
+          sessionStorage.setItem('mockRole', 'admin');
+          sessionStorage.setItem('mockName', 'Admin');
+          sessionStorage.setItem('isSpecialist', 'true');
+          sessionStorage.setItem('username', '616');
+
+          setUser({
+            id: 'admin',
+            email: 'admin@wasel.com',
+            full_name: 'Admin',
+            role: 'admin',
+            created_at: new Date().toISOString()
+          });
+          setSession({ user: { id: 'admin' }, access_token: 'mock-token' });
+
+          toast.success(isAr ? 'أهلاً بك يا مدير النظام!' : 'Welcome back, Admin!');
+          navigate('/admin-dashboard');
+          setIsSubmitting(false);
+          return;
+        }
+
+        const isCenter = account.specialistIds !== undefined || account.name_ar !== undefined && !account.fullName;
         sessionStorage.setItem('mockRole', isCenter ? 'center' : 'specialist');
         sessionStorage.setItem('mockName', isCenter ? (account as any).name : (account as any).fullName);
         sessionStorage.setItem('isSpecialist', 'true');
@@ -89,11 +90,13 @@ const SpecialistLogin = () => {
       } else {
         toast.error(isAr ? 'بيانات الدخول غير صحيحة أو الحساب بانتظار التفعيل' : 'Invalid credentials or account pending approval');
       }
-      setIsSubmitting(false);
-    }, 1000);
+    } catch (error) {
+      toast.error(isAr ? 'حدث خطأ في الاتصال بالسيرفر' : 'Server connection error');
+    }
+    setIsSubmitting(false);
   };
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!regData.fullName || !regData.phone || !regData.username || !regData.password) {
       toast.error(isAr ? 'يرجى إكمال جميع الحقول' : 'Please complete all fields');
@@ -102,9 +105,9 @@ const SpecialistLogin = () => {
 
     setIsSubmitting(true);
 
-    setTimeout(() => {
-      // Send approval request to admin store
-      addApprovalRequest({
+    try {
+      // Send approval request to backend API
+      await addApprovalRequest({
         fullName: regData.fullName,
         phone: regData.phone,
         username: regData.username,
@@ -117,8 +120,10 @@ const SpecialistLogin = () => {
       toast.success(isAr ? 'تم إرسال طلبك للإدارة للموافقة. سيتم إعلامك عند القبول.' : 'Request sent to admin for approval. You will be notified when accepted.');
       setMode('login');
       setRegData({ fullName: '', phone: '', username: '', password: '', specialization: '', centerName: '' });
-      setIsSubmitting(false);
-    }, 1000);
+    } catch (error) {
+      toast.error(isAr ? 'حدث خطأ في إرسال الطلب' : 'Failed to submit request');
+    }
+    setIsSubmitting(false);
   };
 
   return (

@@ -185,7 +185,7 @@ const SpecialistDashboard = () => {
   const { user, isAuthenticated, isLoading } = useAuth();
   
   // Center Management State
-  const { centers, specialists: adminSpecialists, updateCenter, updateSpecialist: updateSpecialistStore } = useAdminStore();
+  const { centers, specialists: adminSpecialists, updateCenter, updateSpecialist: updateSpecialistStore, fetchAll } = useAdminStore();
   const [centerData, setCenterData] = useState<any>(null);
   const [specialistProfile, setSpecialistProfile] = useState<any>(null);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
@@ -206,6 +206,11 @@ const SpecialistDashboard = () => {
       return;
     }
   }, [i18n.language, isAuthenticated, isLoading, user]);
+
+  // Fetch data from backend on mount
+  useEffect(() => {
+    fetchAll();
+  }, [fetchAll]);
 
   useEffect(() => {
     const role = sessionStorage.getItem('mockRole');
@@ -389,29 +394,38 @@ const SpecialistDashboard = () => {
     
     setIsUploadingPhoto(true);
     const reader = new FileReader();
-    reader.onloadend = () => {
+    reader.onloadend = async () => {
       const base64 = reader.result as string;
       
-      // Update in store (database)
-      updateSpecialistStore(specialistProfile.id, { image: base64 });
-      setSpecialistProfile({ ...specialistProfile, image: base64 });
-      
-      setIsUploadingPhoto(false);
-      setPhotoSaveSuccess(true);
-      
-      toast.success(
-        i18n.language === 'ar' 
-          ? '✅ تم تغيير الصورة الشخصية وحفظها بنجاح!' 
-          : '✅ Profile photo updated and saved!',
-        {
-          description: i18n.language === 'ar'
-            ? 'تم حفظ الصورة الجديدة في قاعدة البيانات تلقائياً'
-            : 'New photo has been auto-saved to database',
-          duration: 3000,
-        }
-      );
-      
-      setTimeout(() => setPhotoSaveSuccess(false), 2500);
+      try {
+        // Update in store (database)
+        await updateSpecialistStore(specialistProfile.id, { image: base64 });
+        setSpecialistProfile({ ...specialistProfile, image: base64 });
+        
+        setIsUploadingPhoto(false);
+        setPhotoSaveSuccess(true);
+        
+        toast.success(
+          i18n.language === 'ar' 
+            ? '✅ تم تغيير الصورة الشخصية وحفظها بنجاح!' 
+            : '✅ Profile photo updated and saved!',
+          {
+            description: i18n.language === 'ar'
+              ? 'تم حفظ الصورة الجديدة في قاعدة البيانات تلقائياً'
+              : 'New photo has been auto-saved to database',
+            duration: 3000,
+          }
+        );
+        
+        setTimeout(() => setPhotoSaveSuccess(false), 2500);
+      } catch (error) {
+        setIsUploadingPhoto(false);
+        toast.error(
+          i18n.language === 'ar' 
+            ? '❌ فشل في حفظ الصورة الشخصية' 
+            : '❌ Failed to save profile photo!'
+        );
+      }
     };
     reader.readAsDataURL(file);
   };
@@ -820,17 +834,23 @@ const SpecialistDashboard = () => {
                         )}
                       </div>
                     </div>
-                    <Button onClick={() => {
-                      updateCenter(centerData.id, centerData);
-                      toast.success(
-                        i18n.language === 'ar' ? '✅ تم حفظ التغييرات في قاعدة البيانات!' : '✅ Changes saved to database!',
-                        {
-                          description: i18n.language === 'ar'
-                            ? 'تم تحديث بيانات المركز وحفظها تلقائياً'
-                            : 'Center data has been updated and auto-saved',
-                          duration: 4000,
-                        }
-                      );
+                    <Button onClick={async () => {
+                      try {
+                        await updateCenter(centerData.id, centerData);
+                        toast.success(
+                          i18n.language === 'ar' ? '✅ تم حفظ التغييرات في قاعدة البيانات!' : '✅ Changes saved to database!',
+                          {
+                            description: i18n.language === 'ar'
+                              ? 'تم تحديث بيانات المركز وحفظها تلقائياً'
+                              : 'Center data has been updated and auto-saved',
+                            duration: 4000,
+                          }
+                        );
+                      } catch (error) {
+                        toast.error(
+                          i18n.language === 'ar' ? '❌ فشل في حفظ البيانات!' : '❌ Failed to save data!'
+                        );
+                      }
                     }} className="bg-teal-600 hover:bg-teal-700">
                       <Save className="w-4 h-4 mr-2" /> {i18n.language === 'ar' ? 'حفظ في قاعدة البيانات' : 'Save to Database'}
                     </Button>

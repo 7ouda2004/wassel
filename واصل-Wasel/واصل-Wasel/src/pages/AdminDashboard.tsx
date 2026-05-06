@@ -24,6 +24,8 @@ const AdminDashboard = () => {
     specialists,
     centers,
     approvalRequests,
+    isLoading,
+    fetchAll,
     updateSpecialist,
     updateCenter,
     approveRequest,
@@ -65,17 +67,19 @@ const AdminDashboard = () => {
     const role = sessionStorage.getItem('mockRole');
     if (role !== 'admin') {
       navigate('/login');
+    } else {
+      // Fetch all data from backend
+      fetchAll();
     }
-  }, [navigate]);
+  }, [navigate, fetchAll]);
 
-  const handleSaveEdit = () => {
+  const handleSaveEdit = async () => {
     if (!editUser) return;
     setIsSaving(true);
     
-    // Simulate save delay for visual feedback
-    setTimeout(() => {
+    try {
       if (editType === 'specialist') {
-        updateSpecialist(editUser.id, {
+        await updateSpecialist(editUser.id, {
           username: editUser.username,
           password: editUser.password,
           fullName: editUser.fullName,
@@ -86,7 +90,7 @@ const AdminDashboard = () => {
           centerName: centers.find(c => c.id === editUser.centerId)?.name
         });
       } else if (editType === 'center') {
-        updateCenter(editUser.id, {
+        await updateCenter(editUser.id, {
           username: editUser.username,
           password: editUser.password,
           name: editUser.name,
@@ -119,73 +123,88 @@ const AdminDashboard = () => {
         setEditUser(null);
         setEditType(null);
       }, 1500);
-    }, 600);
+    } catch (error) {
+      setIsSaving(false);
+      toast.error(isAr ? '❌ فشل في حفظ البيانات' : '❌ Failed to save data');
+    }
   };
 
-  const handleApproveRequest = (id: string) => {
+  const handleApproveRequest = async (id: string) => {
     const request = approvalRequests.find(r => r.id === id);
     if (!request) return;
     
-    approveRequest(id);
-    setApprovalSuccess(request.fullName);
-    
-    toast.success(
-      isAr 
-        ? `🎉 تم قبول طلب "${request.fullName}" وحفظه في قاعدة البيانات!`
-        : `🎉 "${request.fullName}" approved and saved to database!`,
-      {
-        description: isAr
-          ? `تم إنشاء حساب ${request.type === 'specialist' ? 'أخصائي' : 'مركز'} جديد تلقائياً وحفظه في النظام`
-          : `A new ${request.type} account has been automatically created and saved`,
-        duration: 5000,
-      }
-    );
-    
-    setTimeout(() => setApprovalSuccess(null), 3000);
+    try {
+      await approveRequest(id);
+      setApprovalSuccess(request.fullName);
+      
+      toast.success(
+        isAr 
+          ? `🎉 تم قبول طلب "${request.fullName}" وحفظه في قاعدة البيانات!`
+          : `🎉 "${request.fullName}" approved and saved to database!`,
+        {
+          description: isAr
+            ? `تم إنشاء حساب ${request.type === 'specialist' ? 'أخصائي' : 'مركز'} جديد تلقائياً وحفظه في النظام`
+            : `A new ${request.type} account has been automatically created and saved`,
+          duration: 5000,
+        }
+      );
+      
+      setTimeout(() => setApprovalSuccess(null), 3000);
+    } catch (error) {
+      toast.error(isAr ? '❌ فشل في قبول الطلب' : '❌ Failed to approve request');
+    }
   };
 
-  const handleAddSpecialist = () => {
+  const handleAddSpecialist = async () => {
     if (!newSpecialist.fullName || !newSpecialist.username || !newSpecialist.password) {
       toast.error(isAr ? 'يرجى ملء الحقول الأساسية' : 'Please fill required fields');
       return;
     }
     
-    addSpecialist({
-      ...newSpecialist,
-      type: 'specialist',
-      centerName: centers.find(c => c.id === newSpecialist.centerId)?.name,
-      image: newSpecialist.image || 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?q=80&w=2070&auto=format&fit=crop'
-    });
-    
-    toast.success(isAr ? 'تمت إضافة الأخصائي بنجاح' : 'Specialist added successfully');
-    setIsAddingSpecialist(false);
-    setNewSpecialist({ fullName: '', phone: '', username: '', password: '', specialization: '', centerId: '', experience: 0, image: '' });
+    try {
+      await addSpecialist({
+        ...newSpecialist,
+        type: 'specialist',
+        centerName: centers.find(c => c.id === newSpecialist.centerId)?.name,
+        image: newSpecialist.image || 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?q=80&w=2070&auto=format&fit=crop'
+      });
+      
+      toast.success(isAr ? 'تمت إضافة الأخصائي بنجاح' : 'Specialist added successfully');
+      setIsAddingSpecialist(false);
+      setNewSpecialist({ fullName: '', phone: '', username: '', password: '', specialization: '', centerId: '', experience: 0, image: '' });
+    } catch (error) {
+      toast.error(isAr ? '❌ فشل في إضافة الأخصائي' : '❌ Failed to add specialist');
+    }
   };
 
-  const handleAddCenter = () => {
+  const handleAddCenter = async () => {
     if (!newCenter.name || !newCenter.username || !newCenter.password) {
       toast.error(isAr ? 'يرجى ملء الحقول الأساسية' : 'Please fill required fields');
       return;
     }
     
-    addCenter({
-      name: newCenter.name,
-      username: newCenter.username,
-      password: newCenter.password,
-      phone: newCenter.phone,
-      address: newCenter.address,
-      governorate_ar: newCenter.governorate,
-      image: newCenter.image || 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?q=80&w=2053&auto=format&fit=crop',
-      specializations: [],
-      rating: 5,
-      insurance_supported: true,
-      products: [],
-      services_ar: []
-    });
-    
-    toast.success(isAr ? 'تمت إضافة المركز بنجاح' : 'Center added successfully');
-    setIsAddingCenter(false);
-    setNewCenter({ name: '', governorate: '', address: '', phone: '', username: '', password: '', image: '' });
+    try {
+      await addCenter({
+        name: newCenter.name,
+        username: newCenter.username,
+        password: newCenter.password,
+        phone: newCenter.phone,
+        address: newCenter.address,
+        governorate_ar: newCenter.governorate,
+        image: newCenter.image || 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?q=80&w=2053&auto=format&fit=crop',
+        specializations: [],
+        rating: 5,
+        insurance_supported: true,
+        products: [],
+        services_ar: []
+      });
+      
+      toast.success(isAr ? 'تمت إضافة المركز بنجاح' : 'Center added successfully');
+      setIsAddingCenter(false);
+      setNewCenter({ name: '', governorate: '', address: '', phone: '', username: '', password: '', image: '' });
+    } catch (error) {
+      toast.error(isAr ? '❌ فشل في إضافة المركز' : '❌ Failed to add center');
+    }
   };
 
   return (

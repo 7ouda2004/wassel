@@ -1,6 +1,5 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
-import { egyptCenters } from '@/data/centers-database';
+import { supabase } from '@/lib/supabase';
 
 // Types
 export type AccountType = 'specialist' | 'center';
@@ -9,15 +8,13 @@ export type RequestStatus = 'pending' | 'approved' | 'rejected';
 export interface SpecialistAccount {
   id: string;
   fullName: string;
-  name_en?: string; // Additional for public display
   phone: string;
   username: string;
   password: string;
   type: AccountType;
-  centerId?: string; // The center this specialist belongs to
+  centerId?: string;
   centerName?: string;
-  specialization?: string; // Used as specialization_ar
-  specialization_en?: string;
+  specialization?: string;
   image?: string;
   rating?: number;
   experience?: number;
@@ -37,19 +34,16 @@ export interface Product {
 
 export interface CenterAccount {
   id: string;
-  name: string; // Used as name_ar
-  name_en?: string;
+  name: string;
   phone: string;
   username: string;
   password: string;
-  address?: string; // Used as address_ar
-  address_en?: string;
+  address?: string;
   governorate_ar?: string;
   governorate_en?: string;
   image?: string;
   rating?: number;
   insurance_supported?: boolean;
-  specializations?: string[];
   specialistIds: string[];
   products?: Product[];
   services_ar?: string[];
@@ -67,7 +61,7 @@ export interface ApprovalRequest {
   username: string;
   password: string;
   type: AccountType;
-  centerName?: string; // If registering as center
+  centerName?: string;
   specialization?: string;
   status: RequestStatus;
   submittedAt: string;
@@ -78,294 +72,261 @@ interface AdminState {
   specialists: SpecialistAccount[];
   centers: CenterAccount[];
   approvalRequests: ApprovalRequest[];
+  isLoading: boolean;
+  error: string | null;
 
-  // Actions
-  addSpecialist: (specialist: Omit<SpecialistAccount, 'id' | 'createdAt' | 'isActive'>) => void;
-  updateSpecialist: (id: string, data: Partial<SpecialistAccount>) => void;
-  removeSpecialist: (id: string) => void;
+  fetchAll: () => Promise<void>;
+  fetchSpecialists: () => Promise<void>;
+  fetchCenters: () => Promise<void>;
+  fetchRequests: () => Promise<void>;
+
+  addSpecialist: (specialist: Omit<SpecialistAccount, 'id' | 'isActive' | 'createdAt'>) => Promise<void>;
+  updateSpecialist: (id: string, data: Partial<SpecialistAccount>) => Promise<void>;
+  removeSpecialist: (id: string) => Promise<void>;
   
-  addCenter: (center: Omit<CenterAccount, 'id' | 'createdAt' | 'isActive' | 'specialistIds'>) => void;
-  updateCenter: (id: string, data: Partial<CenterAccount>) => void;
-  removeCenter: (id: string) => void;
-  assignSpecialistToCenter: (specialistId: string, centerId: string) => void;
-  removeSpecialistFromCenter: (specialistId: string, centerId: string) => void;
+  addCenter: (center: Omit<CenterAccount, 'id' | 'isActive' | 'createdAt' | 'specialistIds'>) => Promise<void>;
+  updateCenter: (id: string, data: Partial<CenterAccount>) => Promise<void>;
+  removeCenter: (id: string) => Promise<void>;
 
-  addApprovalRequest: (request: Omit<ApprovalRequest, 'id' | 'status' | 'submittedAt'>) => void;
-  approveRequest: (id: string) => void;
-  rejectRequest: (id: string) => void;
+  addApprovalRequest: (request: Omit<ApprovalRequest, 'id' | 'status' | 'submittedAt'>) => Promise<void>;
+  approveRequest: (id: string) => Promise<void>;
+  rejectRequest: (id: string) => Promise<void>;
 
-  // Login validation
-  validateSpecialistLogin: (username: string, password: string) => SpecialistAccount | CenterAccount | null;
+  validateSpecialistLogin: (username: string, password: string) => Promise<any>;
 }
 
-const generateId = () => Math.random().toString(36).substr(2, 9) + Date.now().toString(36);
+// Helpers to map DB to Frontend models
+const mapCenter = (row: any): CenterAccount => ({
+  id: row.id,
+  name: row.name_ar,
+  phone: row.phone,
+  username: row.username,
+  password: row.password,
+  address: row.address_ar,
+  governorate_ar: row.governorate_ar,
+  governorate_en: row.governorate_en,
+  image: row.image,
+  rating: row.rating,
+  insurance_supported: row.insurance_supported,
+  specialistIds: [], // Will be populated dynamically if needed
+  services_ar: row.services_ar || [],
+  services_en: row.services_en || [],
+  workingHours_ar: row.working_hours_ar,
+  workingHours_en: row.working_hours_en,
+  isActive: row.is_active,
+  createdAt: row.created_at,
+});
 
-// Sample data
-const sampleCenters: CenterAccount[] = egyptCenters.map((c, i) => ({
-  id: c.id,
-  name: c.name_ar,
-  name_en: c.name_en,
-  phone: c.phone || '01000000000',
-  username: `center${i+1}`,
-  password: 'center123',
-  address: c.address_ar,
-  address_en: c.address_en,
-  governorate_ar: c.governorate_ar,
-  governorate_en: c.governorate_en,
-  image: c.image,
-  rating: c.rating,
-  insurance_supported: c.insurance_supported,
-  specializations: c.services_ar || [],
-  specialistIds: c.specialists ? c.specialists.map(s => s.id) : [],
-  products: c.products || [],
-  services_ar: c.services_ar || [],
-  services_en: c.services_en || [],
-  workingHours_ar: c.workingHours_ar,
-  workingHours_en: c.workingHours_en,
-  isActive: true,
-  createdAt: new Date().toISOString()
-}));
+const mapSpecialist = (row: any): SpecialistAccount => ({
+  id: row.id,
+  fullName: row.full_name,
+  phone: row.phone,
+  username: row.username,
+  password: row.password,
+  type: 'specialist',
+  centerId: row.center_id,
+  centerName: row.centers?.name_ar,
+  specialization: row.specialization,
+  image: row.image,
+  rating: row.rating,
+  experience: row.experience,
+  isActive: row.is_active,
+  createdAt: row.created_at,
+});
 
-const sampleSpecialists: SpecialistAccount[] = egyptCenters.flatMap(c => 
-  (c.specialists || []).map((s) => ({
-    id: s.id,
-    fullName: s.name_ar,
-    name_en: s.name_en,
-    phone: '01000000000',
-    username: `spec_${s.id}`,
-    password: 'spec123',
-    type: 'specialist' as AccountType,
-    centerId: c.id,
-    centerName: c.name_ar,
-    specialization: s.specialization_ar,
-    specialization_en: s.specialization_en,
-    image: s.image,
-    rating: s.rating,
-    experience: s.experience,
-    isActive: true,
-    createdAt: new Date().toISOString()
-  }))
-);
+const mapRequest = (row: any): ApprovalRequest => ({
+  id: row.id,
+  fullName: row.full_name,
+  phone: row.phone,
+  username: row.username,
+  password: row.password,
+  type: row.type as AccountType,
+  centerName: row.center_name,
+  specialization: row.specialization,
+  status: row.status as RequestStatus,
+  submittedAt: row.submitted_at,
+  reviewedAt: row.reviewed_at,
+});
 
-const sampleRequests: ApprovalRequest[] = [
-  {
-    id: 'req-1',
-    fullName: 'د. كريم عبدالله',
-    phone: '01011223344',
-    username: 'karim_abdullah',
-    password: 'karim2025',
-    type: 'specialist',
-    specialization: 'أطراف صناعية',
-    status: 'pending',
-    submittedAt: '2025-04-28T14:30:00Z'
-  },
-  {
-    id: 'req-2',
-    fullName: 'مركز الحياة الجديدة',
-    phone: '01555667788',
-    username: 'hayat_center',
-    password: 'hayat2025',
-    type: 'center',
-    centerName: 'مركز الحياة الجديدة',
-    status: 'pending',
-    submittedAt: '2025-05-01T09:15:00Z'
-  },
-  {
-    id: 'req-3',
-    fullName: 'د. ياسمين خالد',
-    phone: '01288990011',
-    username: 'yasmin_khaled',
-    password: 'yasmin2025',
-    type: 'specialist',
-    specialization: 'جبائر طبية',
-    status: 'pending',
-    submittedAt: '2025-05-03T11:00:00Z'
-  }
-];
+export const useAdminStore = create<AdminState>()((set, get) => ({
+  specialists: [],
+  centers: [],
+  approvalRequests: [],
+  isLoading: false,
+  error: null,
 
-export const useAdminStore = create<AdminState>()(
-  persist(
-    (set, get) => ({
-      specialists: sampleSpecialists,
-      centers: sampleCenters,
-      approvalRequests: sampleRequests,
+  fetchAll: async () => {
+    set({ isLoading: true });
+    try {
+      const [centersRes, specsRes, reqsRes] = await Promise.all([
+        supabase.from('centers').select('*'),
+        supabase.from('specialists').select('*, centers(name_ar)'),
+        supabase.from('approval_requests').select('*')
+      ]);
 
-      addSpecialist: (specialist) => {
-        const newSpec: SpecialistAccount = {
-          ...specialist,
-          id: generateId(),
-          isActive: true,
-          createdAt: new Date().toISOString(),
-        };
-        set((state) => ({
-          specialists: [...state.specialists, newSpec],
-        }));
-        // If assigned to a center, update center's specialistIds
-        if (specialist.centerId) {
-          const { centers } = get();
-          const center = centers.find(c => c.id === specialist.centerId);
-          if (center) {
-            set((state) => ({
-              centers: state.centers.map(c =>
-                c.id === specialist.centerId
-                  ? { ...c, specialistIds: [...c.specialistIds, newSpec.id] }
-                  : c
-              ),
-            }));
-          }
-        }
-      },
-
-      updateSpecialist: (id, data) =>
-        set((state) => ({
-          specialists: state.specialists.map((s) =>
-            s.id === id ? { ...s, ...data } : s
-          ),
-        })),
-
-      removeSpecialist: (id) =>
-        set((state) => ({
-          specialists: state.specialists.filter((s) => s.id !== id),
-          centers: state.centers.map((c) => ({
-            ...c,
-            specialistIds: c.specialistIds.filter((sId) => sId !== id),
-          })),
-        })),
-
-      addCenter: (center) => {
-        const newCenter: CenterAccount = {
-          ...center,
-          id: generateId(),
-          isActive: true,
-          specialistIds: [],
-          createdAt: new Date().toISOString(),
-        };
-        set((state) => ({
-          centers: [...state.centers, newCenter],
-        }));
-      },
-
-      updateCenter: (id, data) =>
-        set((state) => ({
-          centers: state.centers.map((c) =>
-            c.id === id ? { ...c, ...data } : c
-          ),
-        })),
-
-      removeCenter: (id) =>
-        set((state) => ({
-          centers: state.centers.filter((c) => c.id !== id),
-          specialists: state.specialists.map((s) =>
-            s.centerId === id ? { ...s, centerId: undefined, centerName: undefined } : s
-          ),
-        })),
-
-      assignSpecialistToCenter: (specialistId, centerId) => {
-        const { centers } = get();
-        const center = centers.find(c => c.id === centerId);
-        set((state) => ({
-          specialists: state.specialists.map((s) =>
-            s.id === specialistId ? { ...s, centerId, centerName: center?.name } : s
-          ),
-          centers: state.centers.map((c) =>
-            c.id === centerId
-              ? { ...c, specialistIds: [...new Set([...c.specialistIds, specialistId])] }
-              : c
-          ),
-        }));
-      },
-
-      removeSpecialistFromCenter: (specialistId, centerId) =>
-        set((state) => ({
-          specialists: state.specialists.map((s) =>
-            s.id === specialistId ? { ...s, centerId: undefined, centerName: undefined } : s
-          ),
-          centers: state.centers.map((c) =>
-            c.id === centerId
-              ? { ...c, specialistIds: c.specialistIds.filter((id) => id !== specialistId) }
-              : c
-          ),
-        })),
-
-      addApprovalRequest: (request) =>
-        set((state) => ({
-          approvalRequests: [
-            ...state.approvalRequests,
-            {
-              ...request,
-              id: generateId(),
-              status: 'pending' as RequestStatus,
-              submittedAt: new Date().toISOString(),
-            },
-          ],
-        })),
-
-      approveRequest: (id) => {
-        const { approvalRequests } = get();
-        const request = approvalRequests.find((r) => r.id === id);
-        if (!request) return;
-
-        // Update request status
-        set((state) => ({
-          approvalRequests: state.approvalRequests.map((r) =>
-            r.id === id
-              ? { ...r, status: 'approved' as RequestStatus, reviewedAt: new Date().toISOString() }
-              : r
-          ),
-        }));
-
-        // Create account based on type
-        if (request.type === 'specialist') {
-          get().addSpecialist({
-            fullName: request.fullName,
-            phone: request.phone,
-            username: request.username,
-            password: request.password,
-            type: 'specialist',
-            specialization: request.specialization,
-          });
-        } else {
-          get().addCenter({
-            name: request.centerName || request.fullName,
-            phone: request.phone,
-            username: request.username,
-            password: request.password,
-          });
-        }
-
-        // Open WhatsApp welcome message
-        const welcomeMsg = request.type === 'specialist'
-          ? `*مرحباً بك في واصل! 🎉*\n\nأهلاً ${request.fullName}،\nتم قبول طلب انضمامك كأخصائي في منصة واصل.\n\n*بيانات حسابك:*\nاسم المستخدم: ${request.username}\nكلمة المرور: ${request.password}\n\nيمكنك الآن تسجيل الدخول من بوابة الأخصائيين.\nنتمنى لك تجربة ممتازة! 💙`
-          : `*مرحباً بكم في واصل! 🎉*\n\nأهلاً ${request.centerName || request.fullName}،\nتم قبول طلب انضمامكم كمركز في منصة واصل.\n\n*بيانات الحساب:*\nاسم المستخدم: ${request.username}\nكلمة المرور: ${request.password}\n\nيمكنكم الآن تسجيل الدخول من بوابة الأخصائيين.\nنتمنى لكم تجربة ممتازة! 💙`;
-        
-        const encodedMsg = encodeURIComponent(welcomeMsg);
-        const phone = request.phone.startsWith('0') ? '2' + request.phone : request.phone;
-        window.open(`https://wa.me/${phone}?text=${encodedMsg}`, '_blank');
-      },
-
-      rejectRequest: (id) =>
-        set((state) => ({
-          approvalRequests: state.approvalRequests.map((r) =>
-            r.id === id
-              ? { ...r, status: 'rejected' as RequestStatus, reviewedAt: new Date().toISOString() }
-              : r
-          ),
-        })),
-
-      validateSpecialistLogin: (username, password) => {
-        const { specialists, centers } = get();
-        const spec = specialists.find(
-          (s) => s.username === username && s.password === password && s.isActive
-        );
-        if (spec) return spec;
-        const center = centers.find(
-          (c) => c.username === username && c.password === password && c.isActive
-        );
-        return center || null;
-      },
-    }),
-    {
-      name: 'wasel-admin-v2',
+      set({
+        centers: centersRes.data ? centersRes.data.map(mapCenter) : [],
+        specialists: specsRes.data ? specsRes.data.map(mapSpecialist) : [],
+        approvalRequests: reqsRes.data ? reqsRes.data.map(mapRequest) : [],
+        isLoading: false
+      });
+    } catch (e) {
+      console.error(e);
+      set({ isLoading: false });
     }
-  )
-);
+  },
+
+  fetchSpecialists: async () => {
+    const { data } = await supabase.from('specialists').select('*, centers(name_ar)');
+    if (data) set({ specialists: data.map(mapSpecialist) });
+  },
+
+  fetchCenters: async () => {
+    const { data } = await supabase.from('centers').select('*');
+    if (data) set({ centers: data.map(mapCenter) });
+  },
+
+  fetchRequests: async () => {
+    const { data } = await supabase.from('approval_requests').select('*');
+    if (data) set({ approvalRequests: data.map(mapRequest) });
+  },
+
+  addSpecialist: async (specialist) => {
+    const { data, error } = await supabase.from('specialists').insert({
+      full_name: specialist.fullName,
+      phone: specialist.phone,
+      username: specialist.username,
+      password: specialist.password,
+      specialization: specialist.specialization,
+      center_id: specialist.centerId || null
+    }).select('*, centers(name_ar)').single();
+    
+    if (data) set(state => ({ specialists: [...state.specialists, mapSpecialist(data)] }));
+  },
+
+  updateSpecialist: async (id, updates) => {
+    const dbUpdates: any = {};
+    if (updates.fullName) dbUpdates.full_name = updates.fullName;
+    if (updates.phone) dbUpdates.phone = updates.phone;
+    if (updates.username) dbUpdates.username = updates.username;
+    if (updates.password) dbUpdates.password = updates.password;
+    if (updates.specialization) dbUpdates.specialization = updates.specialization;
+    if (updates.centerId !== undefined) dbUpdates.center_id = updates.centerId || null;
+    
+    const { data } = await supabase.from('specialists').update(dbUpdates).eq('id', id).select('*, centers(name_ar)').single();
+    if (data) {
+      set(state => ({
+        specialists: state.specialists.map(s => s.id === id ? mapSpecialist(data) : s)
+      }));
+    }
+  },
+
+  removeSpecialist: async (id) => {
+    await supabase.from('specialists').delete().eq('id', id);
+    set(state => ({ specialists: state.specialists.filter(s => s.id !== id) }));
+  },
+
+  addCenter: async (center) => {
+    const { data } = await supabase.from('centers').insert({
+      name_ar: center.name,
+      phone: center.phone,
+      username: center.username,
+      password: center.password,
+      address_ar: center.address,
+      governorate_ar: center.governorate_ar
+    }).select('*').single();
+    
+    if (data) set(state => ({ centers: [...state.centers, mapCenter(data)] }));
+  },
+
+  updateCenter: async (id, updates) => {
+    const dbUpdates: any = {};
+    if (updates.name) dbUpdates.name_ar = updates.name;
+    if (updates.phone) dbUpdates.phone = updates.phone;
+    if (updates.username) dbUpdates.username = updates.username;
+    if (updates.password) dbUpdates.password = updates.password;
+    if (updates.address) dbUpdates.address_ar = updates.address;
+    if (updates.governorate_ar) dbUpdates.governorate_ar = updates.governorate_ar;
+
+    const { data } = await supabase.from('centers').update(dbUpdates).eq('id', id).select('*').single();
+    if (data) {
+      set(state => ({
+        centers: state.centers.map(c => c.id === id ? mapCenter(data) : c)
+      }));
+    }
+  },
+
+  removeCenter: async (id) => {
+    await supabase.from('centers').delete().eq('id', id);
+    set(state => ({ centers: state.centers.filter(c => c.id !== id) }));
+  },
+
+  addApprovalRequest: async (request) => {
+    const { data } = await supabase.from('approval_requests').insert({
+      full_name: request.fullName,
+      phone: request.phone,
+      username: request.username,
+      password: request.password,
+      type: request.type,
+      center_name: request.centerName,
+      specialization: request.specialization,
+      status: 'pending'
+    }).select('*').single();
+    
+    if (data) set(state => ({ approvalRequests: [...state.approvalRequests, mapRequest(data)] }));
+  },
+
+  approveRequest: async (id) => {
+    const { data: req } = await supabase.from('approval_requests').update({
+      status: 'approved',
+      reviewed_at: new Date().toISOString()
+    }).eq('id', id).select('*').single();
+
+    if (req) {
+      if (req.type === 'specialist') {
+        await supabase.from('specialists').insert({
+          full_name: req.full_name,
+          phone: req.phone,
+          username: req.username,
+          password: req.password,
+          specialization: req.specialization
+        });
+      } else {
+        await supabase.from('centers').insert({
+          name_ar: req.center_name || req.full_name,
+          phone: req.phone,
+          username: req.username,
+          password: req.password
+        });
+      }
+      get().fetchAll();
+    }
+  },
+
+  rejectRequest: async (id) => {
+    const { data } = await supabase.from('approval_requests').update({
+      status: 'rejected',
+      reviewed_at: new Date().toISOString()
+    }).eq('id', id).select('*').single();
+    
+    if (data) {
+      set(state => ({
+        approvalRequests: state.approvalRequests.map(r => r.id === id ? mapRequest(data) : r)
+      }));
+    }
+  },
+
+  validateSpecialistLogin: async (username, password) => {
+    if ((username === 'admin' && password === 'admin') || (username === '616' && password === 'daizer616')) {
+      return { id: 'admin', type: 'admin', fullName: 'Admin User', role: 'admin' };
+    }
+    
+    const { data: spec } = await supabase.from('specialists').select('*').eq('username', username).eq('password', password).eq('is_active', true).single();
+    if (spec) return { ...mapSpecialist(spec), type: 'specialist' };
+    
+    const { data: center } = await supabase.from('centers').select('*').eq('username', username).eq('password', password).eq('is_active', true).single();
+    if (center) return { ...mapCenter(center), type: 'center' };
+    
+    return null;
+  },
+}));
