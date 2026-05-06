@@ -185,7 +185,7 @@ const SpecialistLogin = () => {
                         <p className="text-gray-500 text-sm">{isAr ? 'سجل دخولك للوصول للوحة التحكم' : 'Login to access your dashboard'}</p>
                       </div>
 
-                      <form onSubmit={handleLogin} className="space-y-5">
+                      <form onSubmit={handleLogin} className="space-y-5" autoComplete="off">
                         <div>
                           <Label className="text-sm font-semibold text-gray-700 mb-1.5 block">
                             {isAr ? 'اسم المستخدم' : 'Username'}
@@ -195,7 +195,9 @@ const SpecialistLogin = () => {
                               value={loginUsername}
                               onChange={(e) => setLoginUsername(e.target.value)}
                               className="rounded-xl h-12"
-                              placeholder={isAr ? 'username' : 'username'}
+                              placeholder={isAr ? 'اسم المستخدم' : 'username'}
+                              autoComplete="off"
+                              name="specialist-username"
                             />
                             <User className={`absolute ${isRtl ? 'left-3' : 'right-3'} top-3.5 h-5 w-5 text-gray-400`} />
                           </div>
@@ -211,6 +213,8 @@ const SpecialistLogin = () => {
                               value={loginPassword}
                               onChange={(e) => setLoginPassword(e.target.value)}
                               className="rounded-xl h-12"
+                              autoComplete="new-password"
+                              name="specialist-password"
                             />
                             <button type="button" onClick={() => setShowPassword(!showPassword)} className={`absolute ${isRtl ? 'left-3' : 'right-3'} top-3.5 text-gray-400`}>
                               {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}

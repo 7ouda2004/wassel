@@ -210,7 +210,7 @@ const Login = () => {
                       </p>
                     </div>
 
-                    <form onSubmit={handleLogin} className="space-y-5">
+                    <form onSubmit={handleLogin} className="space-y-5" autoComplete="off">
                       <div>
                         <Label htmlFor="login-email" className="text-sm font-semibold text-gray-700 mb-1.5 block">
                           {isAr ? 'البريد الإلكتروني' : 'Email'}
@@ -223,6 +223,8 @@ const Login = () => {
                             onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
                             className="rounded-xl border-gray-200 h-12 focus:border-medical-500 focus:ring-medical-500/20"
                             placeholder="example@mail.com"
+                            autoComplete="off"
+                            name="patient-email"
                             required
                           />
                           <Mail className={`absolute ${isRtl ? 'left-3' : 'right-3'} top-3.5 h-5 w-5 text-gray-400`} />
@@ -241,6 +243,8 @@ const Login = () => {
                             onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
                             className="rounded-xl border-gray-200 h-12"
                             placeholder="••••••••"
+                            autoComplete="new-password"
+                            name="patient-password"
                             required
                           />
                           <button type="button" onClick={() => setShowPassword(!showPassword)} className={`absolute ${isRtl ? 'left-3' : 'right-3'} top-3.5 text-gray-400 hover:text-gray-600`}>

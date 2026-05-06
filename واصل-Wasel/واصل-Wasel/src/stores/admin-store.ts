@@ -212,8 +212,19 @@ export const useAdminStore = create<AdminState>()((set, get) => ({
     if (updates.password) dbUpdates.password = updates.password;
     if (updates.specialization) dbUpdates.specialization = updates.specialization;
     if (updates.centerId !== undefined) dbUpdates.center_id = updates.centerId || null;
+    if (updates.image !== undefined) dbUpdates.image = updates.image;
+    if (updates.rating !== undefined) dbUpdates.rating = updates.rating;
+    if (updates.experience !== undefined) dbUpdates.experience = updates.experience;
+    if (updates.isActive !== undefined) dbUpdates.is_active = updates.isActive;
+
+    // Don't send empty updates
+    if (Object.keys(dbUpdates).length === 0) return;
     
-    const { data } = await supabase.from('specialists').update(dbUpdates).eq('id', id).select('*, centers(name_ar)').single();
+    const { data, error } = await supabase.from('specialists').update(dbUpdates).eq('id', id).select('*, centers(name_ar)').single();
+    if (error) {
+      console.error('Error updating specialist:', error);
+      throw error;
+    }
     if (data) {
       set(state => ({
         specialists: state.specialists.map(s => s.id === id ? mapSpecialist(data) : s)
@@ -247,8 +258,24 @@ export const useAdminStore = create<AdminState>()((set, get) => ({
     if (updates.password) dbUpdates.password = updates.password;
     if (updates.address) dbUpdates.address_ar = updates.address;
     if (updates.governorate_ar) dbUpdates.governorate_ar = updates.governorate_ar;
+    if (updates.image !== undefined) dbUpdates.image = updates.image;
+    if (updates.rating !== undefined) dbUpdates.rating = updates.rating;
+    if (updates.insurance_supported !== undefined) dbUpdates.insurance_supported = updates.insurance_supported;
+    if (updates.services_ar !== undefined) dbUpdates.services_ar = updates.services_ar;
+    if (updates.services_en !== undefined) dbUpdates.services_en = updates.services_en;
+    if (updates.workingHours_ar !== undefined) dbUpdates.working_hours_ar = updates.workingHours_ar;
+    if (updates.workingHours_en !== undefined) dbUpdates.working_hours_en = updates.workingHours_en;
+    if (updates.isActive !== undefined) dbUpdates.is_active = updates.isActive;
+    if (updates.products !== undefined) dbUpdates.products = updates.products;
 
-    const { data } = await supabase.from('centers').update(dbUpdates).eq('id', id).select('*').single();
+    // Don't send empty updates
+    if (Object.keys(dbUpdates).length === 0) return;
+
+    const { data, error } = await supabase.from('centers').update(dbUpdates).eq('id', id).select('*').single();
+    if (error) {
+      console.error('Error updating center:', error);
+      throw error;
+    }
     if (data) {
       set(state => ({
         centers: state.centers.map(c => c.id === id ? mapCenter(data) : c)

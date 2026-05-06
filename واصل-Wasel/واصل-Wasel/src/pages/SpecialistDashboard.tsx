@@ -402,6 +402,9 @@ const SpecialistDashboard = () => {
         await updateSpecialistStore(specialistProfile.id, { image: base64 });
         setSpecialistProfile({ ...specialistProfile, image: base64 });
         
+        // Resync all data from database to keep everything in sync
+        await fetchAll();
+        
         setIsUploadingPhoto(false);
         setPhotoSaveSuccess(true);
         
@@ -837,6 +840,8 @@ const SpecialistDashboard = () => {
                     <Button onClick={async () => {
                       try {
                         await updateCenter(centerData.id, centerData);
+                        // Resync all data from database
+                        await fetchAll();
                         toast.success(
                           i18n.language === 'ar' ? '✅ تم حفظ التغييرات في قاعدة البيانات!' : '✅ Changes saved to database!',
                           {
