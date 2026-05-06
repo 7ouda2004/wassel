@@ -7,7 +7,8 @@ import { Input } from '@/components/ui/input';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useTranslation } from 'react-i18next';
-import { regions, egyptCenters } from '@/data/centers-database';
+import { regions } from '@/data/centers-database';
+import { supabase } from '@/lib/supabase';
 
 const Centers = () => {
   const { t, i18n } = useTranslation();
@@ -16,9 +17,30 @@ const Centers = () => {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRegion, setSelectedRegion] = useState('الكل');
-  
+  const [dbCenters, setDbCenters] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => { 
+    window.scrollTo(0, 0); 
+    
+    const fetchCenters = async () => {
+      try {
+        const { data, error } = await supabase.from('centers').select('*, specialists(id)');
+        if (!error && data) {
+          setDbCenters(data);
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchCenters();
+  }, []);
+
   const centers = useMemo(() => {
-    return egyptCenters.map(c => ({
+    return dbCenters.map(c => ({
       ...c,
       id: c.id,
       name_ar: c.name_ar,
@@ -30,18 +52,12 @@ const Centers = () => {
       address_ar: c.address_ar,
       address_en: c.address_en,
       image_url: c.image,
-      rating: c.rating,
+      rating: c.rating || 5.0,
       insurance_supported: c.insurance_supported,
       specialists_count: c.specialists?.length || 0,
       phone: c.phone
     }));
-  }, []);
-
-  useEffect(() => { 
-    window.scrollTo(0, 0); 
-  }, []);
-
-  const isLoading = false;
+  }, [dbCenters]);
 
   const filteredCenters = useMemo(() => {
     return centers.filter(center => {

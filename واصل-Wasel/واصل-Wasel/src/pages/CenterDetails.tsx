@@ -6,8 +6,7 @@ import { Button } from '@/components/ui/button';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useTranslation } from 'react-i18next';
-import { egyptCenters } from '@/data/centers-database';
-import type { GovernorateCenter, Specialist } from '@/data/centers-database';
+import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 
 const StarRating = ({ rating, size = 'sm' }: { rating: number; size?: string }) => {
@@ -27,17 +26,42 @@ const CenterDetails = () => {
   const isAr = i18n.language === 'ar';
   const isRtl = i18n.dir() === 'rtl';
 
-  const [center, setCenter] = useState<GovernorateCenter | null>(null);
+  const [center, setCenter] = useState<any | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    const foundCenter = egyptCenters.find(c => c.id === id);
-    if (foundCenter) {
-      setCenter(foundCenter);
-    } else {
-      setCenter(null);
-    }
+    const fetchCenter = async () => {
+      try {
+        const { data, error } = await supabase.from('centers').select('*, specialists(*), products(*)').eq('id', id).single();
+        if (data && !error) {
+          setCenter(data);
+        } else {
+          setCenter(null);
+        }
+      } catch (err) {
+        console.error('Error fetching center details:', err);
+        setCenter(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchCenter();
   }, [id]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        <div className="flex-grow flex items-center justify-center py-20">
+          <div className="text-medical-600">
+            <p className="font-bold text-lg">{isAr ? 'جاري تحميل تفاصيل المركز...' : 'Loading center details...'}</p>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   if (!center) {
     return (
@@ -102,7 +126,7 @@ const CenterDetails = () => {
           <div className="flex items-center gap-6 text-sm text-gray-600">
             <span className="flex items-center gap-2"><Phone className="w-4 h-4 text-medical-500" /><span dir="ltr">{center.phone}</span></span>
             <span className="flex items-center gap-2"><Clock className="w-4 h-4 text-medical-500" />{workingHours}</span>
-            <span className="flex items-center gap-2"><Users className="w-4 h-4 text-medical-500" />{center.specialists.length} {isAr ? 'أخصائي' : 'specialists'}</span>
+            <span className="flex items-center gap-2"><Users className="w-4 h-4 text-medical-500" />{center.specialists?.length || 0} {isAr ? 'أخصائي' : 'specialists'}</span>
           </div>
           <div className="flex gap-3">
             <Link to={`/booking?center=${center.id}&centerName=${encodeURIComponent(isAr ? center.governorate_ar : center.governorate_en)}`}>
@@ -138,7 +162,7 @@ const CenterDetails = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {center.specialists.map((spec, idx) => (
+              {center.specialists && center.specialists.map((spec: any, idx: number) => (
                 <motion.div
                   key={spec.id}
                   initial={{ opacity: 0, y: 20 }}
@@ -148,10 +172,10 @@ const CenterDetails = () => {
                 >
                   <div className="p-6">
                     <div className="flex items-start gap-4 mb-4">
-                      <img src={spec.image} alt={isAr ? spec.name_ar : spec.name_en} className="w-16 h-16 rounded-xl object-cover shadow-md" />
+                      <img src={spec.image || 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80'} alt={isAr ? spec.full_name : spec.name_en} className="w-16 h-16 rounded-xl object-cover shadow-md" />
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-bold text-gray-900 text-lg">{isAr ? spec.name_ar : spec.name_en}</h3>
-                        <p className="text-medical-600 text-sm font-medium">{isAr ? spec.specialization_ar : spec.specialization_en}</p>
+                        <h3 className="font-bold text-gray-900 text-lg">{isAr ? spec.full_name : spec.name_en}</h3>
+                        <p className="text-medical-600 text-sm font-medium">{isAr ? spec.specialization : spec.specialization_en}</p>
                       </div>
                     </div>
 
@@ -160,19 +184,19 @@ const CenterDetails = () => {
                         <Award className="w-4 h-4 text-medical-600" />
                         <span className="text-sm font-semibold text-gray-900">{isAr ? 'التخصص' : 'Specialization'}</span>
                       </div>
-                      <p className="text-sm text-medical-700 font-medium">{isAr ? spec.specialization_ar : spec.specialization_en}</p>
+                      <p className="text-sm text-medical-700 font-medium">{isAr ? spec.specialization : spec.specialization_en}</p>
                     </div>
 
                     <div className="flex items-center justify-between mb-4 text-sm">
                       <div className="flex items-center gap-2">
-                        <StarRating rating={spec.rating} />
-                        <span className="text-gray-600 font-semibold">{spec.rating.toFixed(1)}</span>
-                        <span className="text-gray-400">({spec.reviewCount})</span>
+                        <StarRating rating={spec.rating || 5} />
+                        <span className="text-gray-600 font-semibold">{(spec.rating || 5).toFixed(1)}</span>
+                        <span className="text-gray-400">({spec.review_count || 0})</span>
                       </div>
                       <span className="text-gray-500">{spec.experience} {isAr ? 'سنة خبرة' : 'yrs exp'}</span>
                     </div>
 
-                    <Link to={`/booking?center=${center.id}&centerName=${encodeURIComponent(isAr ? center.governorate_ar : center.governorate_en)}&specialist=${encodeURIComponent(isAr ? spec.name_ar : spec.name_en)}&specId=${spec.id}`}>
+                    <Link to={`/booking?center=${center.id}&centerName=${encodeURIComponent(isAr ? center.governorate_ar : center.governorate_en)}&specialist=${encodeURIComponent(isAr ? spec.full_name : spec.name_en)}&specId=${spec.id}`}>
                       <Button className="w-full rounded-xl bg-gradient-to-l from-medical-600 to-medical-700 text-white shadow-md hover:shadow-lg">
                         <Calendar className="w-4 h-4 me-2" />
                         {isAr ? 'احجز مع الأخصائي' : 'Book with Specialist'}
@@ -197,18 +221,18 @@ const CenterDetails = () => {
                 </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {center.products.map((prod, idx) => (
+                {center.products.map((prod: any, idx: number) => (
                   <motion.div key={prod.id} initial={{opacity: 0, y: 20}} animate={{opacity: 1, y: 0}} transition={{delay: idx * 0.1}} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-lg transition-all duration-300">
                     <div className="w-full h-48 relative overflow-hidden flex items-center justify-center border-b border-gray-100">
                       {/* Blurred Background */}
                       <div 
                         className="absolute inset-0 bg-cover bg-center blur-xl opacity-20 scale-110"
-                        style={{ backgroundImage: `url(${prod.image})` }}
+                        style={{ backgroundImage: `url(${prod.image_url || prod.image})` }}
                       ></div>
                       
                       {/* Actual Image */}
                       <img 
-                        src={prod.image} 
+                        src={prod.image_url || prod.image} 
                         alt={isAr ? prod.name_ar : prod.name_en} 
                         className="relative z-10 max-w-full max-h-full object-contain transform transition-transform duration-500 hover:scale-105" 
                       />
