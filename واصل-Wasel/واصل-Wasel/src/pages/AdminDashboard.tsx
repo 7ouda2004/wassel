@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from 'sonner';
 import { Textarea } from '@/components/ui/textarea';
-import { Building2, Stethoscope, Users, CheckCircle, XCircle, Edit, Trash2, UserPlus, Save, PlusCircle, X, CheckCircle2, Database, Loader2 } from 'lucide-react';
+import { Building2, Stethoscope, Users, CheckCircle, XCircle, Edit, Trash2, UserPlus, Save, PlusCircle, X, CheckCircle2, Database, Loader2, ArrowUp, ArrowDown } from 'lucide-react';
 import { compressProfilePhoto, compressProductImage } from '@/lib/image-utils';
 
 const AdminDashboard = () => {
@@ -34,7 +34,8 @@ const AdminDashboard = () => {
     removeSpecialist,
     removeCenter,
     addSpecialist,
-    addCenter
+    addCenter,
+    reorderCenters
   } = useAdminStore();
 
   const [editUser, setEditUser] = useState<any>(null);
@@ -52,6 +53,21 @@ const AdminDashboard = () => {
   const [newCenter, setNewCenter] = useState({
     name: '', governorate: '', address: '', phone: '', username: '', password: '', image: ''
   });
+
+  const moveCenter = (index: number, direction: 'up' | 'down') => {
+    if ((direction === 'up' && index === 0) || (direction === 'down' && index === centers.length - 1)) return;
+
+    const newCenters = [...centers];
+    const newIndex = direction === 'up' ? index - 1 : index + 1;
+    
+    // Swap items
+    const temp = newCenters[index];
+    newCenters[index] = newCenters[newIndex];
+    newCenters[newIndex] = temp;
+
+    // Call store to persist
+    reorderCenters(newCenters);
+  };
 
   const handleImageUpload = async (
     e: React.ChangeEvent<HTMLInputElement>, 
@@ -331,6 +347,7 @@ const AdminDashboard = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead>{isAr ? 'الترتيب' : 'Order'}</TableHead>
                     <TableHead>{isAr ? 'اسم المركز' : 'Center Name'}</TableHead>
                     <TableHead>{isAr ? 'عدد الأخصائيين' : 'Specialists Count'}</TableHead>
                     <TableHead>{isAr ? 'اسم المستخدم' : 'Username'}</TableHead>
@@ -339,8 +356,30 @@ const AdminDashboard = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {centers.map(center => (
+                  {centers.map((center, index) => (
                     <TableRow key={center.id}>
+                      <TableCell>
+                        <div className="flex flex-col gap-1">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="h-6 w-6 p-0" 
+                            onClick={() => moveCenter(index, 'up')}
+                            disabled={index === 0}
+                          >
+                            <ArrowUp className="w-4 h-4 text-gray-500" />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="h-6 w-6 p-0" 
+                            onClick={() => moveCenter(index, 'down')}
+                            disabled={index === centers.length - 1}
+                          >
+                            <ArrowDown className="w-4 h-4 text-gray-500" />
+                          </Button>
+                        </div>
+                      </TableCell>
                       <TableCell className="font-medium">{center.name}</TableCell>
                       <TableCell>{center.specialistIds?.length || 0}</TableCell>
                       <TableCell>{center.username}</TableCell>
