@@ -8,12 +8,24 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { 
+  getLocalSpecialists, saveLocalSpecialists, type Specialist 
+} from '@/lib/db';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const { theme, setTheme } = useTheme();
+
+  // Registration States
+  const [isRegisterMode, setIsRegisterMode] = useState(false);
+  const [regName, setRegName] = useState('');
+  const [regUsername, setRegUsername] = useState('');
+  const [regPassword, setRegPassword] = useState('');
+  const [regPhone, setRegPhone] = useState('');
+  const [regRole, setRegRole] = useState('أخصائي أطراف صناعية وجبائر طبية');
+  const [regBio, setRegBio] = useState('');
 
   const toggleMenu = () => {
     setIsOpen(!isOpen);
@@ -31,11 +43,24 @@ const Navbar = () => {
         return;
       }
       
-      // Check credentials
-      const isMahmoud = username === 'mahmoud' && password === 'daizer';
-      const isSpecialist = username === 'specialist' && password === 'specialist123';
+      // Admin Account Check
+      if (username === 'admin' && password === 'admin123') {
+        sessionStorage.setItem('isAdmin', 'true');
+        sessionStorage.setItem('username', 'admin');
+        toast.success('تم تسجيل دخول المسؤول بنجاح');
+        window.location.href = '/admin-dashboard';
+        return;
+      }
+
+      // Check against dynamic Specialists database in localStorage
+      const allSpecs = getLocalSpecialists();
+      const foundSpec = allSpecs.find(s => s.username === username && s.password === password);
       
-      if (isMahmoud || isSpecialist) {
+      if (foundSpec) {
+        if (foundSpec.status === 'pending') {
+          toast.error('حسابك قيد الانتظار لموافقة المسؤول (الادمن)');
+          return;
+        }
         sessionStorage.setItem('isSpecialist', 'true');
         sessionStorage.setItem('username', username);
         toast.success('تم تسجيل الدخول بنجاح');
@@ -49,7 +74,55 @@ const Navbar = () => {
     }
   };
 
-  const isLoggedIn = sessionStorage.getItem('isSpecialist') === 'true';
+  const handleRegisterSpec = (e) => {
+    e.preventDefault();
+    if (!regName || !regUsername || !regPassword) {
+      toast.error('يرجى تعبئة الحقول المطلوبة');
+      return;
+    }
+    
+    const allSpecs = getLocalSpecialists();
+    if (allSpecs.some(s => s.username === regUsername) || regUsername === 'admin') {
+      toast.error('اسم المستخدم هذا مستخدم بالفعل');
+      return;
+    }
+
+    const newSpec: Specialist = {
+      id: Date.now().toString(),
+      name: regName,
+      username: regUsername,
+      password: regPassword,
+      role: regRole,
+      bio: regBio || 'أخصائي متمرس في الأطراف الصناعية والأجهزة التقويمية الحديثة.',
+      image: '/images/new.jpg',
+      expertise: [],
+      status: 'pending',
+      phone: regPhone
+    };
+
+    const updated = [...allSpecs, newSpec];
+    saveLocalSpecialists(updated);
+    toast.success('تم تسجيل طلبك بنجاح! يرجى انتظار موافقة المسؤول لتفعيل حسابك.');
+    
+    // Reset form & toggle back to login
+    setRegName('');
+    setRegUsername('');
+    setRegPassword('');
+    setRegPhone('');
+    setRegBio('');
+    setIsRegisterMode(false);
+  };
+
+  const handleLogout = () => {
+    sessionStorage.removeItem('isSpecialist');
+    sessionStorage.removeItem('isAdmin');
+    sessionStorage.removeItem('username');
+    toast.success('تم تسجيل الخروج بنجاح');
+    window.location.href = '/';
+  };
+
+  const isLoggedIn = sessionStorage.getItem('isSpecialist') === 'true' || sessionStorage.getItem('isAdmin') === 'true';
+  const isAdmin = sessionStorage.getItem('isAdmin') === 'true';
 
   // Define navigation links once to avoid duplication
   const navLinks = [
@@ -102,62 +175,157 @@ const Navbar = () => {
           
           <div className="flex items-center space-x-4 rtl:space-x-reverse">
             {isLoggedIn ? (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5 }}
-              >
-                <Link to="/specialist-dashboard">
+              <div className="flex items-center gap-2">
+                <Link to={isAdmin ? "/admin-dashboard" : "/specialist-dashboard"}>
                   <Button variant="outline" className="flex items-center hover:scale-105 transition-transform duration-200">
                     <User className="mr-2 h-4 w-4" />
                     لوحة التحكم
                   </Button>
                 </Link>
-              </motion.div>
+                <Button variant="destructive" onClick={handleLogout} className="hover:scale-105 transition-transform duration-200">
+                  خروج
+                </Button>
+              </div>
             ) : (
               <motion.div
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5, delay: 0.1 }}
               >
-                <Dialog>
+                <Dialog onOpenChange={(open) => { if (!open) setIsRegisterMode(false); }}>
                   <DialogTrigger asChild>
                     <Button variant="outline" className="flex items-center hover:scale-105 transition-transform duration-200">
                       <User className="mr-2 h-4 w-4" />
                         الدخول كـأخصائي
                     </Button>
                   </DialogTrigger>
-                  <DialogContent>
+                  <DialogContent className="max-w-md">
                     <DialogHeader>
-                      <DialogTitle className="text-center">تسجيل دخول الأخصائي</DialogTitle>
+                      <DialogTitle className="text-center">
+                        {isRegisterMode ? 'تقديم طلب انضمام كأخصائي' : 'تسجيل دخول الأخصائي / المسؤول'}
+                      </DialogTitle>
                     </DialogHeader>
-                    <form onSubmit={handleSpecialistLogin} className="space-y-4">
-                      <div>
-                        <Label htmlFor="navbar-username">اسم المستخدم</Label>
-                        <Input 
-                          id="navbar-username" 
-                          type="text" 
-                          value={username}
-                          onChange={(e) => setUsername(e.target.value)}
-                          className="mt-1"
-                          placeholder="مثال: mahmoud أو specialist"
-                          required
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="navbar-password">كلمة المرور</Label>
-                        <Input 
-                          id="navbar-password" 
-                          type="password" 
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                          className="mt-1"
-                          placeholder="••••••••"
-                          required
-                        />
-                      </div>
-                      <Button type="submit" className="w-full">تسجيل الدخول</Button>
-                    </form>
+
+                    {!isRegisterMode ? (
+                      <form onSubmit={handleSpecialistLogin} className="space-y-4">
+                        <div>
+                          <Label htmlFor="navbar-username">اسم المستخدم</Label>
+                          <Input 
+                            id="navbar-username" 
+                            type="text" 
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
+                            className="mt-1"
+                            placeholder="اسم المستخدم"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="navbar-password">كلمة المرور</Label>
+                          <Input 
+                            id="navbar-password" 
+                            type="password" 
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            className="mt-1"
+                            placeholder="••••••••"
+                            required
+                          />
+                        </div>
+                        <Button type="submit" className="w-full bg-medical-600 hover:bg-medical-700 text-white">تسجيل الدخول</Button>
+                        <div className="text-center mt-4">
+                          <button 
+                            type="button" 
+                            onClick={() => setIsRegisterMode(true)}
+                            className="text-sm text-medical-600 hover:underline font-semibold"
+                          >
+                            ليس لديك حساب؟ سجل كأخصائي جديد
+                          </button>
+                        </div>
+                      </form>
+                    ) : (
+                      <form onSubmit={handleRegisterSpec} className="space-y-3">
+                        <div>
+                          <Label htmlFor="reg-name">الاسم بالكامل *</Label>
+                          <Input 
+                            id="reg-name" 
+                            type="text" 
+                            value={regName}
+                            onChange={(e) => setRegName(e.target.value)}
+                            className="mt-1"
+                            placeholder="أدخل اسمك الثلاثي"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="reg-username">اسم المستخدم *</Label>
+                          <Input 
+                            id="reg-username" 
+                            type="text" 
+                            value={regUsername}
+                            onChange={(e) => setRegUsername(e.target.value)}
+                            className="mt-1"
+                            placeholder="مثال: ahmad_ali"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="reg-password">كلمة المرور *</Label>
+                          <Input 
+                            id="reg-password" 
+                            type="password" 
+                            value={regPassword}
+                            onChange={(e) => setRegPassword(e.target.value)}
+                            className="mt-1"
+                            placeholder="•••••••• (6 خانات على الأقل)"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="reg-phone">رقم الهاتف</Label>
+                          <Input 
+                            id="reg-phone" 
+                            type="text" 
+                            value={regPhone}
+                            onChange={(e) => setRegPhone(e.target.value)}
+                            className="mt-1"
+                            placeholder="مثال: 01012345678"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="reg-role">الوظيفة / التخصص العلمي</Label>
+                          <Input 
+                            id="reg-role" 
+                            type="text" 
+                            value={regRole}
+                            onChange={(e) => setRegRole(e.target.value)}
+                            className="mt-1"
+                            placeholder="أخصائي أطراف صناعية"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="reg-bio">نبذة تعريفية سريعة</Label>
+                          <Textarea 
+                            id="reg-bio" 
+                            value={regBio}
+                            onChange={(e) => setRegBio(e.target.value)}
+                            className="mt-1"
+                            placeholder="اكتب نبذة مختصرة عن مؤهلاتك..."
+                            rows={2}
+                          />
+                        </div>
+                        <Button type="submit" className="w-full bg-green-600 hover:bg-green-700 text-white mt-2">تقديم طلب التسجيل</Button>
+                        <div className="text-center mt-3">
+                          <button 
+                            type="button" 
+                            onClick={() => setIsRegisterMode(false)}
+                            className="text-sm text-medical-600 hover:underline font-semibold"
+                          >
+                            لديك حساب بالفعل؟ تسجيل الدخول
+                          </button>
+                        </div>
+                      </form>
+                    )}
                   </DialogContent>
                 </Dialog>
               </motion.div>

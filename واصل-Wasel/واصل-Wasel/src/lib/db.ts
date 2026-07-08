@@ -298,3 +298,96 @@ export function getLocalCenters(): Center[] {
 export function saveLocalCenters(centers: Center[]): void {
   localStorage.setItem('centers', JSON.stringify(centers));
 }
+
+export interface Specialist {
+  id: string;
+  name: string;
+  username: string;
+  password?: string;
+  role: string;
+  bio: string;
+  image: string;
+  expertise: string[];
+  status: 'pending' | 'active';
+  phone?: string;
+  facebook?: string;
+  instagram?: string;
+  linkedin?: string;
+}
+
+export const defaultSpecialists: Specialist[] = [
+  {
+    id: '1',
+    name: 'محمود إبراهيم',
+    username: 'mahmoud',
+    password: 'daizer',
+    role: 'المؤسس وأخصائي أطراف صناعية وأجهزة تقويمية',
+    image: '/public/images/mahmoud.jpg',
+    bio: 'خريج جامعة القاهرة الجديدة التكنولوجية، ومتخصص في تصميم وتصنيع الأطراف الصناعية والأجهزة التقويمية. يمتلك خبرة واسعة في المجال ويسعى دائمًا لتقديم أحدث التقنيات والحلول المبتكرة للمرضى.',
+    expertise: ['تصميم الأطراف الصناعية', 'الجبائر التقويمية', 'تقييم الحالات المتقدمة'],
+    status: 'active',
+    phone: '01012345678',
+    facebook: 'https://www.facebook.com/profile.php?id=100009899685976',
+    instagram: 'https://www.instagram.com/mahmoud.ibrahim.7/',
+    linkedin: 'https://www.linkedin.com/in/mahmoud-arafa-b490b4265/'
+  },
+  {
+    id: '2',
+    name: 'نادر إبراهيم',
+    username: 'nader',
+    password: 'specialist123',
+    role: 'أخصائي تركيب وضبط الأطراف الصناعية',
+    image: '/public/images/nader.jpg',
+    bio: 'متخصص في ضبط وتركيب الأطراف الصناعية بدقة عالية، مع خبرة أكثر من 7 سنوات في المجال. يتميز بمهاراته الفنية العالية ودقته في العمل، مما يضمن حصول المرضى على أفضل النتائج وأعلى مستويات الراحة.',
+    expertise: ['ضبط الأطراف الصناعية', 'تقييم الحركة والمشي', 'الصيانة والإصلاح'],
+    status: 'active',
+    phone: '01098765432',
+    facebook: 'https://www.facebook.com/nader.ibrahem.35',
+    instagram: 'https://www.instagram.com/nader_op1/',
+    linkedin: 'https://www.linkedin.com/in/nader-ibrahim-3a2554278/'
+  },
+  {
+    id: '3',
+    name: 'باسل هاني',
+    username: 'bassel',
+    password: 'specialist123',
+    role: 'أخصائي الجبائر الطبية وتقنيات السيليكون الحديثه',
+    image: '/public/images/bassel.jpg',
+    bio: 'متخصص في تصميم وتصنيع الجبائر الطبية المخصصة. يمتلك معرفة عميقة بعلم التشريح وميكانيكا الجسم، مما يمكنه من تصميم جبائر تلبي الاحتياجات الدقيقة لكل مريض.',
+    expertise: ['جبائر العمود الفقري', 'جبائر الركبة والكاحل', 'جبائر الأطفال المتخصصة'],
+    status: 'active',
+    phone: '01167834290',
+    facebook: 'https://www.facebook.com/bassel.hany.mohammed',
+    instagram: 'https://www.instagram.com/bassel_hanymohammad/',
+    linkedin: 'https://www.linkedin.com/in/bassel-hany-mohammed-526276328/'
+  },
+  {
+    id: '4',
+    name: 'أخصائي واصل',
+    username: 'specialist',
+    password: 'specialist123',
+    role: 'أخصائي أطراف صناعية وجبائر طبية',
+    image: '/images/new.jpg',
+    bio: 'أخصائي متمرس في الأطراف الصناعية والأجهزة التقويمية الحديثة.',
+    expertise: ['الأطراف الصناعية', 'الجبائر الطبية'],
+    status: 'active',
+    phone: '01234567890'
+  }
+];
+
+export function getLocalSpecialists(): Specialist[] {
+  const saved = localStorage.getItem('specialists');
+  if (saved) {
+    try {
+      return JSON.parse(saved);
+    } catch (e) {
+      console.error('Error parsing specialists:', e);
+    }
+  }
+  localStorage.setItem('specialists', JSON.stringify(defaultSpecialists));
+  return defaultSpecialists;
+}
+
+export function saveLocalSpecialists(specialists: Specialist[]): void {
+  localStorage.setItem('specialists', JSON.stringify(specialists));
+}

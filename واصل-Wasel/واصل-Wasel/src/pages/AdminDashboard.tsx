@@ -1,839 +1,600 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useAdminStore, SpecialistAccount, CenterAccount } from '@/stores/admin-store';
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
+import { motion } from 'framer-motion';
+import { 
+  Users, MapPin, PlusCircle, Edit, Trash, Save, Search, 
+  UserCheck, ShieldAlert, Clock, Phone, Building, Check, X
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { toast } from 'sonner';
 import { Textarea } from '@/components/ui/textarea';
-import { Building2, Stethoscope, Users, CheckCircle, XCircle, Edit, Trash2, UserPlus, Save, PlusCircle, X, CheckCircle2, Database, Loader2, ArrowUp, ArrowDown } from 'lucide-react';
-import { compressProfilePhoto, compressProductImage } from '@/lib/image-utils';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { toast } from "sonner";
+import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
+import { 
+  getLocalCenters, saveLocalCenters, type Center,
+  getLocalSpecialists, saveLocalSpecialists, type Specialist 
+} from '@/lib/db';
 
 const AdminDashboard = () => {
-  const { t, i18n } = useTranslation();
-  const navigate = useNavigate();
-  const isAr = i18n.language === 'ar';
-
-  const {
-    specialists,
-    centers,
-    approvalRequests,
-    isLoading,
-    fetchAll,
-    updateSpecialist,
-    updateCenter,
-    approveRequest,
-    rejectRequest,
-    removeSpecialist,
-    removeCenter,
-    addSpecialist,
-    addCenter,
-    reorderCenters
-  } = useAdminStore();
-
-  const [editUser, setEditUser] = useState<any>(null);
-  const [editType, setEditType] = useState<'specialist' | 'center' | null>(null);
-  const [saveSuccess, setSaveSuccess] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [approvalSuccess, setApprovalSuccess] = useState<string | null>(null);
-  
-  const [isAddingSpecialist, setIsAddingSpecialist] = useState(false);
-  const [newSpecialist, setNewSpecialist] = useState({
-    fullName: '', phone: '', username: '', password: '', specialization: '', centerId: '', experience: 0, image: ''
-  });
-
+  // Centers state
+  const [centers, setCenters] = useState<Center[]>([]);
   const [isAddingCenter, setIsAddingCenter] = useState(false);
-  const [newCenter, setNewCenter] = useState({
-    name: '', governorate: '', address: '', phone: '', username: '', password: '', image: ''
+  const [isEditingCenter, setIsEditingCenter] = useState(false);
+  const [currentCenter, setCurrentCenter] = useState<Center>({
+    id: '', name: '', location: '', address: '', phone: '',
+    workingHours: 'السبت - الخميس: 9 صباحاً - 9 مساءً',
+    image: '/images/ortho.png', region: 'القاهرة الكبرى'
   });
+  const [centerSearchTerm, setCenterSearchTerm] = useState('');
+  const [confirmDeleteCenter, setConfirmDeleteCenter] = useState<string | null>(null);
 
-  const moveCenter = (index: number, direction: 'up' | 'down') => {
-    if ((direction === 'up' && index === 0) || (direction === 'down' && index === centers.length - 1)) return;
-
-    const newCenters = [...centers];
-    const newIndex = direction === 'up' ? index - 1 : index + 1;
-    
-    // Swap items
-    const temp = newCenters[index];
-    newCenters[index] = newCenters[newIndex];
-    newCenters[newIndex] = temp;
-
-    // Call store to persist
-    reorderCenters(newCenters);
-  };
-
-  const handleImageUpload = async (
-    e: React.ChangeEvent<HTMLInputElement>, 
-    callback: (base64: string) => void,
-    type: 'profile' | 'product' = 'profile'
-  ) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      try {
-        const compressed = type === 'product' 
-          ? await compressProductImage(file) 
-          : await compressProfilePhoto(file);
-        callback(compressed);
-      } catch (err) {
-        console.error('Failed to compress image:', err);
-      }
-    }
-  };
+  // Specialists state
+  const [specialists, setSpecialists] = useState<Specialist[]>([]);
+  const [isAddingSpec, setIsAddingSpec] = useState(false);
+  const [isEditingSpec, setIsEditingSpec] = useState(false);
+  const [currentSpec, setCurrentSpec] = useState<Specialist>({
+    id: '', name: '', username: '', password: '', role: '', bio: '',
+    image: '/images/new.jpg', expertise: [], status: 'active', phone: ''
+  });
+  const [specSearchTerm, setSpecSearchTerm] = useState('');
+  const [confirmDeleteSpec, setConfirmDeleteSpec] = useState<string | null>(null);
+  const [specExpertiseInput, setSpecExpertiseInput] = useState('');
 
   useEffect(() => {
-    const role = sessionStorage.getItem('mockRole');
-    if (role !== 'admin') {
-      navigate('/login');
+    document.documentElement.dir = 'rtl';
+    document.body.classList.add('font-cairo');
+    
+    // Auth Check
+    const isAdmin = sessionStorage.getItem('isAdmin');
+    if (isAdmin !== 'true') {
+      toast.error('غير مصرح لك بدخول هذه الصفحة');
+      window.location.href = '/';
+      return;
+    }
+
+    setCenters(getLocalCenters());
+    setSpecialists(getLocalSpecialists());
+  }, []);
+
+  // --- Center Handlers ---
+  const handleAddCenter = () => {
+    setCurrentCenter({
+      id: Date.now().toString(),
+      name: '',
+      location: '',
+      address: '',
+      phone: '',
+      workingHours: 'السبت - الخميس: 9 صباحاً - 9 مساءً',
+      image: '/images/ortho.png',
+      region: 'القاهرة الكبرى'
+    });
+    setIsAddingCenter(true);
+  };
+
+  const handleEditCenter = (center: Center) => {
+    setCurrentCenter({ ...center });
+    setIsEditingCenter(true);
+  };
+
+  const handleDeleteCenter = (id: string) => {
+    setConfirmDeleteCenter(id);
+  };
+
+  const confirmDeleteCenterFn = () => {
+    if (confirmDeleteCenter) {
+      const updated = centers.filter(c => c.id !== confirmDeleteCenter);
+      setCenters(updated);
+      saveLocalCenters(updated);
+      setConfirmDeleteCenter(null);
+      toast.success('تم حذف المركز بنجاح');
+    }
+  };
+
+  const handleCenterInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setCurrentCenter(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSaveCenter = () => {
+    if (!currentCenter.name || !currentCenter.location || !currentCenter.address || !currentCenter.phone) {
+      toast.error('يرجى ملء جميع الحقول المطلوبة (*)');
+      return;
+    }
+
+    let updated: Center[];
+    if (isAddingCenter) {
+      updated = [...centers, currentCenter];
+      toast.success('تم إضافة المركز بنجاح');
     } else {
-      // Fetch all data from backend
-      fetchAll();
+      updated = centers.map(c => c.id === currentCenter.id ? currentCenter : c);
+      toast.success('تم تعديل بيانات المركز بنجاح');
     }
-  }, [navigate, fetchAll]);
 
-  const handleSaveEdit = async () => {
-    if (!editUser) return;
-    setIsSaving(true);
-    
-    try {
-      if (editType === 'specialist') {
-        await updateSpecialist(editUser.id, {
-          username: editUser.username,
-          password: editUser.password,
-          fullName: editUser.fullName,
-          image: editUser.image,
-          specialization: editUser.specialization,
-          experience: editUser.experience,
-          centerId: editUser.centerId,
-          centerName: centers.find(c => c.id === editUser.centerId)?.name
-        });
-      } else if (editType === 'center') {
-        await updateCenter(editUser.id, {
-          username: editUser.username,
-          password: editUser.password,
-          name: editUser.name,
-          address: editUser.address,
-          governorate_ar: editUser.governorate_ar,
-          image: editUser.image,
-          services_ar: editUser.services_ar,
-          products: editUser.products
-        });
+    setCenters(updated);
+    saveLocalCenters(updated);
+    setIsAddingCenter(false);
+    setIsEditingCenter(false);
+  };
+
+  // --- Specialist Handlers ---
+  const handleAddSpec = () => {
+    setCurrentSpec({
+      id: Date.now().toString(),
+      name: '',
+      username: '',
+      password: '',
+      role: '',
+      bio: '',
+      image: '/images/new.jpg',
+      expertise: [],
+      status: 'active',
+      phone: '',
+      facebook: '',
+      instagram: '',
+      linkedin: ''
+    });
+    setSpecExpertiseInput('');
+    setIsAddingSpec(true);
+  };
+
+  const handleEditSpec = (spec: Specialist) => {
+    setCurrentSpec({ ...spec });
+    setSpecExpertiseInput(spec.expertise ? spec.expertise.join('، ') : '');
+    setIsEditingSpec(true);
+  };
+
+  const handleDeleteSpec = (id: string) => {
+    setConfirmDeleteSpec(id);
+  };
+
+  const confirmDeleteSpecFn = () => {
+    if (confirmDeleteSpec) {
+      const updated = specialists.filter(s => s.id !== confirmDeleteSpec);
+      setSpecialists(updated);
+      saveLocalSpecialists(updated);
+      setConfirmDeleteSpec(null);
+      toast.success('تم حذف حساب الأخصائي بنجاح');
+    }
+  };
+
+  const handleSpecInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setCurrentSpec(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSaveSpec = () => {
+    if (!currentSpec.name || !currentSpec.username || (isAddingSpec && !currentSpec.password)) {
+      toast.error('يرجى كتابة الاسم واسم المستخدم وكلمة المرور');
+      return;
+    }
+
+    // Convert comma-separated expertise to array
+    const expArray = specExpertiseInput
+      ? specExpertiseInput.split(/[،,]/).map(s => s.trim()).filter(Boolean)
+      : [];
+
+    const updatedSpec = {
+      ...currentSpec,
+      expertise: expArray
+    };
+
+    let updatedList: Specialist[];
+    if (isAddingSpec) {
+      // Check if username already exists
+      if (specialists.some(s => s.username === currentSpec.username)) {
+        toast.error('اسم المستخدم هذا مستخدم بالفعل');
+        return;
       }
-      
-      setIsSaving(false);
-      setSaveSuccess(true);
-      
-      toast.success(
-        isAr 
-          ? `✅ تم حفظ البيانات في قاعدة البيانات بنجاح!` 
-          : `✅ Data saved to database successfully!`,
-        {
-          description: isAr 
-            ? `تم تحديث بيانات ${editType === 'center' ? 'المركز' : 'الأخصائي'} وحفظها تلقائياً`
-            : `${editType === 'center' ? 'Center' : 'Specialist'} data has been updated and auto-saved`,
-          duration: 4000,
-        }
-      );
-      
-      // Show success animation for 1.5 seconds then close
-      setTimeout(() => {
-        setSaveSuccess(false);
-        setEditUser(null);
-        setEditType(null);
-      }, 1500);
-    } catch (error) {
-      setIsSaving(false);
-      toast.error(isAr ? '❌ فشل في حفظ البيانات' : '❌ Failed to save data');
+      updatedList = [...specialists, updatedSpec];
+      toast.success('تم إضافة حساب الأخصائي بنجاح');
+    } else {
+      updatedList = specialists.map(s => s.id === currentSpec.id ? updatedSpec : s);
+      toast.success('تم تعديل حساب الأخصائي بنجاح');
     }
+
+    setSpecialists(updatedList);
+    saveLocalSpecialists(updatedList);
+    setIsAddingSpec(false);
+    setIsEditingSpec(false);
   };
 
-  const handleApproveRequest = async (id: string) => {
-    const request = approvalRequests.find(r => r.id === id);
-    if (!request) return;
-    
-    try {
-      await approveRequest(id);
-      setApprovalSuccess(request.fullName);
-      
-      toast.success(
-        isAr 
-          ? `🎉 تم قبول طلب "${request.fullName}" وحفظه في قاعدة البيانات!`
-          : `🎉 "${request.fullName}" approved and saved to database!`,
-        {
-          description: isAr
-            ? `تم إنشاء حساب ${request.type === 'specialist' ? 'أخصائي' : 'مركز'} جديد تلقائياً وحفظه في النظام`
-            : `A new ${request.type} account has been automatically created and saved`,
-          duration: 5000,
-        }
-      );
-      
-      setTimeout(() => setApprovalSuccess(null), 3000);
-    } catch (error) {
-      toast.error(isAr ? '❌ فشل في قبول الطلب' : '❌ Failed to approve request');
-    }
+  const handleApproveSpec = (spec: Specialist) => {
+    const updated = specialists.map(s => s.id === spec.id ? { ...s, status: 'active' as const } : s);
+    setSpecialists(updated);
+    saveLocalSpecialists(updated);
+    toast.success(`تم قبول حساب الأخصائي: ${spec.name}`);
   };
 
-  const handleAddSpecialist = async () => {
-    if (!newSpecialist.fullName || !newSpecialist.username || !newSpecialist.password) {
-      toast.error(isAr ? 'يرجى ملء الحقول الأساسية' : 'Please fill required fields');
-      return;
-    }
-    
-    try {
-      await addSpecialist({
-        ...newSpecialist,
-        type: 'specialist',
-        centerName: centers.find(c => c.id === newSpecialist.centerId)?.name,
-        image: newSpecialist.image || 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?q=80&w=2070&auto=format&fit=crop'
-      });
-      
-      toast.success(isAr ? 'تمت إضافة الأخصائي بنجاح' : 'Specialist added successfully');
-      setIsAddingSpecialist(false);
-      setNewSpecialist({ fullName: '', phone: '', username: '', password: '', specialization: '', centerId: '', experience: 0, image: '' });
-    } catch (error) {
-      toast.error(isAr ? '❌ فشل في إضافة الأخصائي' : '❌ Failed to add specialist');
-    }
-  };
-
-  const handleAddCenter = async () => {
-    if (!newCenter.name || !newCenter.username || !newCenter.password) {
-      toast.error(isAr ? 'يرجى ملء الحقول الأساسية' : 'Please fill required fields');
-      return;
-    }
-    
-    try {
-      await addCenter({
-        name: newCenter.name,
-        username: newCenter.username,
-        password: newCenter.password,
-        phone: newCenter.phone,
-        address: newCenter.address,
-        governorate_ar: newCenter.governorate,
-        image: newCenter.image || 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?q=80&w=2053&auto=format&fit=crop',
-        specializations: [],
-        rating: 5,
-        insurance_supported: true,
-        products: [],
-        services_ar: []
-      });
-      
-      toast.success(isAr ? 'تمت إضافة المركز بنجاح' : 'Center added successfully');
-      setIsAddingCenter(false);
-      setNewCenter({ name: '', governorate: '', address: '', phone: '', username: '', password: '', image: '' });
-    } catch (error) {
-      toast.error(isAr ? '❌ فشل في إضافة المركز' : '❌ Failed to add center');
-    }
+  const handleRejectSpec = (spec: Specialist) => {
+    const updated = specialists.filter(s => s.id !== spec.id);
+    setSpecialists(updated);
+    saveLocalSpecialists(updated);
+    toast.error(`تم رفض وحذف حساب: ${spec.name}`);
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen flex flex-col">
       <Navbar />
-      
+
       <main className="flex-grow container mx-auto px-4 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">{isAr ? 'لوحة تحكم الإدارة' : 'Admin Dashboard'}</h1>
-          <p className="text-gray-600">{isAr ? 'إدارة الأخصائيين، المراكز، وطلبات الانضمام' : 'Manage specialists, centers, and join requests'}</p>
+        <div className="mb-8 flex justify-between items-center bg-red-50 border-r-4 border-red-500 p-4 rounded">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">لوحة تحكم المسؤول (الادمن)</h1>
+            <p className="text-gray-600 mt-1">إدارة المراكز الطبية وحسابات الأخصائيين المعتمدين</p>
+          </div>
+          <Building className="h-10 w-10 text-red-500" />
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex items-center">
-            <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mr-4 ml-4">
-              <Stethoscope className="w-6 h-6 text-blue-600" />
-            </div>
-            <div>
-              <p className="text-sm text-gray-500 font-medium">{isAr ? 'إجمالي الأخصائيين' : 'Total Specialists'}</p>
-              <h3 className="text-2xl font-bold text-gray-900">{specialists.length}</h3>
-            </div>
-          </div>
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex items-center">
-            <div className="w-12 h-12 rounded-full bg-teal-100 flex items-center justify-center mr-4 ml-4">
-              <Building2 className="w-6 h-6 text-teal-600" />
-            </div>
-            <div>
-              <p className="text-sm text-gray-500 font-medium">{isAr ? 'المراكز المتعاقدة' : 'Contracted Centers'}</p>
-              <h3 className="text-2xl font-bold text-gray-900">{centers.length}</h3>
-            </div>
-          </div>
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex items-center">
-            <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center mr-4 ml-4">
-              <Users className="w-6 h-6 text-orange-600" />
-            </div>
-            <div>
-              <p className="text-sm text-gray-500 font-medium">{isAr ? 'طلبات قيد المراجعة' : 'Pending Requests'}</p>
-              <h3 className="text-2xl font-bold text-gray-900">{approvalRequests.filter(r => r.status === 'pending').length}</h3>
-            </div>
-          </div>
-        </div>
-
-        <Tabs defaultValue="specialists" className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-          <TabsList className="mb-6">
-            <TabsTrigger value="specialists">{isAr ? 'الأخصائيين' : 'Specialists'}</TabsTrigger>
-            <TabsTrigger value="centers">{isAr ? 'المراكز' : 'Centers'}</TabsTrigger>
-            <TabsTrigger value="requests">
-              {isAr ? 'طلبات الانضمام' : 'Join Requests'}
-              {approvalRequests.filter(r => r.status === 'pending').length > 0 && (
-                <span className="ml-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  {approvalRequests.filter(r => r.status === 'pending').length}
-                </span>
-              )}
-            </TabsTrigger>
+        <Tabs defaultValue="specs">
+          <TabsList className="grid grid-cols-2 mb-6">
+            <TabsTrigger value="specs">إدارة الأخصائيين</TabsTrigger>
+            <TabsTrigger value="centers">إدارة المراكز</TabsTrigger>
           </TabsList>
 
-          {/* Specialists Tab */}
-          <TabsContent value="specialists">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold">{isAr ? 'إدارة الأخصائيين' : 'Manage Specialists'}</h2>
-              <Button onClick={() => setIsAddingSpecialist(true)} className="bg-teal-600 hover:bg-teal-700">
-                <UserPlus className="w-4 h-4 mr-2" />
-                {isAr ? 'أضف أخصائي جديد' : 'Add New Specialist'}
+          {/* --- Specialists Tab Content --- */}
+          <TabsContent value="specs">
+            <div className="mb-6 flex flex-col md:flex-row justify-between gap-4">
+              <div className="flex-1 relative">
+                <Search className="absolute right-3 top-2.5 h-5 w-5 text-gray-400" />
+                <Input
+                  placeholder="البحث عن أخصائي..."
+                  value={specSearchTerm}
+                  onChange={(e) => setSpecSearchTerm(e.target.value)}
+                  className="pl-3 pr-10"
+                />
+              </div>
+              <Button onClick={handleAddSpec} className="bg-red-600 hover:bg-red-700 text-white">
+                <PlusCircle className="ml-2 h-5 w-5" />
+                إضافة أخصائي جديد
               </Button>
             </div>
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>{isAr ? 'الاسم' : 'Name'}</TableHead>
-                    <TableHead>{isAr ? 'المركز التابع له' : 'Center'}</TableHead>
-                    <TableHead>{isAr ? 'اسم المستخدم' : 'Username'}</TableHead>
-                    <TableHead>{isAr ? 'كلمة المرور' : 'Password'}</TableHead>
-                    <TableHead>{isAr ? 'إجراءات' : 'Actions'}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {specialists.map(spec => (
-                    <TableRow key={spec.id}>
-                      <TableCell className="font-medium">{spec.fullName}</TableCell>
-                      <TableCell>{spec.centerName || (isAr ? 'مستقل' : 'Independent')}</TableCell>
-                      <TableCell>{spec.username}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <span className="font-mono bg-gray-100 px-2 py-1 rounded text-sm">{spec.password}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex gap-2">
-                          <Button variant="outline" size="sm" onClick={() => { setEditUser({ ...spec }); setEditType('specialist'); }}>
-                            <Edit className="w-4 h-4" />
-                          </Button>
-                          <Button variant="destructive" size="sm" onClick={() => removeSpecialist(spec.id)}>
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </TabsContent>
 
-          {/* Centers Tab */}
-          <TabsContent value="centers">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold">{isAr ? 'إدارة المراكز' : 'Manage Centers'}</h2>
-              <Button onClick={() => setIsAddingCenter(true)} className="bg-teal-600 hover:bg-teal-700">
-                <Building2 className="w-4 h-4 mr-2" />
-                {isAr ? 'أضف مركز جديد' : 'Add New Center'}
-              </Button>
-            </div>
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>{isAr ? 'الترتيب' : 'Order'}</TableHead>
-                    <TableHead>{isAr ? 'اسم المركز' : 'Center Name'}</TableHead>
-                    <TableHead>{isAr ? 'عدد الأخصائيين' : 'Specialists Count'}</TableHead>
-                    <TableHead>{isAr ? 'اسم المستخدم' : 'Username'}</TableHead>
-                    <TableHead>{isAr ? 'كلمة المرور' : 'Password'}</TableHead>
-                    <TableHead>{isAr ? 'إجراءات' : 'Actions'}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {centers.map((center, index) => (
-                    <TableRow key={center.id}>
-                      <TableCell>
-                        <div className="flex flex-col gap-1">
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            className="h-6 w-6 p-0" 
-                            onClick={() => moveCenter(index, 'up')}
-                            disabled={index === 0}
-                          >
-                            <ArrowUp className="w-4 h-4 text-gray-500" />
-                          </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="sm" 
-                            className="h-6 w-6 p-0" 
-                            onClick={() => moveCenter(index, 'down')}
-                            disabled={index === centers.length - 1}
-                          >
-                            <ArrowDown className="w-4 h-4 text-gray-500" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                      <TableCell className="font-medium">{center.name}</TableCell>
-                      <TableCell>{center.specialistIds?.length || 0}</TableCell>
-                      <TableCell>{center.username}</TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <span className="font-mono bg-gray-100 px-2 py-1 rounded text-sm">{center.password}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex gap-2">
-                          <Button variant="outline" size="sm" onClick={() => { setEditUser({ ...center }); setEditType('center'); }}>
-                            <Edit className="w-4 h-4" />
-                          </Button>
-                          <Button variant="destructive" size="sm" onClick={() => removeCenter(center.id)}>
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </TabsContent>
+            {/* Pending Requests Section */}
+            {specialists.some(s => s.status === 'pending') && (
+              <div className="mb-8 bg-amber-50/50 p-6 rounded-xl border border-amber-200">
+                <h2 className="text-lg font-bold text-amber-900 mb-4 flex items-center gap-2">
+                  <ShieldAlert className="h-5 w-5 text-amber-600" />
+                  حسابات جديدة قيد الانتظار لموافقتك ({specialists.filter(s => s.status === 'pending').length})
+                </h2>
+                
+                <div className="overflow-x-auto bg-white rounded-lg border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="text-right">الاسم</TableHead>
+                        <TableHead className="text-right">اسم المستخدم</TableHead>
+                        <TableHead className="text-right">الوظيفة</TableHead>
+                        <TableHead className="text-right">الهاتف</TableHead>
+                        <TableHead className="text-right">الإجراءات</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {specialists
+                        .filter(s => s.status === 'pending')
+                        .map(spec => (
+                          <TableRow key={spec.id}>
+                            <TableCell className="font-bold">{spec.name}</TableCell>
+                            <TableCell className="text-gray-600">{spec.username}</TableCell>
+                            <TableCell>{spec.role}</TableCell>
+                            <TableCell>{spec.phone || '-'}</TableCell>
+                            <TableCell>
+                              <div className="flex gap-2">
+                                <Button 
+                                  size="sm" 
+                                  onClick={() => handleApproveSpec(spec)}
+                                  className="bg-green-600 hover:bg-green-700 text-white"
+                                >
+                                  <Check className="h-4 w-4 ml-1" /> قبول الحساب
+                                </Button>
+                                <Button 
+                                  size="sm" 
+                                  variant="destructive"
+                                  onClick={() => handleRejectSpec(spec)}
+                                >
+                                  <X className="h-4 w-4 ml-1" /> رفض الحساب
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
+            )}
 
-          {/* Requests Tab */}
-          <TabsContent value="requests">
-            <h2 className="text-xl font-semibold mb-4">{isAr ? 'طلبات الانضمام' : 'Join Requests'}</h2>
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>{isAr ? 'الاسم/المركز' : 'Name/Center'}</TableHead>
-                    <TableHead>{isAr ? 'النوع' : 'Type'}</TableHead>
-                    <TableHead>{isAr ? 'الهاتف' : 'Phone'}</TableHead>
-                    <TableHead>{isAr ? 'تاريخ الطلب' : 'Date'}</TableHead>
-                    <TableHead>{isAr ? 'الحالة' : 'Status'}</TableHead>
-                    <TableHead>{isAr ? 'إجراءات' : 'Actions'}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {approvalRequests.map(req => (
-                    <TableRow key={req.id}>
-                      <TableCell className="font-medium">{req.type === 'center' ? req.centerName : req.fullName}</TableCell>
-                      <TableCell>
-                        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${req.type === 'specialist' ? 'bg-blue-100 text-blue-700' : 'bg-teal-100 text-teal-700'}`}>
-                          {req.type === 'specialist' ? (isAr ? 'أخصائي' : 'Specialist') : (isAr ? 'مركز' : 'Center')}
-                        </span>
-                      </TableCell>
-                      <TableCell>{req.phone}</TableCell>
-                      <TableCell>{new Date(req.submittedAt).toLocaleDateString()}</TableCell>
-                      <TableCell>
-                        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                          req.status === 'pending' ? 'bg-orange-100 text-orange-700' : 
-                          req.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                        }`}>
-                          {req.status === 'pending' ? (isAr ? 'قيد المراجعة' : 'Pending') :
-                           req.status === 'approved' ? (isAr ? 'مقبول' : 'Approved') : (isAr ? 'مرفوض' : 'Rejected')}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        {req.status === 'pending' && (
-                          <div className="flex gap-2">
-                            <Button size="sm" className="bg-green-600 hover:bg-green-700" onClick={() => handleApproveRequest(req.id)}>
-                              <CheckCircle className="w-4 h-4 mr-1" /> {isAr ? 'قبول وحفظ' : 'Approve & Save'}
-                            </Button>
-                            <Button size="sm" variant="destructive" onClick={() => rejectRequest(req.id)}>
-                              <XCircle className="w-4 h-4 mr-1" /> {isAr ? 'رفض' : 'Reject'}
-                            </Button>
-                          </div>
-                        )}
-                        {req.status === 'approved' && (
-                          <div className="flex items-center gap-1 text-green-600 text-sm font-medium">
-                            <Database className="w-4 h-4" />
-                            {isAr ? 'محفوظ في قاعدة البيانات' : 'Saved to DB'}
-                          </div>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                  {approvalRequests.length === 0 && (
+            {/* Active Specialists List */}
+            <div className="bg-white rounded-xl border p-6">
+              <h2 className="text-lg font-bold text-gray-900 mb-4">الأخصائيين المعتمدين</h2>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center py-8 text-gray-500">
-                        {isAr ? 'لا توجد طلبات حالياً' : 'No requests at the moment'}
-                      </TableCell>
+                      <TableHead className="text-right">الصورة</TableHead>
+                      <TableHead className="text-right">الاسم</TableHead>
+                      <TableHead className="text-right">اسم المستخدم</TableHead>
+                      <TableHead className="text-right">الدور / التخصص</TableHead>
+                      <TableHead className="text-right">الهاتف</TableHead>
+                      <TableHead className="text-right">الإجراءات</TableHead>
                     </TableRow>
-                  )}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {specialists
+                      .filter(s => s.status === 'active' && s.name.toLowerCase().includes(specSearchTerm.toLowerCase()))
+                      .map(spec => (
+                        <TableRow key={spec.id}>
+                          <TableCell>
+                            <img 
+                              src={spec.image || '/images/new.jpg'} 
+                              alt={spec.name} 
+                              className="h-10 w-10 rounded-full object-cover border"
+                              onError={(e) => {
+                                e.currentTarget.src = "https://images.unsplash.com/photo-1622253692010-333f2da6031d?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80";
+                              }}
+                            />
+                          </TableCell>
+                          <TableCell className="font-semibold">{spec.name}</TableCell>
+                          <TableCell className="text-gray-500 font-mono">{spec.username}</TableCell>
+                          <TableCell>{spec.role}</TableCell>
+                          <TableCell>{spec.phone || '-'}</TableCell>
+                          <TableCell>
+                            <div className="flex gap-2">
+                              <Button variant="ghost" size="sm" onClick={() => handleEditSpec(spec)}>
+                                <Edit className="h-4 w-4 text-blue-600" />
+                              </Button>
+                              <Button variant="ghost" size="sm" onClick={() => handleDeleteSpec(spec.id)}>
+                                <Trash className="h-4 w-4 text-red-600" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* --- Centers Tab Content --- */}
+          <TabsContent value="centers">
+            <div className="mb-6 flex flex-col md:flex-row justify-between gap-4">
+              <div className="flex-1 relative">
+                <Search className="absolute right-3 top-2.5 h-5 w-5 text-gray-400" />
+                <Input
+                  placeholder="البحث عن مركز..."
+                  value={centerSearchTerm}
+                  onChange={(e) => setCenterSearchTerm(e.target.value)}
+                  className="pl-3 pr-10"
+                />
+              </div>
+              <Button onClick={handleAddCenter} className="bg-red-600 hover:bg-red-700 text-white">
+                <PlusCircle className="ml-2 h-5 w-5" />
+                إضافة مركز جديد
+              </Button>
+            </div>
+
+            <div className="bg-white rounded-xl border p-6">
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="text-right">اسم المركز</TableHead>
+                      <TableHead className="text-right">المحافظة</TableHead>
+                      <TableHead className="text-right">العنوان</TableHead>
+                      <TableHead className="text-right">الهاتف</TableHead>
+                      <TableHead className="text-right">ساعات العمل</TableHead>
+                      <TableHead className="text-right">الإجراءات</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {centers
+                      .filter(c => c.name.toLowerCase().includes(centerSearchTerm.toLowerCase()) || c.location.toLowerCase().includes(centerSearchTerm.toLowerCase()))
+                      .map(center => (
+                        <TableRow key={center.id}>
+                          <TableCell className="font-semibold">{center.name}</TableCell>
+                          <TableCell>{center.location}</TableCell>
+                          <TableCell className="max-w-[200px] truncate">{center.address}</TableCell>
+                          <TableCell>{center.phone}</TableCell>
+                          <TableCell className="text-xs">{center.workingHours}</TableCell>
+                          <TableCell>
+                            <div className="flex gap-2">
+                              <Button variant="ghost" size="sm" onClick={() => handleEditCenter(center)}>
+                                <Edit className="h-4 w-4 text-blue-600" />
+                              </Button>
+                              <Button variant="ghost" size="sm" onClick={() => handleDeleteCenter(center.id)}>
+                                <Trash className="h-4 w-4 text-red-600" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                  </TableBody>
+                </Table>
+              </div>
             </div>
           </TabsContent>
         </Tabs>
       </main>
 
+      {/* Add/Edit Specialist Dialog */}
+      <Dialog open={isAddingSpec || isEditingSpec} onOpenChange={(o) => { if(!o) { setIsAddingSpec(false); setIsEditingSpec(false); } }}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>{isAddingSpec ? 'إضافة أخصائي جديد' : 'تعديل بيانات الأخصائي'}</DialogTitle>
+          </DialogHeader>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="spec-name">الاسم بالكامل *</Label>
+                <Input id="spec-name" name="name" value={currentSpec.name} onChange={handleSpecInputChange} required />
+              </div>
+              <div>
+                <Label htmlFor="spec-username">اسم المستخدم *</Label>
+                <Input id="spec-username" name="username" value={currentSpec.username} onChange={handleSpecInputChange} required />
+              </div>
+              <div>
+                <Label htmlFor="spec-password">كلمة المرور {isEditingSpec && '(اتركه فارغاً لعدم التعديل)'}</Label>
+                <Input id="spec-password" name="password" type="password" value={currentSpec.password || ''} onChange={handleSpecInputChange} />
+              </div>
+              <div>
+                <Label htmlFor="spec-phone">رقم الهاتف</Label>
+                <Input id="spec-phone" name="phone" value={currentSpec.phone || ''} onChange={handleSpecInputChange} />
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="spec-role">الوظيفة / التخصص العلمي *</Label>
+                <Input id="spec-role" name="role" value={currentSpec.role} onChange={handleSpecInputChange} placeholder="أخصائي أطراف صناعية" required />
+              </div>
+              <div>
+                <Label htmlFor="spec-image">رابط الصورة الشخصية</Label>
+                <Input id="spec-image" name="image" value={currentSpec.image} onChange={handleSpecInputChange} />
+              </div>
+              <div>
+                <Label htmlFor="spec-expertise">التخصصات الفرعية (مفصولة بفاصلة)</Label>
+                <Input 
+                  id="spec-expertise" 
+                  value={specExpertiseInput} 
+                  onChange={(e) => setSpecExpertiseInput(e.target.value)} 
+                  placeholder="جبائر الركبة، أطراف علوية"
+                />
+              </div>
+              <div>
+                <Label htmlFor="spec-bio">نبذة تعريفية للموقع *</Label>
+                <Textarea id="spec-bio" name="bio" value={currentSpec.bio} onChange={handleSpecInputChange} rows={2} required />
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-2 border-t pt-4">
+            <div>
+              <Label htmlFor="spec-facebook">رابط فيسبوك</Label>
+              <Input id="spec-facebook" name="facebook" value={currentSpec.facebook || ''} onChange={handleSpecInputChange} />
+            </div>
+            <div>
+              <Label htmlFor="spec-instagram">رابط انستجرام</Label>
+              <Input id="spec-instagram" name="instagram" value={currentSpec.instagram || ''} onChange={handleSpecInputChange} />
+            </div>
+            <div>
+              <Label htmlFor="spec-linkedin">رابط لينكد إن</Label>
+              <Input id="spec-linkedin" name="linkedin" value={currentSpec.linkedin || ''} onChange={handleSpecInputChange} />
+            </div>
+          </div>
+
+          <DialogFooter className="mt-4">
+            <Button variant="outline" onClick={() => { setIsAddingSpec(false); setIsEditingSpec(false); }}>إلغاء</Button>
+            <Button onClick={handleSaveSpec} className="bg-red-600 hover:bg-red-700 text-white">
+              <Save className="h-4 w-4 ml-2" /> حفظ البيانات
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Specialist Confirmation */}
+      <Dialog open={confirmDeleteSpec !== null} onOpenChange={(o) => { if(!o) setConfirmDeleteSpec(null); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>تأكيد حذف الأخصائي</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p>هل أنت متأكد من رغبتك في حذف هذا الأخصائي نهائياً؟ لن يتمكن من تسجيل الدخول وسيمحى من الموقع.</p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirmDeleteSpec(null)}>إلغاء</Button>
+            <Button variant="destructive" onClick={confirmDeleteSpecFn}>نعم، حذف الأخصائي</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add/Edit Center Dialog */}
+      <Dialog open={isAddingCenter || isEditingCenter} onOpenChange={(o) => { if(!o) { setIsAddingCenter(false); setIsEditingCenter(false); } }}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>{isAddingCenter ? 'إضافة مركز جديد' : 'تعديل بيانات المركز'}</DialogTitle>
+          </DialogHeader>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="center-name">اسم المركز *</Label>
+                <Input id="center-name" name="name" value={currentCenter.name} onChange={handleCenterInputChange} placeholder="مركز واصل - القاهرة" required />
+              </div>
+              <div>
+                <Label htmlFor="center-location">المحافظة / المدينة *</Label>
+                <Input id="center-location" name="location" value={currentCenter.location} onChange={handleCenterInputChange} placeholder="القاهرة" required />
+              </div>
+              <div>
+                <Label htmlFor="center-address">العنوان التفصيلي *</Label>
+                <Input id="center-address" name="address" value={currentCenter.address} onChange={handleCenterInputChange} placeholder="شارع التحرير" required />
+              </div>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="center-phone">رقم الهاتف *</Label>
+                <Input id="center-phone" name="phone" value={currentCenter.phone} onChange={handleCenterInputChange} placeholder="02-123-4567" required />
+              </div>
+              <div>
+                <Label htmlFor="center-workingHours">ساعات العمل</Label>
+                <Input id="center-workingHours" name="workingHours" value={currentCenter.workingHours} onChange={handleCenterInputChange} />
+              </div>
+              <div>
+                <Label htmlFor="center-region">المنطقة</Label>
+                <select id="center-region" name="region" value={currentCenter.region} onChange={handleCenterInputChange} className="w-full rounded-md border p-2 bg-white">
+                  <option value="القاهرة الكبرى">القاهرة الكبرى</option>
+                  <option value="الإسكندرية">الإسكندرية</option>
+                  <option value="الدلتا">الدلتا</option>
+                  <option value="الصعيد">الصعيد</option>
+                  <option value="القناة">القناة</option>
+                  <option value="الحدود">الحدود</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setIsAddingCenter(false); setIsEditingCenter(false); }}>إلغاء</Button>
+            <Button onClick={handleSaveCenter} className="bg-red-600 hover:bg-red-700 text-white">
+              <Save className="h-4 w-4 ml-2" /> حفظ المركز
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Center Confirmation */}
+      <Dialog open={confirmDeleteCenter !== null} onOpenChange={(o) => { if(!o) setConfirmDeleteCenter(null); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>تأكيد حذف المركز</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p>هل أنت متأكد من رغبتك في حذف هذا المركز نهائياً من النظام؟</p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfirmDeleteCenter(null)}>إلغاء</Button>
+            <Button variant="destructive" onClick={confirmDeleteCenterFn}>نعم، حذف</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <Footer />
-
-      {/* Edit Dialog */}
-      <Dialog open={!!editUser} onOpenChange={(open) => !open && setEditUser(null)}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>
-              {isAr ? `تعديل بيانات ${editType === 'center' ? 'المركز' : 'الأخصائي'}` : `Edit ${editType === 'center' ? 'Center' : 'Specialist'}`}
-            </DialogTitle>
-          </DialogHeader>
-          {/* Save Success Overlay */}
-          <AnimatePresence>
-            {saveSuccess && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.8 }}
-                className="absolute inset-0 z-50 flex items-center justify-center bg-white/90 backdrop-blur-sm rounded-xl"
-              >
-                <div className="text-center">
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ type: 'spring', stiffness: 200, damping: 15 }}
-                    className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4"
-                  >
-                    <CheckCircle2 className="w-10 h-10 text-green-600" />
-                  </motion.div>
-                  <motion.p
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
-                    className="text-lg font-bold text-green-700"
-                  >
-                    {isAr ? 'تم الحفظ بنجاح!' : 'Saved Successfully!'}
-                  </motion.p>
-                  <motion.p
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.4 }}
-                    className="text-sm text-gray-500 mt-1 flex items-center justify-center gap-1"
-                  >
-                    <Database className="w-4 h-4" />
-                    {isAr ? 'تم حفظ البيانات في قاعدة البيانات تلقائياً' : 'Data auto-saved to database'}
-                  </motion.p>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {editUser && (
-            <div className="space-y-4 py-4">
-              <div>
-                <Label>{isAr ? 'الاسم' : 'Name'}</Label>
-                <Input 
-                  value={editType === 'center' ? editUser.name : editUser.fullName} 
-                  disabled 
-                  className="bg-gray-50"
-                />
-              </div>
-              
-              {editType === 'specialist' && (
-                <div>
-                  <Label>{isAr ? 'المركز التابع له' : 'Assigned Center'}</Label>
-                  <select 
-                    className="w-full border rounded-md h-10 px-3 mt-1"
-                    value={editUser.centerId || ''}
-                    onChange={(e) => setEditUser({...editUser, centerId: e.target.value})}
-                  >
-                    <option value="">{isAr ? 'بدون مركز (مستقل)' : 'No Center (Independent)'}</option>
-                    {centers.map(c => (
-                      <option key={c.id} value={c.id}>{c.name}</option>
-                    ))}
-                  </select>
-                </div>
-              )}
-
-              {/* Extended fields for Center */}
-              {editType === 'center' && (
-                <>
-                  <div>
-                    <Label>{isAr ? 'الاسم' : 'Name'}</Label>
-                    <Input value={editUser.name} onChange={(e) => setEditUser({...editUser, name: e.target.value})} />
-                  </div>
-                  <div>
-                    <Label>{isAr ? 'العنوان' : 'Address'}</Label>
-                    <Input value={editUser.address || ''} onChange={(e) => setEditUser({...editUser, address: e.target.value})} />
-                  </div>
-                  <div>
-                    <Label>{isAr ? 'المحافظة' : 'Governorate'}</Label>
-                    <Input value={editUser.governorate_ar || ''} onChange={(e) => setEditUser({...editUser, governorate_ar: e.target.value})} />
-                  </div>
-                  <div>
-                    <Label>{isAr ? 'الخدمات (مفصولة بفاصلة)' : 'Services (Comma separated)'}</Label>
-                    <Textarea 
-                      value={editUser.services_ar?.join(', ') || ''} 
-                      onChange={(e) => setEditUser({...editUser, services_ar: e.target.value.split(',').map(s => s.trim())})} 
-                      placeholder={isAr ? 'مثال: أطراف صناعية, جبائر طبية' : 'Example: Prosthetics, Orthotics'}
-                    />
-                  </div>
-                  <div className="pt-4 border-t mt-6">
-                    <div className="flex justify-between items-center mb-4">
-                      <Label className="text-lg font-bold text-teal-700">{isAr ? 'المنتجات والأسعار' : 'Products & Prices'}</Label>
-                      <Button variant="outline" size="sm" onClick={() => setEditUser({...editUser, products: [...(editUser.products || []), {id: Math.random().toString(), name_ar: '', name_en: '', description_ar: '', description_en: '', image: '', price: 0}]})}>
-                        <PlusCircle className="w-4 h-4 me-1" /> {isAr ? 'إضافة منتج' : 'Add Product'}
-                      </Button>
-                    </div>
-                    <div className="space-y-4">
-                      {(editUser.products || []).map((prod: any, i: number) => (
-                        <div key={i} className="p-4 border border-gray-200 rounded-xl bg-white shadow-sm flex flex-col gap-3 relative transition-all hover:border-teal-300">
-                          <Button variant="ghost" size="sm" className="absolute top-2 left-2 text-red-500 hover:bg-red-50 h-8 w-8 p-0 rounded-full" onClick={() => setEditUser({...editUser, products: editUser.products.filter((_: any, idx: number) => idx !== i)})}>
-                            <X className="w-4 h-4" />
-                          </Button>
-                          
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pr-8">
-                            <div>
-                              <Label className="text-xs text-gray-500">{isAr ? 'اسم المنتج' : 'Product Name'}</Label>
-                              <Input placeholder={isAr ? 'اسم المنتج' : 'Product Name'} value={prod.name_ar} onChange={(e) => {
-                                const newProds = [...editUser.products];
-                                newProds[i].name_ar = e.target.value;
-                                setEditUser({...editUser, products: newProds});
-                              }} />
-                            </div>
-                            <div>
-                              <Label className="text-xs text-gray-500">{isAr ? 'السعر' : 'Price'}</Label>
-                              <Input placeholder={isAr ? 'السعر' : 'Price'} type="number" value={prod.price || ''} onChange={(e) => {
-                                const newProds = [...editUser.products];
-                                newProds[i].price = parseInt(e.target.value) || 0;
-                                setEditUser({...editUser, products: newProds});
-                              }} />
-                            </div>
-                          </div>
-                          
-                          <div>
-                            <Label className="text-xs text-gray-500">{isAr ? 'الوصف' : 'Description'}</Label>
-                            <Input placeholder={isAr ? 'الوصف' : 'Description'} value={prod.description_ar || ''} onChange={(e) => {
-                              const newProds = [...editUser.products];
-                              newProds[i].description_ar = e.target.value;
-                              setEditUser({...editUser, products: newProds});
-                            }} />
-                          </div>
-
-                          <div>
-                            <Label className="text-xs text-gray-500">{isAr ? 'صورة المنتج' : 'Product Image'}</Label>
-                            <div className="mt-1 flex items-center gap-3">
-                              {prod.image && (
-                                <img src={prod.image} alt="Preview" className="w-12 h-12 rounded object-cover border" />
-                              )}
-                              <Input 
-                                type="file" 
-                                accept="image/*"
-                                className="text-sm cursor-pointer"
-                                onChange={(e) => handleImageUpload(e, (base64) => {
-                                  const newProds = [...editUser.products];
-                                  newProds[i].image = base64;
-                                  setEditUser({...editUser, products: newProds});
-                                }, 'product')} 
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                      {(!editUser.products || editUser.products.length === 0) && (
-                        <div className="text-center py-6 text-gray-400 bg-gray-50 rounded-xl border border-dashed">
-                          {isAr ? 'لا يوجد منتجات، اضغط على إضافة لإنشاء منتج جديد' : 'No products. Click Add to create one.'}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </>
-              )}
-
-              {/* Extended fields for Specialist */}
-              {editType === 'specialist' && (
-                <>
-                  <div>
-                    <Label>{isAr ? 'الاسم بالكامل' : 'Full Name'}</Label>
-                    <Input value={editUser.fullName} onChange={(e) => setEditUser({...editUser, fullName: e.target.value})} />
-                  </div>
-                  <div>
-                    <Label>{isAr ? 'التخصص' : 'Specialization'}</Label>
-                    <Input value={editUser.specialization || ''} onChange={(e) => setEditUser({...editUser, specialization: e.target.value})} />
-                  </div>
-                  <div>
-                    <Label>{isAr ? 'سنوات الخبرة' : 'Years of Experience'}</Label>
-                    <Input type="number" min="0" value={editUser.experience || 0} onChange={(e) => setEditUser({...editUser, experience: parseInt(e.target.value) || 0})} />
-                  </div>
-                </>
-              )}
-
-              <div>
-                <Label>{isAr ? 'الصورة' : 'Image'}</Label>
-                <div className="mt-1 flex items-center gap-4">
-                  {editUser.image && (
-                    <img src={editUser.image} alt="Preview" className="w-12 h-12 rounded-full object-cover border" />
-                  )}
-                  <Input 
-                    type="file" 
-                    accept="image/*"
-                    onChange={(e) => handleImageUpload(e, (base64) => setEditUser({...editUser, image: base64}))} 
-                  />
-                </div>
-              </div>
-
-              <div>
-                <Label>{isAr ? 'اسم المستخدم' : 'Username'}</Label>
-                <Input 
-                  value={editUser.username} 
-                  onChange={(e) => setEditUser({...editUser, username: e.target.value})}
-                />
-              </div>
-              <div>
-                <Label>{isAr ? 'كلمة المرور' : 'Password'}</Label>
-                <Input 
-                  value={editUser.password} 
-                  onChange={(e) => setEditUser({...editUser, password: e.target.value})}
-                />
-              </div>
-            </div>
-          )}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setEditUser(null)} disabled={isSaving}>{isAr ? 'إلغاء' : 'Cancel'}</Button>
-            <Button onClick={handleSaveEdit} className="bg-teal-600 hover:bg-teal-700" disabled={isSaving}>
-              {isSaving ? (
-                <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> {isAr ? 'جاري الحفظ...' : 'Saving...'}</>
-              ) : (
-                <><Save className="w-4 h-4 mr-2" /> {isAr ? 'حفظ في قاعدة البيانات' : 'Save to Database'}</>
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Add Specialist Dialog */}
-      <Dialog open={isAddingSpecialist} onOpenChange={setIsAddingSpecialist}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{isAr ? 'إضافة أخصائي جديد' : 'Add New Specialist'}</DialogTitle>
-            <DialogDescription>
-              {isAr ? 'يمكنك إضافة الأخصائي وتعيينه لمركز معين' : 'You can add a specialist and assign them to a specific center'}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div>
-              <Label>{isAr ? 'الاسم بالكامل' : 'Full Name'}</Label>
-              <Input value={newSpecialist.fullName} onChange={e => setNewSpecialist({...newSpecialist, fullName: e.target.value})} />
-            </div>
-            <div>
-              <Label>{isAr ? 'التخصص' : 'Specialization'}</Label>
-              <Input value={newSpecialist.specialization} onChange={e => setNewSpecialist({...newSpecialist, specialization: e.target.value})} />
-            </div>
-            <div>
-              <Label>{isAr ? 'سنوات الخبرة' : 'Years of Experience'}</Label>
-              <Input type="number" min="0" value={newSpecialist.experience} onChange={e => setNewSpecialist({...newSpecialist, experience: parseInt(e.target.value) || 0})} />
-            </div>
-            <div>
-              <Label>{isAr ? 'الصورة الشخصية' : 'Profile Image'}</Label>
-              <div className="mt-1 flex items-center gap-4">
-                {newSpecialist.image && (
-                  <img src={newSpecialist.image} alt="Preview" className="w-12 h-12 rounded-full object-cover border" />
-                )}
-                <Input 
-                  type="file" 
-                  accept="image/*"
-                  onChange={(e) => handleImageUpload(e, (base64) => setNewSpecialist({...newSpecialist, image: base64}))} 
-                />
-              </div>
-            </div>
-            <div>
-              <Label>{isAr ? 'رقم الهاتف' : 'Phone'}</Label>
-              <Input value={newSpecialist.phone} onChange={e => setNewSpecialist({...newSpecialist, phone: e.target.value})} />
-            </div>
-            <div>
-              <Label>{isAr ? 'اسم المستخدم' : 'Username'}</Label>
-              <Input value={newSpecialist.username} onChange={e => setNewSpecialist({...newSpecialist, username: e.target.value})} />
-            </div>
-            <div>
-              <Label>{isAr ? 'كلمة المرور' : 'Password'}</Label>
-              <Input value={newSpecialist.password} onChange={e => setNewSpecialist({...newSpecialist, password: e.target.value})} />
-            </div>
-            <div>
-              <Label>{isAr ? 'المركز (اختياري)' : 'Center (Optional)'}</Label>
-              <select 
-                className="w-full border rounded-md h-10 px-3 mt-1"
-                value={newSpecialist.centerId}
-                onChange={e => setNewSpecialist({...newSpecialist, centerId: e.target.value})}
-              >
-                <option value="">{isAr ? 'اختر المركز' : 'Select Center'}</option>
-                {centers.map(c => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsAddingSpecialist(false)}>{isAr ? 'إلغاء' : 'Cancel'}</Button>
-            <Button onClick={handleAddSpecialist} className="bg-teal-600 hover:bg-teal-700">
-              <UserPlus className="w-4 h-4 mr-2" /> {isAr ? 'إضافة' : 'Add'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Add Center Dialog */}
-      <Dialog open={isAddingCenter} onOpenChange={setIsAddingCenter}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{isAr ? 'إضافة مركز جديد' : 'Add New Center'}</DialogTitle>
-            <DialogDescription>
-              {isAr ? 'إضافة مركز متكامل جديد للمنصة' : 'Add a new integrated center to the platform'}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4 max-h-[60vh] overflow-y-auto">
-            <div>
-              <Label>{isAr ? 'اسم المركز' : 'Center Name'}</Label>
-              <Input value={newCenter.name} onChange={e => setNewCenter({...newCenter, name: e.target.value})} />
-            </div>
-            <div>
-              <Label>{isAr ? 'المحافظة' : 'Governorate'}</Label>
-              <Input value={newCenter.governorate} onChange={e => setNewCenter({...newCenter, governorate: e.target.value})} />
-            </div>
-            <div>
-              <Label>{isAr ? 'العنوان بالتفصيل' : 'Detailed Address'}</Label>
-              <Input value={newCenter.address} onChange={e => setNewCenter({...newCenter, address: e.target.value})} />
-            </div>
-            <div>
-              <Label>{isAr ? 'صورة المركز' : 'Center Image'}</Label>
-              <div className="mt-1 flex items-center gap-4">
-                {newCenter.image && (
-                  <img src={newCenter.image} alt="Preview" className="w-16 h-16 rounded object-cover border" />
-                )}
-                <Input 
-                  type="file" 
-                  accept="image/*"
-                  onChange={(e) => handleImageUpload(e, (base64) => setNewCenter({...newCenter, image: base64}))} 
-                />
-              </div>
-            </div>
-            <div>
-              <Label>{isAr ? 'رقم الهاتف' : 'Phone'}</Label>
-              <Input value={newCenter.phone} onChange={e => setNewCenter({...newCenter, phone: e.target.value})} />
-            </div>
-            <hr className="my-4" />
-            <div>
-              <Label>{isAr ? 'اسم المستخدم' : 'Username'}</Label>
-              <Input value={newCenter.username} onChange={e => setNewCenter({...newCenter, username: e.target.value})} />
-            </div>
-            <div>
-              <Label>{isAr ? 'كلمة المرور' : 'Password'}</Label>
-              <Input value={newCenter.password} onChange={e => setNewCenter({...newCenter, password: e.target.value})} />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsAddingCenter(false)}>{isAr ? 'إلغاء' : 'Cancel'}</Button>
-            <Button onClick={handleAddCenter} className="bg-teal-600 hover:bg-teal-700">
-              <Building2 className="w-4 h-4 mr-2" /> {isAr ? 'إضافة' : 'Add'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
