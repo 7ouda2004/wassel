@@ -34,10 +34,35 @@ import {
   getLocalCenters, saveLocalCenters, type Center,
   getLocalSpecialists, saveLocalSpecialists, type Specialist 
 } from '@/lib/db';
-import { 
-  getPendingRequests, approveSpecialistInDb, approveCenterInDb, 
-  rejectRequest, type RegistrationRequest, syncDatabase, uploadLocalData 
-} from '@/lib/registrations';
+const EGYPT_GOVERNORATES = [
+  'القاهرة',
+  'الجيزة',
+  'الإسكندرية',
+  'القليوبية',
+  'الدقهلية',
+  'البحيرة',
+  'الشرقية',
+  'الغربية',
+  'المنوفية',
+  'دمياط',
+  'كفر الشيخ',
+  'الفيوم',
+  'بني سويف',
+  'المنيا',
+  'أسيوط',
+  'سوهاج',
+  'قنا',
+  'الأقصر',
+  'أسوان',
+  'البحر الأحمر',
+  'الوادي الجديد',
+  'مطروح',
+  'شمال سيناء',
+  'جنوب سيناء',
+  'بورسعيد',
+  'السويس',
+  'الإسماعيلية'
+];
 
 const AdminDashboard = () => {
   // Centers state
@@ -931,7 +956,19 @@ const AdminDashboard = () => {
               </div>
               <div>
                 <Label htmlFor="center-location">المحافظة / المدينة *</Label>
-                <Input id="center-location" name="location" value={currentCenter.location} onChange={handleCenterInputChange} placeholder="المحافظة / المدينة" required />
+                <select
+                  id="center-location"
+                  name="location"
+                  value={currentCenter.location}
+                  onChange={handleCenterInputChange}
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  required
+                >
+                  <option value="">— اختر المحافظة —</option>
+                  {EGYPT_GOVERNORATES.map(gov => (
+                    <option key={gov} value={gov}>{gov}</option>
+                  ))}
+                </select>
               </div>
               <div>
                 <Label htmlFor="center-address">العنوان التفصيلي *</Label>

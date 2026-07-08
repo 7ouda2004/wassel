@@ -149,13 +149,9 @@ export async function syncDatabase() {
     if (!res.ok) return;
     const db = await res.json();
 
-    // 1. Load & Sync Specialists
-    const localSpecsSaved = localStorage.getItem('specialists');
-    const localSpecs: Specialist[] = localSpecsSaved ? JSON.parse(localSpecsSaved) : defaultSpecialists;
-
-    const mergedSpecs = [...localSpecs];
-    (db.specialists || []).forEach((dbSpec: any) => {
-      const mappedSpec: Specialist = {
+    // 1. Overwrite Specialists
+    if (db.specialists && Array.isArray(db.specialists)) {
+      const mappedSpecs = db.specialists.map((dbSpec: any) => ({
         id: dbSpec.id || dbSpec.username,
         name: dbSpec.name || dbSpec.full_name,
         username: dbSpec.username,
@@ -167,25 +163,17 @@ export async function syncDatabase() {
         status: dbSpec.status || 'active',
         phone: dbSpec.phone,
         centerId: dbSpec.centerId || dbSpec.center_id,
-        centerName: dbSpec.centerName || dbSpec.center_name
-      };
+        centerName: dbSpec.centerName || dbSpec.center_name,
+        facebook: dbSpec.facebook,
+        instagram: dbSpec.instagram,
+        linkedin: dbSpec.linkedin
+      }));
+      localStorage.setItem('specialists', JSON.stringify(mappedSpecs));
+    }
 
-      const idx = mergedSpecs.findIndex(s => s.username === mappedSpec.username);
-      if (idx > -1) {
-        mergedSpecs[idx] = { ...mergedSpecs[idx], ...mappedSpec };
-      } else {
-        mergedSpecs.push(mappedSpec);
-      }
-    });
-    localStorage.setItem('specialists', JSON.stringify(mergedSpecs));
-
-    // 2. Load & Sync Centers
-    const localCentersSaved = localStorage.getItem('centers');
-    const localCenters: Center[] = localCentersSaved ? JSON.parse(localCentersSaved) : defaultCenters;
-
-    const mergedCenters = [...localCenters];
-    (db.centers || []).forEach((dbCenter: any) => {
-      const mappedCenter: Center = {
+    // 2. Overwrite Centers
+    if (db.centers && Array.isArray(db.centers)) {
+      const mappedCenters = db.centers.map((dbCenter: any) => ({
         id: dbCenter.id || dbCenter.name,
         name: dbCenter.name,
         location: dbCenter.location || 'القاهرة',
@@ -193,6 +181,7 @@ export async function syncDatabase() {
         phone: dbCenter.phone,
         workingHours: dbCenter.workingHours || dbCenter.working_hours || 'السبت - الخميس: 9 صباحاً - 9 مساءً',
         image: dbCenter.image || '/images/ortho.png',
+        images: dbCenter.images || [],
         region: dbCenter.region || 'القاهرة الكبرى',
         description: dbCenter.description || `مركز واصل المعتمد في محافظة ${dbCenter.location || 'القاهرة'}.`,
         services: dbCenter.services || [
@@ -204,16 +193,9 @@ export async function syncDatabase() {
         ],
         reviews: dbCenter.reviews || [],
         status: dbCenter.status || 'active'
-      };
-
-      const idx = mergedCenters.findIndex(c => c.name === mappedCenter.name);
-      if (idx > -1) {
-        mergedCenters[idx] = { ...mergedCenters[idx], ...mappedCenter };
-      } else {
-        mergedCenters.push(mappedCenter);
-      }
-    });
-    localStorage.setItem('centers', JSON.stringify(mergedCenters));
+      }));
+      localStorage.setItem('centers', JSON.stringify(mappedCenters));
+    }
   } catch (err) {
     console.error('syncDatabase error:', err);
   }
