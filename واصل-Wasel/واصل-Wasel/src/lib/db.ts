@@ -16,7 +16,7 @@ export interface Center {
     comment: string;
     date: string;
   }[];
-  status?: 'pending' | 'active';
+  status?: 'pending' | 'active' | 'rejected';
 }
 
 export const defaultCenters: Center[] = [
@@ -378,7 +378,7 @@ export interface Specialist {
   bio: string;
   image: string;
   expertise: string[];
-  status: 'pending' | 'active';
+  status: 'pending' | 'active' | 'rejected';
   phone?: string;
   facebook?: string;
   instagram?: string;

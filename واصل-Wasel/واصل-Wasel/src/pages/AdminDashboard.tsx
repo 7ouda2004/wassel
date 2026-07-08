@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { 
   Users, MapPin, PlusCircle, Edit, Trash, Save, Search, 
   UserCheck, ShieldAlert, Clock, Phone, Building, Check, X,
-  Upload, Sparkles
+  Upload, Sparkles, AlertTriangle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -67,7 +67,7 @@ const AdminDashboard = () => {
     // Auth Check
     const isAdmin = sessionStorage.getItem('isAdmin');
     if (isAdmin !== 'true') {
-      toast.error('غير مصرح لك بدخول هذه صفحة المسؤول');
+      toast.error('غير مصرح لك بدخول صفحة المسؤول');
       window.location.href = '/';
       return;
     }
@@ -118,7 +118,7 @@ const AdminDashboard = () => {
       setCenters(updated);
       saveLocalCenters(updated);
       setConfirmDeleteCenter(null);
-      toast.success('تم حذف المركز بنجاح');
+      toast.success('تم حذف المركز نهائياً من قاعدة البيانات');
     }
   };
 
@@ -152,7 +152,7 @@ const AdminDashboard = () => {
     const updated = centers.map(c => c.id === center.id ? { ...c, status: 'active' as const } : c);
     setCenters(updated);
     saveLocalCenters(updated);
-    toast.success(`تم تفعيل وقبول فرع: ${center.name}`);
+    toast.success(`تم قبول وتفعيل فرع: ${center.name}`);
 
     // Send WhatsApp notification
     if (center.phone) {
@@ -164,10 +164,10 @@ const AdminDashboard = () => {
   };
 
   const handleRejectCenter = (center: Center) => {
-    const updated = centers.filter(c => c.id !== center.id);
+    const updated = centers.map(c => c.id === center.id ? { ...c, status: 'rejected' as const } : c);
     setCenters(updated);
     saveLocalCenters(updated);
-    toast.error(`تم رفض طلب تسجيل: ${center.name}`);
+    toast.error(`تم تعطيل ورفض فرع: ${center.name}`);
   };
 
   // --- Specialist Handlers ---
@@ -207,7 +207,7 @@ const AdminDashboard = () => {
       setSpecialists(updated);
       saveLocalSpecialists(updated);
       setConfirmDeleteSpec(null);
-      toast.success('تم حذف حساب الأخصائي بنجاح');
+      toast.success('تم حذف حساب الأخصائي نهائياً');
     }
   };
 
@@ -222,7 +222,6 @@ const AdminDashboard = () => {
       return;
     }
 
-    // Convert comma-separated expertise to array
     const expArray = specExpertiseInput
       ? specExpertiseInput.split(/[،,]/).map(s => s.trim()).filter(Boolean)
       : [];
@@ -255,22 +254,22 @@ const AdminDashboard = () => {
     const updated = specialists.map(s => s.id === spec.id ? { ...s, status: 'active' as const } : s);
     setSpecialists(updated);
     saveLocalSpecialists(updated);
-    toast.success(`تم قبول حساب الأخصائي: ${spec.name}`);
+    toast.success(`تم قبول وتفعيل حساب الأخصائي: ${spec.name}`);
 
     // Send WhatsApp notification
     if (spec.phone) {
       const waPhone = formatPhoneForWhatsapp(spec.phone);
-      const textMessage = `مرحباً بك أخصائي ${spec.name}، تم قبول طلب انضمامك وتفعيل حسابك بنجاح في منصة واصل! يمكنك الآن تسجيل الدخول باستخدام اسم المستخدم الخاص بك واستعراض لوحة تحكم المرضى الخاصة بك. أهلاً بك في عائلة واصل!`;
+      const textMessage = `مرحباً بك أخصائي ${spec.name}، تم قبول طلب انضمامك وتفعيل حسابك بنجاح في منصة واصل! يمكنك الآن تسجيل الدخول واستخدام لوحة التحكم الخاصة بك. أهلاً بك في عائلة واصل!`;
       const whatsappUrl = `https://api.whatsapp.com/send?phone=${waPhone}&text=${encodeURIComponent(textMessage)}`;
       window.open(whatsappUrl, '_blank');
     }
   };
 
   const handleRejectSpec = (spec: Specialist) => {
-    const updated = specialists.filter(s => s.id !== spec.id);
+    const updated = specialists.map(s => s.id === spec.id ? { ...s, status: 'rejected' as const } : s);
     setSpecialists(updated);
     saveLocalSpecialists(updated);
-    toast.error(`تم رفض وحذف حساب: ${spec.name}`);
+    toast.error(`تم تعطيل ورفض حساب: ${spec.name}`);
   };
 
   return (
@@ -281,7 +280,7 @@ const AdminDashboard = () => {
         <div className="mb-8 flex justify-between items-center bg-red-50 border-r-4 border-red-500 p-4 rounded-xl shadow-xs">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 font-cairo">لوحة تحكم المسؤول (الادمن)</h1>
-            <p className="text-gray-650 mt-1 font-medium">إدارة المراكز الطبية وحسابات الأخصائيين المعتمدين والموافقة على الطلبات الجديدة</p>
+            <p className="text-gray-655 mt-1 font-semibold text-sm">إدارة الأخصائيين المعتمدين، قبول الفروع، وتفعيل أو تعطيل الحسابات مع إمكانية التغيير في أي وقت</p>
           </div>
           <Building className="h-10 w-10 text-red-500 hidden sm:block" />
         </div>
@@ -292,7 +291,9 @@ const AdminDashboard = () => {
             <TabsTrigger value="centers" className="font-bold">إدارة المراكز والفروع</TabsTrigger>
           </TabsList>
 
+          {/* ==================================================== */}
           {/* --- Specialists Tab Content --- */}
+          {/* ==================================================== */}
           <TabsContent value="specs">
             <div className="mb-6 flex flex-col md:flex-row justify-between gap-4">
               <div className="flex-1 relative">
@@ -310,11 +311,11 @@ const AdminDashboard = () => {
               </Button>
             </div>
 
-            {/* Pending Specialists Requests Section */}
+            {/* A. Pending Specialists Requests Section */}
             {specialists.some(s => s.status === 'pending') && (
               <div className="mb-8 bg-amber-50/50 p-6 rounded-xl border border-amber-200">
                 <h2 className="text-lg font-bold text-amber-900 mb-4 flex items-center gap-2">
-                  <ShieldAlert className="h-5 w-5 text-amber-600 animate-pulse" />
+                  <ShieldAlert className="h-5 w-5 text-amber-605 animate-pulse" />
                   طلبات انضمام الأخصائيين قيد الانتظار ({specialists.filter(s => s.status === 'pending').length})
                 </h2>
                 
@@ -335,7 +336,7 @@ const AdminDashboard = () => {
                         .map(spec => (
                           <TableRow key={spec.id}>
                             <TableCell className="font-bold">{spec.name}</TableCell>
-                            <TableCell className="text-gray-600">{spec.username}</TableCell>
+                            <TableCell className="text-gray-600 font-mono">{spec.username}</TableCell>
                             <TableCell>{spec.role}</TableCell>
                             <TableCell>{spec.phone || '-'}</TableCell>
                             <TableCell>
@@ -345,14 +346,14 @@ const AdminDashboard = () => {
                                   onClick={() => handleApproveSpec(spec)}
                                   className="bg-green-600 hover:bg-green-700 text-white"
                                 >
-                                  <Check className="h-4 w-4 ml-1" /> قبول الحساب وتفعيل
+                                  <Check className="h-4 w-4 ml-1" /> قبول وتفعيل
                                 </Button>
                                 <Button 
                                   size="sm" 
                                   variant="destructive"
                                   onClick={() => handleRejectSpec(spec)}
                                 >
-                                  <X className="h-4 w-4 ml-1" /> رفض الطلب
+                                  <X className="h-4 w-4 ml-1" /> رفض وتعطيل
                                 </Button>
                               </div>
                             </TableCell>
@@ -364,9 +365,9 @@ const AdminDashboard = () => {
               </div>
             )}
 
-            {/* Active Specialists List */}
-            <div className="bg-white rounded-xl border p-6">
-              <h2 className="text-lg font-bold text-gray-900 mb-4">الأخصائيين المعتمدين بالموقع</h2>
+            {/* B. Active Specialists List */}
+            <div className="bg-white rounded-xl border p-6 mb-8">
+              <h2 className="text-lg font-bold text-gray-900 mb-4">الأخصائيين المعتمدين والنشطين</h2>
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
@@ -390,7 +391,7 @@ const AdminDashboard = () => {
                               alt={spec.name} 
                               className="h-10 w-10 rounded-full object-cover border"
                               onError={(e) => {
-                                e.currentTarget.src = "https://images.unsplash.com/photo-1622253692010-333f2da6031d?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80";
+                                e.currentTarget.src = "/images/new.jpg";
                               }}
                             />
                           </TableCell>
@@ -399,12 +400,15 @@ const AdminDashboard = () => {
                           <TableCell>{spec.role}</TableCell>
                           <TableCell>{spec.phone || '-'}</TableCell>
                           <TableCell>
-                            <div className="flex gap-2">
-                              <Button variant="ghost" size="sm" onClick={() => handleEditSpec(spec)}>
-                                <Edit className="h-4 w-4 text-blue-600" />
+                            <div className="flex gap-1">
+                              <Button variant="outline" size="sm" onClick={() => handleEditSpec(spec)} className="h-8">
+                                تعديل
                               </Button>
-                              <Button variant="ghost" size="sm" onClick={() => handleDeleteSpec(spec.id)}>
-                                <Trash className="h-4 w-4 text-red-600" />
+                              <Button variant="destructive" size="sm" onClick={() => handleRejectSpec(spec)} className="h-8 bg-amber-600 hover:bg-amber-700">
+                                تعطيل/رفض
+                              </Button>
+                              <Button variant="ghost" size="sm" onClick={() => handleDeleteSpec(spec.id)} className="h-8 text-red-600 hover:bg-red-50">
+                                <Trash className="h-4 w-4" />
                               </Button>
                             </div>
                           </TableCell>
@@ -414,9 +418,63 @@ const AdminDashboard = () => {
                 </Table>
               </div>
             </div>
+
+            {/* C. Rejected/Deactivated Specialists List */}
+            {specialists.some(s => s.status === 'rejected') && (
+              <div className="bg-red-50/30 rounded-xl border border-red-200 p-6">
+                <h2 className="text-lg font-bold text-red-900 mb-4 flex items-center gap-2">
+                  <AlertTriangle className="h-5 w-5 text-red-605" />
+                  حسابات الأخصائيين المرفوضة / المعطلة (يمكن إعادة تفعيلها)
+                </h2>
+                <div className="overflow-x-auto bg-white rounded-lg border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="text-right">الاسم</TableHead>
+                        <TableHead className="text-right">اسم المستخدم</TableHead>
+                        <TableHead className="text-right">الهاتف</TableHead>
+                        <TableHead className="text-right">الإجراءات</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {specialists
+                        .filter(s => s.status === 'rejected')
+                        .map(spec => (
+                          <TableRow key={spec.id}>
+                            <TableCell className="font-bold text-gray-500 line-through">{spec.name}</TableCell>
+                            <TableCell className="text-gray-400 font-mono">{spec.username}</TableCell>
+                            <TableCell>{spec.phone || '-'}</TableCell>
+                            <TableCell>
+                              <div className="flex gap-2">
+                                <Button 
+                                  size="sm" 
+                                  onClick={() => handleApproveSpec(spec)}
+                                  className="bg-green-600 hover:bg-green-700 text-white"
+                                >
+                                  <Check className="h-4 w-4 ml-1" /> إعادة تفعيل وقبول
+                                </Button>
+                                <Button 
+                                  size="sm" 
+                                  variant="ghost"
+                                  onClick={() => handleDeleteSpec(spec.id)}
+                                  className="text-red-600 hover:bg-red-50"
+                                >
+                                  حذف نهائي
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
+            )}
           </TabsContent>
 
+          {/* ==================================================== */}
           {/* --- Centers Tab Content --- */}
+          {/* ==================================================== */}
           <TabsContent value="centers">
             <div className="mb-6 flex flex-col md:flex-row justify-between gap-4">
               <div className="flex-1 relative">
@@ -434,11 +492,11 @@ const AdminDashboard = () => {
               </Button>
             </div>
 
-            {/* Pending Centers Registration Requests Section */}
+            {/* A. Pending Centers Registration Requests Section */}
             {centers.some(c => c.status === 'pending') && (
               <div className="mb-8 bg-amber-50/50 p-6 rounded-xl border border-amber-200">
                 <h2 className="text-lg font-bold text-amber-900 mb-4 flex items-center gap-2">
-                  <ShieldAlert className="h-5 w-5 text-amber-600 animate-pulse" />
+                  <ShieldAlert className="h-5 w-5 text-amber-605 animate-pulse" />
                   طلبات تسجيل فروع جديدة قيد الانتظار ({centers.filter(c => c.status === 'pending').length})
                 </h2>
                 
@@ -476,7 +534,7 @@ const AdminDashboard = () => {
                                   variant="destructive"
                                   onClick={() => handleRejectCenter(center)}
                                 >
-                                  <X className="h-4 w-4 ml-1" /> رفض الطلب
+                                  <X className="h-4 w-4 ml-1" /> رفض وتعطيل
                                 </Button>
                               </div>
                             </TableCell>
@@ -488,9 +546,9 @@ const AdminDashboard = () => {
               </div>
             )}
 
-            {/* Approved Centers List */}
-            <div className="bg-white rounded-xl border p-6">
-              <h2 className="text-lg font-bold text-gray-900 mb-4">المراكز والفروع المعتمدة</h2>
+            {/* B. Approved Centers List */}
+            <div className="bg-white rounded-xl border p-6 mb-8">
+              <h2 className="text-lg font-bold text-gray-900 mb-4">المراكز والفروع المعتمدة والنشطة</h2>
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
@@ -499,7 +557,6 @@ const AdminDashboard = () => {
                       <TableHead className="text-right">المحافظة</TableHead>
                       <TableHead className="text-right">العنوان</TableHead>
                       <TableHead className="text-right">الهاتف</TableHead>
-                      <TableHead className="text-right">ساعات العمل</TableHead>
                       <TableHead className="text-right">الإجراءات</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -512,14 +569,16 @@ const AdminDashboard = () => {
                           <TableCell>{center.location}</TableCell>
                           <TableCell className="max-w-[200px] truncate">{center.address}</TableCell>
                           <TableCell>{center.phone}</TableCell>
-                          <TableCell className="text-xs">{center.workingHours}</TableCell>
                           <TableCell>
-                            <div className="flex gap-2">
-                              <Button variant="ghost" size="sm" onClick={() => handleEditCenter(center)}>
-                                <Edit className="h-4 w-4 text-blue-600" />
+                            <div className="flex gap-1">
+                              <Button variant="outline" size="sm" onClick={() => handleEditCenter(center)} className="h-8">
+                                تعديل
                               </Button>
-                              <Button variant="ghost" size="sm" onClick={() => handleDeleteCenter(center.id)}>
-                                <Trash className="h-4 w-4 text-red-600" />
+                              <Button variant="destructive" size="sm" onClick={() => handleRejectCenter(center)} className="h-8 bg-amber-600 hover:bg-amber-700">
+                                تعطيل/رفض
+                              </Button>
+                              <Button variant="ghost" size="sm" onClick={() => handleDeleteCenter(center.id)} className="h-8 text-red-600 hover:bg-red-50">
+                                <Trash className="h-4 w-4" />
                               </Button>
                             </div>
                           </TableCell>
@@ -529,6 +588,58 @@ const AdminDashboard = () => {
                 </Table>
               </div>
             </div>
+
+            {/* C. Rejected/Deactivated Centers List */}
+            {centers.some(c => c.status === 'rejected') && (
+              <div className="bg-red-50/30 rounded-xl border border-red-200 p-6">
+                <h2 className="text-lg font-bold text-red-900 mb-4 flex items-center gap-2">
+                  <AlertTriangle className="h-5 w-5 text-red-605" />
+                  المراكز والفروع المرفوضة / المعطلة (يمكن إعادة قبولها)
+                </h2>
+                <div className="overflow-x-auto bg-white rounded-lg border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="text-right">اسم الفرع</TableHead>
+                        <TableHead className="text-right">المحافظة</TableHead>
+                        <TableHead className="text-right">الهاتف</TableHead>
+                        <TableHead className="text-right">الإجراءات</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {centers
+                        .filter(c => c.status === 'rejected')
+                        .map(center => (
+                          <TableRow key={center.id}>
+                            <TableCell className="font-bold text-gray-500 line-through">{center.name}</TableCell>
+                            <TableCell>{center.location}</TableCell>
+                            <TableCell>{center.phone}</TableCell>
+                            <TableCell>
+                              <div className="flex gap-2">
+                                <Button 
+                                  size="sm" 
+                                  onClick={() => handleApproveCenter(center)}
+                                  className="bg-green-600 hover:bg-green-700 text-white"
+                                >
+                                  <Check className="h-4 w-4 ml-1" /> إعادة تفعيل وقبول
+                                </Button>
+                                <Button 
+                                  size="sm" 
+                                  variant="ghost"
+                                  onClick={() => handleDeleteCenter(center.id)}
+                                  className="text-red-600 hover:bg-red-50"
+                                >
+                                  حذف نهائي
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
+            )}
           </TabsContent>
         </Tabs>
       </main>
@@ -636,10 +747,10 @@ const AdminDashboard = () => {
       <Dialog open={confirmDeleteSpec !== null} onOpenChange={(o) => { if(!o) setConfirmDeleteSpec(null); }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>تأكيد حذف الأخصائي</DialogTitle>
+            <DialogTitle>تأكيد حذف الأخصائي نهائياً</DialogTitle>
           </DialogHeader>
           <div className="py-4">
-            <p>هل أنت متأكد من رغبتك في حذف هذا الأخصائي نهائياً؟ لن يتمكن من تسجيل الدخول وسيمحى من الموقع.</p>
+            <p>هل أنت متأكد من رغبتك في حذف هذا الأخصائي نهائياً؟ لن يتمكن من تسجيل الدخول وسيمحى من الموقع بالكامل.</p>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setConfirmDeleteSpec(null)}>إلغاء</Button>
@@ -732,10 +843,10 @@ const AdminDashboard = () => {
       <Dialog open={confirmDeleteCenter !== null} onOpenChange={(o) => { if(!o) setConfirmDeleteCenter(null); }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>تأكيد حذف المركز</DialogTitle>
+            <DialogTitle>تأكيد حذف المركز نهائياً</DialogTitle>
           </DialogHeader>
           <div className="py-4">
-            <p>هل أنت متأكد من رغبتك في حذف هذا المركز نهائياً من النظام؟</p>
+            <p>هل أنت متأكد من رغبتك في حذف هذا المركز نهائياً من قاعدة البيانات؟ لن يظهر في القوائم أبداً.</p>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setConfirmDeleteCenter(null)}>إلغاء</Button>

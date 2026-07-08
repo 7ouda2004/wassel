@@ -19,6 +19,7 @@ import SpecialistDashboard from "./pages/SpecialistDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
 import Booking from '@/pages/Booking';
+import Login from "./pages/Login";
 
 const queryClient = new QueryClient();
 
@@ -39,6 +40,7 @@ const AnimatedRoutes = () => {
         <Route path="/specialist-dashboard" element={<SpecialistDashboard />} />
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
         <Route path="/booking" element={<Booking />} />
+        <Route path="/login" element={<Login />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </AnimatePresence>
