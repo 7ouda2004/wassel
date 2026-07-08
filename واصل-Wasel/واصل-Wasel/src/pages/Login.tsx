@@ -141,7 +141,7 @@ const Login = () => {
   };
 
   // Specialist Login Submit
-  const handleSpecialistLogin = (e: React.FormEvent) => {
+  const handleSpecialistLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!specUsername.trim() || !specPassword) {
       toast.error('يرجى كتابة اسم المستخدم وكلمة المرور');
@@ -155,6 +155,13 @@ const Login = () => {
       toast.success('تم تسجيل دخول المسؤول بنجاح');
       window.location.href = '/admin-dashboard';
       return;
+    }
+
+    try {
+      // Sync cloud data first before verifying credentials
+      await syncDatabase();
+    } catch (err) {
+      console.error('Login syncDatabase failed:', err);
     }
 
     const allSpecs = getLocalSpecialists();
