@@ -1,26 +1,19 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Menu, X, User, Phone, Moon, Sun, Globe, LogOut, LayoutDashboard, Building } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
+import { Menu, X, User, Phone, Moon, Sun } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from "@/providers/theme-provider";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { useAuth } from '@/providers/auth-provider';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const { theme, setTheme } = useTheme();
-  const { t, i18n } = useTranslation();
-  const navigate = useNavigate();
-  const { isAuthenticated, user, signOut } = useAuth();
-
-  const toggleLanguage = () => {
-    i18n.changeLanguage(i18n.language === 'ar' ? 'en' : 'ar');
-  };
 
   const toggleMenu = () => {
     setIsOpen(!isOpen);
@@ -29,22 +22,26 @@ const Navbar = () => {
   const handleSpecialistLogin = async (e) => {
     e.preventDefault();
     try {
-      // TODO: استبدل هذا بطلب API حقيقي للتحقق من كلمة المرور
+      if (!username) {
+        toast.error('يرجى إدخال اسم المستخدم');
+        return;
+      }
       if (password.length < 6) {
         toast.error('كلمة المرور يجب أن تكون 6 أحرف على الأقل');
         return;
       }
       
-      // محاكاة طلب API
-      const isValid = password === 'daizer616';
-      if (isValid) {
-        // استخدام sessionStorage بدلاً من localStorage للأمان
+      // Check credentials
+      const isMahmoud = username === 'mahmoud' && password === 'daizer';
+      const isSpecialist = username === 'specialist' && password === 'specialist123';
+      
+      if (isMahmoud || isSpecialist) {
         sessionStorage.setItem('isSpecialist', 'true');
-        sessionStorage.setItem('username', '616');
+        sessionStorage.setItem('username', username);
         toast.success('تم تسجيل الدخول بنجاح');
         window.location.href = '/specialist-dashboard';
       } else {
-        toast.error('كلمة المرور غير صحيحة');
+        toast.error('اسم المستخدم أو كلمة المرور غير صحيحة');
       }
     } catch (error) {
       console.error('خطأ في تسجيل الدخول:', error);
@@ -54,24 +51,16 @@ const Navbar = () => {
 
   const isLoggedIn = sessionStorage.getItem('isSpecialist') === 'true';
 
-  // Determine correct dashboard route based on role
-  const getDashboardRoute = () => {
-    const mockRole = sessionStorage.getItem('mockRole');
-    if (user?.role === 'admin' || mockRole === 'admin') return '/admin-dashboard';
-    if (user?.role === 'center' || user?.role === 'specialist' || mockRole === 'center' || mockRole === 'specialist' || sessionStorage.getItem('isSpecialist') === 'true') return '/specialist-dashboard';
-    return '/dashboard';
-  };
-
   // Define navigation links once to avoid duplication
   const navLinks = [
-    { path: "/", label: t('nav.home') },
-    { path: "/orthoses", label: t('nav.orthoses') },
-    { path: "/prosthetics", label: t('nav.prosthetics') },
-    { path: "/centers", label: i18n.language === 'ar' ? 'المراكز' : 'Centers' },
-    { path: "/smart-recommendation", label: i18n.language === 'ar' ? 'اختبار ذكي' : 'Smart Quiz' },
-    { path: "/about", label: t('nav.about') },
-    { path: "/contact", label: t('nav.contact') },
-    { path: "/booking", label: t('nav.booking') }
+    { path: "/", label: "الرئيسية" },
+    { path: "/orthoses", label: "الجبائر الطبية" },
+    { path: "/prosthetics", label: "الأطراف الصناعية" },
+    { path: "/about", label: "عن التطبيق" },
+    { path: "/team", label: "فريق العمل" },
+    { path: "/locations", label: "مراكزنا" },
+    { path: "/contact", label: "تواصل معنا" },
+    { path: "/booking", label: "حجز موعد" }
   ];
 
   return (
@@ -83,66 +72,111 @@ const Navbar = () => {
               <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-medical-500 to-medical-700 flex items-center justify-center">
                 <span className="text-white font-bold text-lg">W</span>
               </div>
-              <span className="mx-2 font-bold text-xl text-medical-800">واصــل</span>
+              <span className="mx-3 font-bold text-xl text-medical-800">واصــــل</span>
             </Link>
           </div>
           
           {/* Desktop menu */}
-          <div className="hidden lg:flex lg:items-center lg:space-x-3 lg:rtl:space-x-reverse flex-1 justify-center px-3">
-            {navLinks.map((link) => (
-              <Link 
-                key={link.path} 
-                to={link.path} 
-                className="text-gray-700 hover:text-primary font-medium text-sm whitespace-nowrap"
+          <div className="hidden md:flex md:items-center md:space-x-6 md:rtl:space-x-reverse">
+            {navLinks.map((link, index) => (
+              <motion.div
+                key={link.path}
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
               >
-                {link.label}
-              </Link>
+                <Link 
+                  to={link.path} 
+                  className="text-gray-700 hover:text-primary font-medium relative group transition-colors duration-300"
+                >
+                  {link.label}
+                  <motion.span 
+                    className="absolute bottom-0 left-0 w-0 h-0.5 bg-medical-600 group-hover:w-full transition-all duration-300"
+                    initial={{ width: 0 }}
+                    whileHover={{ width: '100%' }}
+                  />
+                </Link>
+              </motion.div>
             ))}
           </div>
           
-          <div className="flex items-center space-x-2 rtl:space-x-reverse flex-shrink-0">
-            {isAuthenticated ? (
-              <div className="hidden sm:flex items-center gap-2">
-                <Link to={getDashboardRoute()}>
-                  <Button variant="outline" className="flex items-center whitespace-nowrap">
-                    <LayoutDashboard className="mr-2 h-4 w-4" />
-                    {i18n.language === 'ar' ? 'لوحة التحكم' : 'Dashboard'}
+          <div className="flex items-center space-x-4 rtl:space-x-reverse">
+            {isLoggedIn ? (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5 }}
+              >
+                <Link to="/specialist-dashboard">
+                  <Button variant="outline" className="flex items-center hover:scale-105 transition-transform duration-200">
+                    <User className="mr-2 h-4 w-4" />
+                    لوحة التحكم
                   </Button>
                 </Link>
-                <Button variant="ghost" size="icon" onClick={() => { signOut(); navigate('/'); }} className="text-red-500 hover:text-red-600 hover:bg-red-50">
-                  <LogOut className="h-5 w-5" />
-                </Button>
-              </div>
+              </motion.div>
             ) : (
-              <div className="hidden sm:flex items-center gap-2">
-                <Link to="/login">
-                  <Button variant="ghost" size="sm" className="flex items-center whitespace-nowrap">
-                    <User className="mr-1.5 h-4 w-4" />
-                    {i18n.language === 'ar' ? 'تسجيل الدخول' : 'Login'}
-                  </Button>
-                </Link>
-                <Link to="/specialist-login">
-                  <Button variant="outline" size="sm" className="flex items-center whitespace-nowrap border-teal-500 text-teal-600 hover:bg-teal-50">
-                    <Building className="mr-1.5 h-4 w-4" />
-                    {i18n.language === 'ar' ? 'أخصائي' : 'Specialist'}
-                  </Button>
-                </Link>
-              </div>
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5, delay: 0.1 }}
+              >
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" className="flex items-center hover:scale-105 transition-transform duration-200">
+                      <User className="mr-2 h-4 w-4" />
+                        الدخول كـأخصائي
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle className="text-center">تسجيل دخول الأخصائي</DialogTitle>
+                    </DialogHeader>
+                    <form onSubmit={handleSpecialistLogin} className="space-y-4">
+                      <div>
+                        <Label htmlFor="navbar-username">اسم المستخدم</Label>
+                        <Input 
+                          id="navbar-username" 
+                          type="text" 
+                          value={username}
+                          onChange={(e) => setUsername(e.target.value)}
+                          className="mt-1"
+                          placeholder="مثال: mahmoud أو specialist"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="navbar-password">كلمة المرور</Label>
+                        <Input 
+                          id="navbar-password" 
+                          type="password" 
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          className="mt-1"
+                          placeholder="••••••••"
+                          required
+                        />
+                      </div>
+                      <Button type="submit" className="w-full">تسجيل الدخول</Button>
+                    </form>
+                  </DialogContent>
+                </Dialog>
+              </motion.div>
             )}
             
-            <a href="https://wa.me/201119056895" target="_blank" rel="noopener noreferrer">
-              <Button variant="default" size="sm" className="hidden sm:flex items-center medical-btn whitespace-nowrap">
-                <Phone className="mr-1.5 h-4 w-4" />
-                {t('nav.contact_us')}
-              </Button>
-            </a>
-
-            <Button variant="ghost" size="icon" onClick={toggleLanguage} title="تغيير اللغة / Change Language">
-              <Globe className="h-5 w-5 text-gray-700" />
-              <span className="sr-only">Toggle language</span>
-            </Button>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+            >
+              <a href="https://wa.me/201119056895" target="_blank" rel="noopener noreferrer">
+                <Button variant="default" className="flex items-center medical-btn hover:scale-105 transition-transform duration-200">
+                  <Phone className="mr-2 h-4 w-4" />
+                  تواصل معنا
+                </Button>
+              </a>
+            </motion.div>
             
-            <div className="lg:hidden flex items-center">
+            <div className="md:hidden flex items-center">
               <button
                 onClick={toggleMenu}
                 className="text-gray-700 hover:text-primary"
@@ -159,64 +193,36 @@ const Navbar = () => {
         </div>
         
         {/* Mobile menu - integrated within the same navbar container */}
-        {isOpen && (
-          <div className="lg:hidden py-2 border-t border-gray-200">
-            <div className="flex flex-col space-y-1">
-              {navLinks.map((link) => (
-                <Link 
-                  key={link.path} 
-                  to={link.path} 
-                  className="block py-2 px-3 rounded-md hover:bg-primary/10" 
-                  onClick={toggleMenu}
-                >
-                  {link.label}
-                </Link>
-              ))}
-              {!isAuthenticated ? (
-                <>
-                  <Link 
-                    to="/login" 
-                    className="block py-2 px-3 rounded-md hover:bg-primary/10 text-gray-700 font-medium" 
-                    onClick={toggleMenu}
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div 
+              className="md:hidden py-2 border-t border-gray-200 overflow-hidden"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="flex flex-col space-y-1">
+                {navLinks.map((link, index) => (
+                  <motion.div
+                    key={link.path}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.1 }}
                   >
-                    {i18n.language === 'ar' ? 'تسجيل الدخول / حساب جديد' : 'Login / Register'}
-                  </Link>
-                  <Link 
-                    to="/specialist-login" 
-                    className="block py-2 px-3 rounded-md hover:bg-teal-50 text-teal-600 font-bold" 
-                    onClick={toggleMenu}
-                  >
-                    {i18n.language === 'ar' ? 'تسجيل كأخصائي' : 'Specialist Login'}
-                  </Link>
-                </>
-              ) : (
-                <>
-                  <Link 
-                    to={getDashboardRoute()}
-                    className="block py-2 px-3 rounded-md hover:bg-primary/10 font-bold text-medical-700" 
-                    onClick={toggleMenu}
-                  >
-                    {i18n.language === 'ar' ? 'لوحة التحكم' : 'Dashboard'}
-                  </Link>
-                  <button 
-                    className="w-full text-start py-2 px-3 rounded-md hover:bg-red-50 text-red-500 font-bold" 
-                    onClick={() => { signOut(); toggleMenu(); navigate('/'); }}
-                  >
-                    {i18n.language === 'ar' ? 'تسجيل الخروج' : 'Logout'}
-                  </button>
-                </>
-              )}
-              <a 
-                href="https://wa.me/201119056895" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="block py-2 px-3 rounded-md hover:bg-primary/10 font-bold text-medical-700"
-              >
-                {t('nav.contact_us')}
-              </a>
-            </div>
-          </div>
-        )}
+                    <Link 
+                      to={link.path} 
+                      className="block py-2 px-3 rounded-md hover:bg-primary/10 transition-colors duration-200" 
+                      onClick={toggleMenu}
+                    >
+                      {link.label}
+                    </Link>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </nav>
   );

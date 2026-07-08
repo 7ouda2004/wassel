@@ -16,6 +16,7 @@ const Centers = () => {
   const [selectedRegion, setSelectedRegion] = useState('الكل');
   const [centersList, setCentersList] = useState<Center[]>([]);
   const [filteredCenters, setFilteredCenters] = useState<Center[]>([]);
+  const [expandedLocation, setExpandedLocation] = useState<string | null>(null);
 
   useEffect(() => {
     document.documentElement.dir = 'rtl';
@@ -34,6 +35,30 @@ const Centers = () => {
     });
     setFilteredCenters(filtered);
   }, [searchTerm, selectedRegion, centersList]);
+
+  // Auto expand governorate if search term has results
+  useEffect(() => {
+    if (searchTerm.trim() !== '') {
+      const match = filteredCenters.find(c => 
+        c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        c.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        c.address.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      if (match) {
+        setExpandedLocation(match.location);
+      }
+    }
+  }, [searchTerm, filteredCenters]);
+
+  // Group centers by governorate (location)
+  const groupedCenters = filteredCenters.reduce((groups, center) => {
+    const loc = center.location || 'أخرى';
+    if (!groups[loc]) {
+      groups[loc] = [];
+    }
+    groups[loc].push(center);
+    return groups;
+  }, {} as Record<string, Center[]>);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -131,50 +156,102 @@ const Centers = () => {
         </div>
       </section>
 
-      {/* Centers Grid */}
-      <section className="py-12 bg-gray-50">
+      {/* Governorates Collapsible Sections */}
+      <section className="py-12 bg-gray-50 flex-grow">
         <div className="container mx-auto px-4">
-          <div className="max-w-6xl mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {filteredCenters.map((center) => (
-                <motion.div
-                  key={center.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5 }}
-                  className="bg-white rounded-lg shadow-md overflow-hidden"
+          <div className="max-w-4xl mx-auto space-y-4">
+            {Object.keys(groupedCenters).length > 0 ? (
+              Object.entries(groupedCenters).map(([locationName, locationCenters]) => (
+                <div 
+                  key={locationName} 
+                  className="bg-white rounded-xl shadow-sm border border-gray-200/60 overflow-hidden transition-all duration-300"
                 >
-                  <img
-                    src={center.image}
-                    alt={center.name}
-                    className="w-full h-48 object-cover"
-                  />
-                  <div className="p-6">
-                    <h3 className="text-xl font-semibold mb-2">{center.name}</h3>
-                    <div className="space-y-3 mb-4">
-                      <div className="flex items-center text-gray-600">
-                        <MapPin className="h-5 w-5 ml-2" />
-                        <span>{center.address}</span>
-                      </div>
-                      <div className="flex items-center text-gray-600">
-                        <Phone className="h-5 w-5 ml-2" />
-                        <span>{center.phone}</span>
-                      </div>
-                      <div className="flex items-center text-gray-600">
-                        <Clock className="h-5 w-5 ml-2" />
-                        <span>{center.workingHours}</span>
-                      </div>
+                  <button
+                    onClick={() => setExpandedLocation(expandedLocation === locationName ? null : locationName)}
+                    className="w-full px-6 py-5 flex justify-between items-center bg-gradient-to-r from-medical-50/20 to-white hover:from-medical-50/50 transition-colors duration-350"
+                  >
+                    <div className="flex items-center gap-3">
+                      <MapPin className="h-6 w-6 text-medical-600" />
+                      <span className="text-xl font-bold text-gray-900">{locationName}</span>
                     </div>
-                    <Link to={`/centers/${center.id}`}>
-                      <Button className="w-full">
-                        عرض التفاصيل
-                        <ChevronRight className="mr-2 h-5 w-5 rtl:rotate-180" />
-                      </Button>
-                    </Link>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm font-semibold text-medical-700 bg-medical-50 px-3 py-1 rounded-full">
+                        {locationCenters.length} {locationCenters.length === 1 ? 'مركز' : 'مراكز'}
+                      </span>
+                      <ChevronRight className={`h-5 w-5 text-gray-400 transition-transform duration-300 ${expandedLocation === locationName ? 'rotate-90' : 'rtl:rotate-180'}`} />
+                    </div>
+                  </button>
+                  
+                  {expandedLocation === locationName && (
+                    <div className="p-6 bg-gray-50/30 border-t border-gray-100 grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {locationCenters.map(center => (
+                        <motion.div
+                          key={center.id}
+                          initial={{ opacity: 0, y: 15 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.3 }}
+                          className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 flex flex-col justify-between"
+                        >
+                          <img
+                            src={center.image || '/images/ortho.png'}
+                            alt={center.name}
+                            className="w-full h-40 object-cover"
+                            onError={(e) => {
+                              // fallback if image not found
+                              e.currentTarget.src = '/images/ortho.png';
+                            }}
+                          />
+                          <div className="p-5 flex-grow flex flex-col justify-between">
+                            <div>
+                              <h3 className="text-lg font-bold text-gray-900 mb-3">{center.name}</h3>
+                              <div className="space-y-2 mb-5 text-sm text-gray-600">
+                                <div className="flex items-start">
+                                  <MapPin className="h-4 w-4 ml-2 mt-0.5 text-medical-500 flex-shrink-0" />
+                                  <span>{center.address}</span>
+                                </div>
+                                <div className="flex items-center">
+                                  <Phone className="h-4 w-4 ml-2 text-medical-500 flex-shrink-0" />
+                                  <span>{center.phone}</span>
+                                </div>
+                                <div className="flex items-start">
+                                  <Clock className="h-4 w-4 ml-2 mt-0.5 text-medical-500 flex-shrink-0" />
+                                  <span>{center.workingHours}</span>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex gap-2">
+                              <a 
+                                href={`tel:${center.phone}`} 
+                                className="flex-1"
+                              >
+                                <Button variant="outline" className="w-full text-xs py-2">
+                                  اتصال هاتفي
+                                </Button>
+                              </a>
+                              <a 
+                                href={`https://wa.me/${center.phone.replace(/[^0-9]/g, '')}`} 
+                                target="_blank" 
+                                rel="noopener noreferrer" 
+                                className="flex-1"
+                              >
+                                <Button className="w-full text-xs py-2 bg-green-600 hover:bg-green-700 text-white border-none">
+                                  واتساب
+                                </Button>
+                              </a>
+                            </div>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))
+            ) : (
+              <div className="text-center bg-white p-12 rounded-xl shadow-sm border border-gray-100">
+                <MapPin className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                <p className="text-gray-500 text-lg">لا توجد مراكز مطابقة لبحثك في المحافظات المحددة.</p>
+              </div>
+            )}
           </div>
         </div>
       </section>

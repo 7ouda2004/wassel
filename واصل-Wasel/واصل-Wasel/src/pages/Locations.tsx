@@ -11,6 +11,8 @@ import { useState } from 'react';
 
 const Locations = () => {
   const [centersList, setCentersList] = useState<Center[]>([]);
+  const [expandedLocation, setExpandedLocation] = useState<string | null>(null);
+  const [activeMapId, setActiveMapId] = useState<string | null>(null);
 
   useEffect(() => {
     document.documentElement.dir = 'rtl';
@@ -18,6 +20,16 @@ const Locations = () => {
     window.scrollTo(0, 0);
     setCentersList(getLocalCenters());
   }, []);
+
+  // Group centers by governorate (location)
+  const groupedCenters = centersList.reduce((groups, center) => {
+    const loc = center.location || 'أخرى';
+    if (!groups[loc]) {
+      groups[loc] = [];
+    }
+    groups[loc].push(center);
+    return groups;
+  }, {} as Record<string, Center[]>);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -43,77 +55,108 @@ const Locations = () => {
       {/* Locations */}
       <section className="py-20 bg-white">
         <div className="container mx-auto px-4">
-          <h2 className="section-title">مراكزنا المتخصصة</h2>
+          <h2 className="section-title">فروع ومواقع مراكزنا</h2>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-12">
-            {centersList.map((center, index) => {
-              // Predefined maps if matches default ones
-              const mapUrl = center.id === '1' 
-                ? 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d13819.134309871092!2d31.20493971135394!3d30.053742635558787!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x14584132d6eb5851%3A0xb19c7600694af9c5!2z2KfZhNmF2YfZhtiv2LPZitmG2Iwg2KfZhNis2YrYstip!5e0!3m2!1sar!2seg!4v1708440134399!5m2!1sar!2seg' 
-                : center.id === '2' 
-                  ? 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d54803.31018606754!2d29.89121595767993!3d31.20495242201441!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x14f5c3fa29b53c0f%3A0x86c62fc5d4d3865b!2z2LPYqNmI2LHYqtmG2KzYjCDYp9mE2KXYs9mD2YbYr9ix2YrYqQ!5e0!3m2!1sar!2seg!4v1708440199631!5m2!1sar!2seg' 
-                  : center.id === '8' 
-                    ? 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d13769.811808774256!2d31.371969111513693!3d31.040839135950583!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x14f79c2b088dc6e9%3A0xb290248c326f786e!2z2KfZhNmF2YbYtdmI2LHYqdiMINin2YTZhdmG2LXZiNix2KkgKNin2YTZhdmG2LXZiNix2KkpLCDYp9mE2K_ZgtmH2YTZitip!5e0!3m2!1sar!2seg!4v1708440233144!5m2!1sar!2seg'
-                    : `https://maps.google.com/maps?q=${encodeURIComponent(center.name + ' ' + center.address)}&t=&z=13&ie=UTF8&iwloc=&output=embed`;
-              
-              return (
-                <motion.div 
-                  key={center.id}
-                  className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-100"
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: (index % 6) * 0.1 }}
-                  viewport={{ once: true }}
+          <div className="max-w-4xl mx-auto mt-12 space-y-4">
+            {Object.entries(groupedCenters).map(([locationName, locationCenters]) => (
+              <div 
+                key={locationName} 
+                className="bg-white rounded-xl shadow-sm border border-gray-200/60 overflow-hidden transition-all duration-300"
+              >
+                <button
+                  onClick={() => {
+                    setExpandedLocation(expandedLocation === locationName ? null : locationName);
+                    // Reset active map when switching governorates
+                    setActiveMapId(null);
+                  }}
+                  className="w-full px-6 py-5 flex justify-between items-center bg-gradient-to-r from-medical-50/20 to-white hover:from-medical-50/50 transition-colors"
                 >
-                  <div className="h-64">
-                    <iframe 
-                      src={mapUrl} 
-                      width="100%" 
-                      height="100%" 
-                      style={{ border: 0 }} 
-                      allowFullScreen 
-                      loading="lazy" 
-                      referrerPolicy="no-referrer-when-downgrade"
-                      title={center.name}
-                    ></iframe>
+                  <div className="flex items-center gap-3">
+                    <MapPin className="h-6 w-6 text-medical-600" />
+                    <span className="text-xl font-bold text-gray-900">{locationName}</span>
                   </div>
-                  
-                  <div className="p-6">
-                    <h3 className="text-xl font-bold mb-4">{center.name}</h3>
-                    
-                    <div className="space-y-3 text-gray-600">
-                      <div className="flex items-start">
-                        <MapPin className="h-5 w-5 text-medical-500 mr-2 flex-shrink-0 mt-1" />
-                        <span>{center.address}</span>
-                      </div>
-                      
-                      <div className="flex items-center">
-                        <Phone className="h-5 w-5 text-medical-500 mr-2 flex-shrink-0" />
-                        <a href={`tel:${center.phone}`} className="hover:text-medical-600">
-                          {center.phone}
-                        </a>
-                      </div>
-                      
-                      <div className="flex items-start">
-                        <Clock className="h-5 w-5 text-medical-500 mr-2 flex-shrink-0 mt-1" />
-                        <span>{center.workingHours}</span>
-                      </div>
-                    </div>
-                    
-                    <div className="mt-6">
-                      <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(center.address)}`} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="text-medical-600 hover:text-medical-700 font-medium inline-flex items-center"
-                      >
-                        عرض على الخريطة
-                        <ChevronRight className="h-4 w-4 mr-1 rtl:rotate-180" />
-                      </a>
-                    </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm font-semibold text-medical-700 bg-medical-50 px-3 py-1 rounded-full">
+                      {locationCenters.length} {locationCenters.length === 1 ? 'مركز' : 'مراكز'}
+                    </span>
+                    <ChevronRight className={`h-5 w-5 text-gray-400 transition-transform duration-300 ${expandedLocation === locationName ? 'rotate-90' : 'rtl:rotate-180'}`} />
                   </div>
-                </motion.div>
-              );
-            })}
+                </button>
+
+                {expandedLocation === locationName && (
+                  <div className="p-6 bg-gray-50/30 border-t border-gray-100 space-y-6">
+                    {locationCenters.map(center => {
+                      const isMapOpen = activeMapId === center.id;
+                      const mapUrl = center.id === '1' 
+                        ? 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d13819.134309871092!2d31.20493971135394!3d30.053742635558787!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x14584132d6eb5851%3A0xb19c7600694af9c5!2z2KfZhNmF2YfZhtiv2LPZitmG2Iwg2KfZhNis2YrYstip!5e0!3m2!1sar!2seg!4v1708440134399!5m2!1sar!2seg' 
+                        : center.id === '2' 
+                          ? 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d54803.31018606754!2d29.89121595767993!3d31.20495242201441!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x14f5c3fa29b53c0f%3A0x86c62fc5d4d3865b!2z2LPYqNmI2LHYqtmG2KzYjCDYp9mE2KXYs9mD2YbYr9ix2YrYqQ!5e0!3m2!1sar!2seg!4v1708440199631!5m2!1sar!2seg' 
+                          : center.id === '8' 
+                            ? 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d13769.811808774256!2d31.371969111513693!3d31.040839135950583!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x14f79c2b088dc6e9%3A0xb290248c326f786e!2z2KfZhNmF2YbYtdmI2LHYqdiMINin2YTZhdmG2LXZiNix2KkgKNin2YTZhdmG2LXZiNix2KkpLCDYp9mE2K_ZgtmH2YTZitip!5e0!3m2!1sar!2seg!4v1708440233144!5m2!1sar!2seg'
+                            : `https://maps.google.com/maps?q=${encodeURIComponent(center.name + ' ' + center.address)}&t=&z=13&ie=UTF8&iwloc=&output=embed`;
+
+                      return (
+                        <div key={center.id} className="bg-white p-5 rounded-xl border border-gray-200/80 shadow-sm space-y-4">
+                          <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
+                            <div>
+                              <h3 className="text-lg font-bold text-gray-900">{center.name}</h3>
+                              <div className="mt-2 space-y-2 text-sm text-gray-600">
+                                <div className="flex items-start">
+                                  <MapPin className="h-4 w-4 text-medical-500 ml-2 flex-shrink-0 mt-0.5" />
+                                  <span>{center.address}</span>
+                                </div>
+                                <div className="flex items-center">
+                                  <Phone className="h-4 w-4 text-medical-500 ml-2 flex-shrink-0" />
+                                  <span>{center.phone}</span>
+                                </div>
+                                <div className="flex items-center">
+                                  <Clock className="h-4 w-4 text-medical-500 ml-2 flex-shrink-0" />
+                                  <span>{center.workingHours}</span>
+                                </div>
+                              </div>
+                            </div>
+                            
+                            <div className="flex flex-row md:flex-col gap-2">
+                              <Button 
+                                variant={isMapOpen ? "default" : "outline"}
+                                onClick={() => setActiveMapId(isMapOpen ? null : center.id)}
+                                className="text-xs whitespace-nowrap"
+                              >
+                                {isMapOpen ? 'إخفاء الخريطة' : 'عرض على الخريطة'}
+                              </Button>
+                              <a href={`tel:${center.phone}`}>
+                                <Button variant="secondary" className="text-xs w-full whitespace-nowrap">
+                                  اتصال مباشر
+                                </Button>
+                              </a>
+                            </div>
+                          </div>
+
+                          {isMapOpen && (
+                            <motion.div 
+                              initial={{ opacity: 0, height: 0 }}
+                              animate={{ opacity: 1, height: 320 }}
+                              className="w-full h-80 rounded-lg overflow-hidden border border-gray-200"
+                            >
+                              <iframe 
+                                src={mapUrl} 
+                                width="100%" 
+                                height="100%" 
+                                style={{ border: 0 }} 
+                                allowFullScreen 
+                                loading="lazy" 
+                                referrerPolicy="no-referrer-when-downgrade"
+                                title={center.name}
+                              ></iframe>
+                            </motion.div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
         </div>
       </section>
