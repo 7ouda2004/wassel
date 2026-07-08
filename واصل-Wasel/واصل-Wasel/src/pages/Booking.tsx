@@ -23,8 +23,8 @@ const Booking = () => {
   }, []);
 
   const [formData, setFormData] = useState({
-    name: '',
-    phone: '',
+    name: sessionStorage.getItem('patientName') || '',
+    phone: sessionStorage.getItem('patientPhone') || '',
     email: '',
     center: '',
     date: format(new Date(), 'yyyy-MM-dd'),
@@ -32,6 +32,20 @@ const Booking = () => {
     type: 'معاينة',
     notes: ''
   });
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const centerParam = params.get('center');
+    const specialistParam = params.get('specialist');
+    
+    if (centerParam || specialistParam) {
+      setFormData(prev => ({
+        ...prev,
+        center: centerParam || prev.center,
+        notes: specialistParam ? `طلب كشف مع الأخصائي: ${specialistParam}` : prev.notes
+      }));
+    }
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;

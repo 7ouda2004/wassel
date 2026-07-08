@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Users, MapPin, PlusCircle, Edit, Trash, Save, Search, 
-  UserCheck, ShieldAlert, Clock, Phone, Building, Check, X
+  UserCheck, ShieldAlert, Clock, Phone, Building, Check, X,
+  Upload, Sparkles
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -42,7 +43,7 @@ const AdminDashboard = () => {
   const [currentCenter, setCurrentCenter] = useState<Center>({
     id: '', name: '', location: '', address: '', phone: '',
     workingHours: 'السبت - الخميس: 9 صباحاً - 9 مساءً',
-    image: '/images/ortho.png', region: 'القاهرة الكبرى'
+    image: '/images/ortho.png', region: 'القاهرة الكبرى', status: 'active'
   });
   const [centerSearchTerm, setCenterSearchTerm] = useState('');
   const [confirmDeleteCenter, setConfirmDeleteCenter] = useState<string | null>(null);
@@ -66,7 +67,7 @@ const AdminDashboard = () => {
     // Auth Check
     const isAdmin = sessionStorage.getItem('isAdmin');
     if (isAdmin !== 'true') {
-      toast.error('غير مصرح لك بدخول هذه الصفحة');
+      toast.error('غير مصرح لك بدخول هذه صفحة المسؤول');
       window.location.href = '/';
       return;
     }
@@ -74,6 +75,17 @@ const AdminDashboard = () => {
     setCenters(getLocalCenters());
     setSpecialists(getLocalSpecialists());
   }, []);
+
+  // Format Egypt Phone Numbers to International Standard for WhatsApp API
+  const formatPhoneForWhatsapp = (phone: string) => {
+    let cleaned = phone.replace(/\D/g, '');
+    if (cleaned.startsWith('01')) {
+      cleaned = '20' + cleaned.substring(1);
+    } else if (cleaned.startsWith('1')) {
+      cleaned = '20' + cleaned;
+    }
+    return cleaned;
+  };
 
   // --- Center Handlers ---
   const handleAddCenter = () => {
@@ -85,7 +97,8 @@ const AdminDashboard = () => {
       phone: '',
       workingHours: 'السبت - الخميس: 9 صباحاً - 9 مساءً',
       image: '/images/ortho.png',
-      region: 'القاهرة الكبرى'
+      region: 'القاهرة الكبرى',
+      status: 'active'
     });
     setIsAddingCenter(true);
   };
@@ -133,6 +146,28 @@ const AdminDashboard = () => {
     saveLocalCenters(updated);
     setIsAddingCenter(false);
     setIsEditingCenter(false);
+  };
+
+  const handleApproveCenter = (center: Center) => {
+    const updated = centers.map(c => c.id === center.id ? { ...c, status: 'active' as const } : c);
+    setCenters(updated);
+    saveLocalCenters(updated);
+    toast.success(`تم تفعيل وقبول فرع: ${center.name}`);
+
+    // Send WhatsApp notification
+    if (center.phone) {
+      const waPhone = formatPhoneForWhatsapp(center.phone);
+      const textMessage = `مرحباً بك! تم قبول طلب تسجيل مركزكم "${center.name}" وتفعيله بنجاح في منصة واصل. يمكن للمرضى الآن العثور على فرعكم، تصفح خدماتكم، حجز مواعيد وكتابة التقييمات. يسعدنا انضمامكم إلينا!`;
+      const whatsappUrl = `https://api.whatsapp.com/send?phone=${waPhone}&text=${encodeURIComponent(textMessage)}`;
+      window.open(whatsappUrl, '_blank');
+    }
+  };
+
+  const handleRejectCenter = (center: Center) => {
+    const updated = centers.filter(c => c.id !== center.id);
+    setCenters(updated);
+    saveLocalCenters(updated);
+    toast.error(`تم رفض طلب تسجيل: ${center.name}`);
   };
 
   // --- Specialist Handlers ---
@@ -199,7 +234,6 @@ const AdminDashboard = () => {
 
     let updatedList: Specialist[];
     if (isAddingSpec) {
-      // Check if username already exists
       if (specialists.some(s => s.username === currentSpec.username)) {
         toast.error('اسم المستخدم هذا مستخدم بالفعل');
         return;
@@ -222,6 +256,14 @@ const AdminDashboard = () => {
     setSpecialists(updated);
     saveLocalSpecialists(updated);
     toast.success(`تم قبول حساب الأخصائي: ${spec.name}`);
+
+    // Send WhatsApp notification
+    if (spec.phone) {
+      const waPhone = formatPhoneForWhatsapp(spec.phone);
+      const textMessage = `مرحباً بك أخصائي ${spec.name}، تم قبول طلب انضمامك وتفعيل حسابك بنجاح في منصة واصل! يمكنك الآن تسجيل الدخول باستخدام اسم المستخدم الخاص بك واستعراض لوحة تحكم المرضى الخاصة بك. أهلاً بك في عائلة واصل!`;
+      const whatsappUrl = `https://api.whatsapp.com/send?phone=${waPhone}&text=${encodeURIComponent(textMessage)}`;
+      window.open(whatsappUrl, '_blank');
+    }
   };
 
   const handleRejectSpec = (spec: Specialist) => {
@@ -236,18 +278,18 @@ const AdminDashboard = () => {
       <Navbar />
 
       <main className="flex-grow container mx-auto px-4 py-8">
-        <div className="mb-8 flex justify-between items-center bg-red-50 border-r-4 border-red-500 p-4 rounded">
+        <div className="mb-8 flex justify-between items-center bg-red-50 border-r-4 border-red-500 p-4 rounded-xl shadow-xs">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">لوحة تحكم المسؤول (الادمن)</h1>
-            <p className="text-gray-600 mt-1">إدارة المراكز الطبية وحسابات الأخصائيين المعتمدين</p>
+            <h1 className="text-3xl font-bold text-gray-900 font-cairo">لوحة تحكم المسؤول (الادمن)</h1>
+            <p className="text-gray-650 mt-1 font-medium">إدارة المراكز الطبية وحسابات الأخصائيين المعتمدين والموافقة على الطلبات الجديدة</p>
           </div>
-          <Building className="h-10 w-10 text-red-500" />
+          <Building className="h-10 w-10 text-red-500 hidden sm:block" />
         </div>
 
         <Tabs defaultValue="specs">
           <TabsList className="grid grid-cols-2 mb-6">
-            <TabsTrigger value="specs">إدارة الأخصائيين</TabsTrigger>
-            <TabsTrigger value="centers">إدارة المراكز</TabsTrigger>
+            <TabsTrigger value="specs" className="font-bold">إدارة الأخصائيين والطلبات</TabsTrigger>
+            <TabsTrigger value="centers" className="font-bold">إدارة المراكز والفروع</TabsTrigger>
           </TabsList>
 
           {/* --- Specialists Tab Content --- */}
@@ -262,18 +304,18 @@ const AdminDashboard = () => {
                   className="pl-3 pr-10"
                 />
               </div>
-              <Button onClick={handleAddSpec} className="bg-red-600 hover:bg-red-700 text-white">
+              <Button onClick={handleAddSpec} className="bg-red-650 hover:bg-red-750 text-white font-semibold">
                 <PlusCircle className="ml-2 h-5 w-5" />
                 إضافة أخصائي جديد
               </Button>
             </div>
 
-            {/* Pending Requests Section */}
+            {/* Pending Specialists Requests Section */}
             {specialists.some(s => s.status === 'pending') && (
               <div className="mb-8 bg-amber-50/50 p-6 rounded-xl border border-amber-200">
                 <h2 className="text-lg font-bold text-amber-900 mb-4 flex items-center gap-2">
-                  <ShieldAlert className="h-5 w-5 text-amber-600" />
-                  حسابات جديدة قيد الانتظار لموافقتك ({specialists.filter(s => s.status === 'pending').length})
+                  <ShieldAlert className="h-5 w-5 text-amber-600 animate-pulse" />
+                  طلبات انضمام الأخصائيين قيد الانتظار ({specialists.filter(s => s.status === 'pending').length})
                 </h2>
                 
                 <div className="overflow-x-auto bg-white rounded-lg border">
@@ -303,14 +345,14 @@ const AdminDashboard = () => {
                                   onClick={() => handleApproveSpec(spec)}
                                   className="bg-green-600 hover:bg-green-700 text-white"
                                 >
-                                  <Check className="h-4 w-4 ml-1" /> قبول الحساب
+                                  <Check className="h-4 w-4 ml-1" /> قبول الحساب وتفعيل
                                 </Button>
                                 <Button 
                                   size="sm" 
                                   variant="destructive"
                                   onClick={() => handleRejectSpec(spec)}
                                 >
-                                  <X className="h-4 w-4 ml-1" /> رفض الحساب
+                                  <X className="h-4 w-4 ml-1" /> رفض الطلب
                                 </Button>
                               </div>
                             </TableCell>
@@ -324,7 +366,7 @@ const AdminDashboard = () => {
 
             {/* Active Specialists List */}
             <div className="bg-white rounded-xl border p-6">
-              <h2 className="text-lg font-bold text-gray-900 mb-4">الأخصائيين المعتمدين</h2>
+              <h2 className="text-lg font-bold text-gray-900 mb-4">الأخصائيين المعتمدين بالموقع</h2>
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
@@ -386,13 +428,69 @@ const AdminDashboard = () => {
                   className="pl-3 pr-10"
                 />
               </div>
-              <Button onClick={handleAddCenter} className="bg-red-600 hover:bg-red-700 text-white">
+              <Button onClick={handleAddCenter} className="bg-red-650 hover:bg-red-750 text-white font-semibold">
                 <PlusCircle className="ml-2 h-5 w-5" />
                 إضافة مركز جديد
               </Button>
             </div>
 
+            {/* Pending Centers Registration Requests Section */}
+            {centers.some(c => c.status === 'pending') && (
+              <div className="mb-8 bg-amber-50/50 p-6 rounded-xl border border-amber-200">
+                <h2 className="text-lg font-bold text-amber-900 mb-4 flex items-center gap-2">
+                  <ShieldAlert className="h-5 w-5 text-amber-600 animate-pulse" />
+                  طلبات تسجيل فروع جديدة قيد الانتظار ({centers.filter(c => c.status === 'pending').length})
+                </h2>
+                
+                <div className="overflow-x-auto bg-white rounded-lg border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="text-right">اسم الفرع</TableHead>
+                        <TableHead className="text-right">المحافظة</TableHead>
+                        <TableHead className="text-right">العنوان</TableHead>
+                        <TableHead className="text-right">الهاتف</TableHead>
+                        <TableHead className="text-right">الإجراءات</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {centers
+                        .filter(c => c.status === 'pending')
+                        .map(center => (
+                          <TableRow key={center.id}>
+                            <TableCell className="font-bold">{center.name}</TableCell>
+                            <TableCell>{center.location}</TableCell>
+                            <TableCell className="max-w-xs truncate">{center.address}</TableCell>
+                            <TableCell>{center.phone}</TableCell>
+                            <TableCell>
+                              <div className="flex gap-2">
+                                <Button 
+                                  size="sm" 
+                                  onClick={() => handleApproveCenter(center)}
+                                  className="bg-green-600 hover:bg-green-700 text-white"
+                                >
+                                  <Check className="h-4 w-4 ml-1" /> قبول وتفعيل الفرع
+                                </Button>
+                                <Button 
+                                  size="sm" 
+                                  variant="destructive"
+                                  onClick={() => handleRejectCenter(center)}
+                                >
+                                  <X className="h-4 w-4 ml-1" /> رفض الطلب
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
+            )}
+
+            {/* Approved Centers List */}
             <div className="bg-white rounded-xl border p-6">
+              <h2 className="text-lg font-bold text-gray-900 mb-4">المراكز والفروع المعتمدة</h2>
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
@@ -407,7 +505,7 @@ const AdminDashboard = () => {
                   </TableHeader>
                   <TableBody>
                     {centers
-                      .filter(c => c.name.toLowerCase().includes(centerSearchTerm.toLowerCase()) || c.location.toLowerCase().includes(centerSearchTerm.toLowerCase()))
+                      .filter(c => c.status === 'active' && (c.name.toLowerCase().includes(centerSearchTerm.toLowerCase()) || c.location.toLowerCase().includes(centerSearchTerm.toLowerCase())))
                       .map(center => (
                         <TableRow key={center.id}>
                           <TableCell className="font-semibold">{center.name}</TableCell>
@@ -456,8 +554,8 @@ const AdminDashboard = () => {
                 <Input id="spec-password" name="password" type="password" value={currentSpec.password || ''} onChange={handleSpecInputChange} />
               </div>
               <div>
-                <Label htmlFor="spec-phone">رقم الهاتف</Label>
-                <Input id="spec-phone" name="phone" value={currentSpec.phone || ''} onChange={handleSpecInputChange} />
+                <Label htmlFor="spec-phone">رقم الهاتف *</Label>
+                <Input id="spec-phone" name="phone" value={currentSpec.phone || ''} onChange={handleSpecInputChange} required />
               </div>
             </div>
 
@@ -466,10 +564,34 @@ const AdminDashboard = () => {
                 <Label htmlFor="spec-role">الوظيفة / التخصص العلمي *</Label>
                 <Input id="spec-role" name="role" value={currentSpec.role} onChange={handleSpecInputChange} placeholder="أخصائي أطراف صناعية" required />
               </div>
+              
+              {/* File Uploader for Specialist Image */}
               <div>
-                <Label htmlFor="spec-image">رابط الصورة الشخصية</Label>
-                <Input id="spec-image" name="image" value={currentSpec.image} onChange={handleSpecInputChange} />
+                <Label htmlFor="spec-image-upload" className="flex items-center gap-1.5 cursor-pointer text-blue-600 hover:underline">
+                  <Upload className="h-4 w-4" /> تحميل الصورة الشخصية للأخصائي
+                </Label>
+                <Input 
+                  id="spec-image-upload" 
+                  type="file" 
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onloadend = () => {
+                        setCurrentSpec(prev => ({ ...prev, image: reader.result as string }));
+                        toast.success('تم رفع صورة الأخصائي بنجاح');
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                  className="mt-1 text-xs"
+                />
+                <div className="mt-2 h-14 w-14 rounded-full overflow-hidden border bg-gray-50 flex items-center justify-center">
+                  <img src={currentSpec.image || '/images/new.jpg'} alt="المعاينة" className="w-full h-full object-cover" />
+                </div>
               </div>
+
               <div>
                 <Label htmlFor="spec-expertise">التخصصات الفرعية (مفصولة بفاصلة)</Label>
                 <Input 
@@ -547,17 +669,18 @@ const AdminDashboard = () => {
                 <Input id="center-address" name="address" value={currentCenter.address} onChange={handleCenterInputChange} placeholder="شارع التحرير" required />
               </div>
             </div>
+            
             <div className="space-y-4">
               <div>
                 <Label htmlFor="center-phone">رقم الهاتف *</Label>
-                <Input id="center-phone" name="phone" value={currentCenter.phone} onChange={handleCenterInputChange} placeholder="02-123-4567" required />
+                <Input id="center-phone" name="phone" value={currentCenter.phone} onChange={handleCenterInputChange} placeholder="مثال: 01012345678" required />
               </div>
               <div>
                 <Label htmlFor="center-workingHours">ساعات العمل</Label>
                 <Input id="center-workingHours" name="workingHours" value={currentCenter.workingHours} onChange={handleCenterInputChange} />
               </div>
               <div>
-                <Label htmlFor="center-region">المنطقة</Label>
+                <Label htmlFor="center-region">المنطقة الجغرافية</Label>
                 <select id="center-region" name="region" value={currentCenter.region} onChange={handleCenterInputChange} className="w-full rounded-md border p-2 bg-white">
                   <option value="القاهرة الكبرى">القاهرة الكبرى</option>
                   <option value="الإسكندرية">الإسكندرية</option>
@@ -566,6 +689,33 @@ const AdminDashboard = () => {
                   <option value="القناة">القناة</option>
                   <option value="الحدود">الحدود</option>
                 </select>
+              </div>
+
+              {/* File Uploader for Center Image */}
+              <div>
+                <Label htmlFor="center-image-upload" className="flex items-center gap-1.5 cursor-pointer text-blue-600 hover:underline">
+                  <Upload className="h-4 w-4" /> تحميل واجهة / صورة المركز
+                </Label>
+                <Input 
+                  id="center-image-upload" 
+                  type="file" 
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onloadend = () => {
+                        setCurrentCenter(prev => ({ ...prev, image: reader.result as string }));
+                        toast.success('تم رفع واجهة المركز بنجاح');
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                  className="mt-1 text-xs"
+                />
+                <div className="mt-2 h-14 w-20 rounded-md overflow-hidden border bg-gray-50 flex items-center justify-center">
+                  <img src={currentCenter.image || '/images/ortho.png'} alt="معاينة" className="w-full h-full object-cover" />
+                </div>
               </div>
             </div>
           </div>

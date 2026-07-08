@@ -16,6 +16,7 @@ export interface Center {
     comment: string;
     date: string;
   }[];
+  status?: 'pending' | 'active';
 }
 
 export const defaultCenters: Center[] = [
@@ -344,6 +345,11 @@ export function getLocalCenters(): Center[] {
           date: '2026-07-01'
         }
       ];
+      cMod = true;
+    }
+    
+    if (!updated.status) {
+      updated.status = 'active';
       cMod = true;
     }
     
