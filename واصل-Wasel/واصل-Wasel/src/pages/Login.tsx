@@ -13,7 +13,7 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { 
   getLocalSpecialists, saveLocalSpecialists, type Specialist,
-  getLocalCenters, type Center 
+  getLocalCenters, saveLocalCenters, type Center 
 } from '@/lib/db';
 
 const Login = () => {
