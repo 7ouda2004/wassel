@@ -6,6 +6,7 @@ export interface Center {
   phone: string;
   workingHours: string;
   image: string;
+  images?: string[];
   region: string;
   description?: string;
   services?: string[];

@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { getLocalCenters, type Center, getLocalSpecialists, type Specialist } from '@/lib/db';
+import { syncDatabase, uploadLocalData } from '@/lib/registrations';
 
 const Locations = () => {
   const [centersList, setCentersList] = useState<Center[]>([]);
@@ -35,13 +36,33 @@ const Locations = () => {
   const [newReviewAuthor, setNewReviewAuthor] = useState('');
   const [newReviewRating, setNewReviewRating] = useState(5);
   const [newReviewComment, setNewReviewComment] = useState('');
+  
+  // Admin permissions state
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     document.documentElement.dir = 'rtl';
     document.body.classList.add('font-cairo');
     window.scrollTo(0, 0);
-    setCentersList(getLocalCenters());
-    setSpecialistsList(getLocalSpecialists().filter(s => s.status === 'active'));
+    
+    // Check if user is Admin
+    const role = sessionStorage.getItem('mockRole');
+    const isSessionAdmin = sessionStorage.getItem('isAdmin');
+    if (role === 'admin' || isSessionAdmin === 'true') {
+      setIsAdmin(true);
+    }
+
+    const loadData = async () => {
+      try {
+        await syncDatabase();
+      } catch (err) {
+        console.error('Failed to sync cloud database on mount:', err);
+      }
+      setCentersList(getLocalCenters());
+      setSpecialistsList(getLocalSpecialists().filter(s => s.status === 'active'));
+    };
+    
+    loadData();
     
     // Auto-fill patient name if logged in
     const storedPatientName = sessionStorage.getItem('patientName');
@@ -97,6 +118,43 @@ const Locations = () => {
     setNewReviewRating(5);
     setNewReviewComment('');
     toast.success('شكرًا لك! تم إرسال تقييمك بنجاح.');
+
+    // Sync to cloud database
+    try {
+      const allSpecs = getLocalSpecialists();
+      uploadLocalData(allSpecs, updatedCentersList);
+    } catch (err) {
+      console.error('Failed to sync added review to cloud:', err);
+    }
+  };
+
+  // Delete review handler for Admin
+  const handleDeleteReview = async (reviewId: string) => {
+    if (!selectedCenter) return;
+    
+    const updatedReviews = (selectedCenter.reviews || []).filter(r => r.id !== reviewId);
+    const updatedCenter = {
+      ...selectedCenter,
+      reviews: updatedReviews
+    };
+
+    // Update local state
+    setSelectedCenter(updatedCenter);
+
+    // Save back to centers list & localStorage
+    const updatedCentersList = centersList.map(c => c.id === selectedCenter.id ? updatedCenter : c);
+    setCentersList(updatedCentersList);
+    localStorage.setItem('centers', JSON.stringify(updatedCentersList));
+    
+    toast.success('تم حذف التعليق بنجاح');
+
+    // Trigger cloud sync
+    try {
+      const allSpecs = getLocalSpecialists();
+      await uploadLocalData(allSpecs, updatedCentersList);
+    } catch (err) {
+      console.error('Failed to sync deleted review to cloud:', err);
+    }
   };
 
   // Helper to calculate reviews details
@@ -107,11 +165,30 @@ const Locations = () => {
 
   // Helper to get image gallery for the selected center
   const getCenterGallery = (center: Center) => {
-    return [
-      center.image || '/images/ortho.png',
-      'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=800&q=80', // Clinic setup
-      'https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=800&q=80'  // Rehab setup
-    ];
+    const list: string[] = ['/images/ortho.png'];
+    
+    // Add primary center image if it's not the same
+    if (center.image && center.image !== '/images/ortho.png') {
+      list.push(center.image);
+    }
+    
+    // Add additional gallery images if configured
+    if (center.images && Array.isArray(center.images)) {
+      center.images.forEach(img => {
+        if (img && !list.includes(img)) {
+          list.push(img);
+        }
+      });
+    }
+    
+    // Ensure we have at least 3 images for a beautiful gallery slider
+    if (list.length < 2) {
+      list.push('https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=800&q=80');
+    }
+    if (list.length < 3) {
+      list.push('https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=800&q=80');
+    }
+    return list;
   };
 
   return (
@@ -478,7 +555,17 @@ const Locations = () => {
                   <div className="space-y-3 overflow-y-auto max-h-[220px] pr-1 mb-6">
                     {selectedCenter.reviews && selectedCenter.reviews.length > 0 ? (
                       selectedCenter.reviews.map((review) => (
-                        <div key={review.id} className="bg-white p-3 rounded-lg border border-gray-100 shadow-xs">
+                        <div key={review.id} className="bg-white p-3 rounded-lg border border-gray-100 shadow-xs relative group">
+                          {isAdmin && (
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteReview(review.id)}
+                              className="absolute top-2 left-2 text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 p-1 rounded transition-all text-[10px] font-bold"
+                              title="حذف التعليق"
+                            >
+                              حذف التعليق
+                            </button>
+                          )}
                           <div className="flex justify-between items-start mb-1 flex-wrap gap-1">
                             <span className="text-xs font-bold text-gray-800">{review.author}</span>
                             <span className="text-[10px] text-gray-400 font-mono">{review.date}</span>
@@ -495,7 +582,7 @@ const Locations = () => {
                               />
                             ))}
                           </div>
-                          <p className="text-xs text-gray-600 leading-relaxed">{review.comment}</p>
+                          <p className="text-xs text-gray-600 leading-relaxed pr-1 mt-1">{review.comment}</p>
                         </div>
                       ))
                     ) : (

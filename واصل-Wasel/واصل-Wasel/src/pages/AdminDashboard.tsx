@@ -47,7 +47,7 @@ const AdminDashboard = () => {
   const [currentCenter, setCurrentCenter] = useState<Center>({
     id: '', name: '', location: '', address: '', phone: '',
     workingHours: 'السبت - الخميس: 9 صباحاً - 9 مساءً',
-    image: '/images/ortho.png', region: 'القاهرة الكبرى', status: 'active'
+    image: '/images/ortho.png', images: [], region: 'القاهرة الكبرى', status: 'active'
   });
   const [centerSearchTerm, setCenterSearchTerm] = useState('');
   const [confirmDeleteCenter, setConfirmDeleteCenter] = useState<string | null>(null);
@@ -125,6 +125,7 @@ const AdminDashboard = () => {
       phone: '',
       workingHours: 'السبت - الخميس: 9 صباحاً - 9 مساءً',
       image: '',
+      images: [],
       region: 'القاهرة الكبرى',
       status: 'active'
     });
@@ -984,6 +985,67 @@ const AdminDashboard = () => {
                 {currentCenter.image && (
                   <div className="mt-2 h-14 w-20 rounded-md overflow-hidden border bg-gray-50 flex items-center justify-center">
                     <img src={currentCenter.image} alt="معاينة" className="w-full h-full object-cover" />
+                  </div>
+                )}
+              </div>
+
+              {/* Additional Gallery Images */}
+              <div>
+                <Label htmlFor="center-images-upload" className="flex items-center gap-1.5 cursor-pointer text-teal-600 hover:underline mt-4">
+                  <Upload className="h-4 w-4" /> تحميل صور إضافية للمعرض
+                </Label>
+                <Input 
+                  id="center-images-upload" 
+                  type="file" 
+                  accept="image/*"
+                  multiple
+                  onChange={(e) => {
+                    const files = e.target.files;
+                    if (files && files.length > 0) {
+                      const filesArray = Array.from(files);
+                      let loadedCount = 0;
+                      const newImages: string[] = [];
+                      
+                      filesArray.forEach(file => {
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                          if (typeof reader.result === 'string') {
+                            newImages.push(reader.result);
+                          }
+                          loadedCount++;
+                          if (loadedCount === filesArray.length) {
+                            setCurrentCenter(prev => ({
+                              ...prev,
+                              images: [...(prev.images || []), ...newImages]
+                            }));
+                            toast.success(`تم إضافة ${newImages.length} صور للمعرض بنجاح`);
+                          }
+                        };
+                        reader.readAsDataURL(file);
+                      });
+                    }
+                  }}
+                  className="mt-1 text-xs"
+                />
+                {currentCenter.images && currentCenter.images.length > 0 && (
+                  <div className="mt-2 flex flex-wrap gap-2 max-h-32 overflow-y-auto p-1 border rounded-lg bg-gray-50">
+                    {currentCenter.images.map((img, idx) => (
+                      <div key={idx} className="relative h-12 w-16 rounded overflow-hidden border bg-white flex-shrink-0 group">
+                        <img src={img} alt="معرض" className="w-full h-full object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setCurrentCenter(prev => ({
+                              ...prev,
+                              images: prev.images?.filter((_, i) => i !== idx)
+                            }));
+                          }}
+                          className="absolute inset-0 bg-red-600/80 text-white text-[10px] font-bold flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          حذف
+                        </button>
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>
