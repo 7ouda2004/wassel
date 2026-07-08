@@ -385,29 +385,37 @@ const Locations = () => {
                 {/* Medical Team at Branch */}
                 <div className="space-y-3">
                   <h3 className="font-bold text-gray-900 text-lg">فريق الأخصائيين بالفرع</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {specialistsList.slice(0, 4).map((spec) => (
-                      <div key={spec.id} className="flex gap-3 bg-white p-3 rounded-xl border border-gray-200/80 shadow-sm items-center hover:border-medical-300 transition-colors">
-                        <img 
-                          src={spec.image || '/images/new.jpg'} 
-                          alt={spec.name} 
-                          className="h-12 w-12 rounded-full object-cover border"
-                          onError={(e) => {
-                            e.currentTarget.src = "https://images.unsplash.com/photo-1622253692010-333f2da6031d?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80";
-                          }}
-                        />
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-bold text-xs text-gray-900 truncate">{spec.name}</h4>
-                          <p className="text-[10px] text-gray-500 truncate">{spec.role}</p>
-                        </div>
-                        <Link to={`/booking?center=${selectedCenter.id}&specialist=${encodeURIComponent(spec.name)}`}>
-                          <Button size="sm" className="text-[10px] h-7 bg-medical-600 hover:bg-medical-700 text-white">
-                            حجز
-                          </Button>
-                        </Link>
-                      </div>
-                    ))}
-                  </div>
+                  {specialistsList.filter(s => s.centerId === selectedCenter.id).length > 0 ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {specialistsList
+                        .filter(s => s.centerId === selectedCenter.id)
+                        .map((spec) => (
+                          <div key={spec.id} className="flex gap-3 bg-white p-3 rounded-xl border border-gray-200/80 shadow-sm items-center hover:border-medical-300 transition-colors">
+                            <img 
+                              src={spec.image || '/images/new.jpg'} 
+                              alt={spec.name} 
+                              className="h-12 w-12 rounded-full object-cover border"
+                              onError={(e) => {
+                                e.currentTarget.src = "https://images.unsplash.com/photo-1622253692010-333f2da6031d?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80";
+                              }}
+                            />
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-bold text-xs text-gray-900 truncate">{spec.name}</h4>
+                              <p className="text-[10px] text-gray-500 truncate">{spec.role}</p>
+                            </div>
+                            <Link to={`/booking?center=${selectedCenter.id}&specialist=${spec.id}`}>
+                              <Button size="sm" className="text-[10px] h-7 bg-medical-600 hover:bg-medical-700 text-white">
+                                حجز
+                              </Button>
+                            </Link>
+                          </div>
+                        ))}
+                    </div>
+                  ) : (
+                    <div className="p-4 bg-gray-50 rounded-xl text-center border border-dashed text-xs text-gray-500 font-semibold">
+                      لا يوجد أخصائيون معينون في هذا الفرع حالياً. عند حجز موعد، سيقوم أخصائي من المركز الرئيسي بالتنسيق معك.
+                    </div>
+                  )}
                 </div>
 
                 {/* Google Map Embedded Frame */}
