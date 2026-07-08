@@ -15,6 +15,7 @@ import {
   getLocalSpecialists, saveLocalSpecialists, type Specialist,
   getLocalCenters, saveLocalCenters, type Center 
 } from '@/lib/db';
+import { submitRegistration, isUsernameTaken } from '@/lib/registrations';
 
 const Login = () => {
   // Tabs: 'patient' | 'specialist'
@@ -178,7 +179,8 @@ const Login = () => {
   };
 
   // Specialist Register Request
-  const handleRegisterSpec = (e: React.FormEvent) => {
+  // Specialist Register Request
+  const handleRegisterSpec = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!regSpecName.trim() || !regSpecUsername.trim() || !regSpecPassword || !regSpecPhone.trim()) {
       toast.error('يرجى تعبئة الحقول الإلزامية للملف');
@@ -190,41 +192,40 @@ const Login = () => {
       return;
     }
 
-    const allSpecs = getLocalSpecialists();
-    if (allSpecs.some(s => s.username === regSpecUsername) || regSpecUsername === 'admin') {
+    const taken = await isUsernameTaken(regSpecUsername);
+    if (taken || regSpecUsername === 'admin') {
       toast.error('اسم المستخدم هذا محجوز أو مستخدم بالفعل');
       return;
     }
 
-    const newSpec: Specialist = {
-      id: Date.now().toString(),
-      name: regSpecName.trim(),
+    const res = await submitRegistration({
+      type: 'specialist',
+      full_name: regSpecName.trim(),
+      phone: regSpecPhone.trim(),
       username: regSpecUsername.trim(),
       password: regSpecPassword,
       role: regSpecRole,
       bio: regSpecBio || 'أخصائي متمرس في الأطراف الصناعية والأجهزة التقويمية الحديثة.',
-      image: regSpecImage,
-      expertise: [],
-      status: 'pending', // Pending Admin approval
-      phone: regSpecPhone.trim()
-    };
+      image: regSpecImage || ''
+    });
 
-    const updated = [...allSpecs, newSpec];
-    saveLocalSpecialists(updated);
-    toast.success('تم إرسال طلب انضمامك للمسؤول بنجاح! يرجى انتظار الموافقة لتفعيل حسابك.');
-    
-    // Reset & switch mode
-    setRegSpecName('');
-    setRegSpecUsername('');
-    setRegSpecPassword('');
-    setRegSpecPhone('');
-    setRegSpecBio('');
-    setRegSpecImage('/images/new.jpg');
-    setSpecialistMode('login');
+    if (res.ok) {
+      toast.success('تم إرسال طلب انضمامك للمسؤول بنجاح! يرجى انتظار الموافقة لتفعيل حسابك.');
+      // Reset & switch mode
+      setRegSpecName('');
+      setRegSpecUsername('');
+      setRegSpecPassword('');
+      setRegSpecPhone('');
+      setRegSpecBio('');
+      setRegSpecImage('');
+      setSpecialistMode('login');
+    } else {
+      toast.error(`حدث خطأ أثناء إرسال الطلب: ${res.error}`);
+    }
   };
 
   // Center Register Request
-  const handleRegisterCenter = (e: React.FormEvent) => {
+  const handleRegisterCenter = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!regCenterName.trim() || !regCenterLocation.trim() || !regCenterAddress.trim() || !regCenterPhone.trim()) {
       toast.error('يرجى تعبئة الحقول الإلزامية للمركز (*)');
@@ -236,39 +237,32 @@ const Login = () => {
       return;
     }
 
-    const allCenters = getLocalCenters();
-    const newCenter: Center = {
-      id: Date.now().toString(),
-      name: regCenterName.trim(),
+    const res = await submitRegistration({
+      type: 'center',
+      full_name: regCenterName.trim(), // Storing center branch manager name/center name in full_name
+      phone: regCenterPhone.trim(),
+      username: regCenterName.trim().replace(/\s+/g, '_').toLowerCase() + '_' + Date.now().toString().slice(-4), // auto generate username
+      password: 'center_default_password',
+      center_name: regCenterName.trim(),
       location: regCenterLocation.trim(),
       address: regCenterAddress.trim(),
-      phone: regCenterPhone.trim(),
-      workingHours: regCenterWorkingHours,
-      image: regCenterImage,
+      working_hours: regCenterWorkingHours,
       region: regCenterRegion,
-      description: `مركز واصل المعتمد في محافظة ${regCenterLocation}. نوفر أحدث الأطراف والجبائر التقويمية تحت إشراف طبي معتمد وبأعلى كفاءة.`,
-      services: [
-        'تصميم وتركيب الأطراف الصناعية الذكية (علوية وسفلية)',
-        'جبائر تقويم العظام المخصصة (AFO, KAFO)',
-        'تصميم الفرش الطبي والأحذية الطبية المخصصة باستخدام تقنيات قياس الضغط',
-        'صيانة دورية فورية وتعديل مقاسات الأجهزة والجبائر',
-        'جلسات تدريب وتأهيل حركي مجانية للمرضى الجدد'
-      ],
-      reviews: [],
-      status: 'pending' // Pending Admin approval
-    };
+      image: regCenterImage || ''
+    });
 
-    const updated = [...allCenters, newCenter];
-    saveLocalCenters(updated);
-    toast.success('تم تقديم طلب تسجيل مركزك الجديد بنجاح! سيقوم الأدمن بمراجعته وتفعيله.');
-    
-    // Reset & switch mode
-    setRegCenterName('');
-    setRegCenterLocation('');
-    setRegCenterAddress('');
-    setRegCenterPhone('');
-    setRegCenterImage('/images/ortho.png');
-    setSpecialistMode('login');
+    if (res.ok) {
+      toast.success('تم تقديم طلب تسجيل مركزك الجديد بنجاح! سيقوم الأدمن بمراجعته وتفعيله.');
+      // Reset & switch mode
+      setRegCenterName('');
+      setRegCenterLocation('');
+      setRegCenterAddress('');
+      setRegCenterPhone('');
+      setRegCenterImage('');
+      setSpecialistMode('login');
+    } else {
+      toast.error(`حدث خطأ أثناء إرسال الطلب: ${res.error}`);
+    }
   };
 
   return (

@@ -20,6 +20,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
 import Booking from '@/pages/Booking';
 import Login from "./pages/Login";
+import { syncDatabase } from "@/lib/registrations";
 
 const queryClient = new QueryClient();
 
@@ -51,6 +52,9 @@ const App = () => {
   useEffect(() => {
     // Set RTL direction for the entire app
     document.documentElement.dir = 'rtl';
+    
+    // Sync shared specialists and centers from Supabase cloud database
+    syncDatabase();
   }, []);
 
   return (

@@ -34,6 +34,10 @@ import {
   getLocalCenters, saveLocalCenters, type Center,
   getLocalSpecialists, saveLocalSpecialists, type Specialist 
 } from '@/lib/db';
+import { 
+  getPendingRequests, approveSpecialistInDb, approveCenterInDb, 
+  rejectRequest, type RegistrationRequest, syncDatabase 
+} from '@/lib/registrations';
 
 const AdminDashboard = () => {
   // Centers state
@@ -59,10 +63,20 @@ const AdminDashboard = () => {
   const [specSearchTerm, setSpecSearchTerm] = useState('');
   const [confirmDeleteSpec, setConfirmDeleteSpec] = useState<string | null>(null);
   const [specExpertiseInput, setSpecExpertiseInput] = useState('');
+  const [pendingRequests, setPendingRequests] = useState<RegistrationRequest[]>([]);
 
-  const loadData = () => {
-    setCenters(getLocalCenters());
-    setSpecialists(getLocalSpecialists());
+  const loadData = async () => {
+    try {
+      await syncDatabase();
+      setCenters(getLocalCenters());
+      setSpecialists(getLocalSpecialists());
+      const reqs = await getPendingRequests();
+      setPendingRequests(reqs);
+    } catch (e) {
+      console.error('loadData error:', e);
+      setCenters(getLocalCenters());
+      setSpecialists(getLocalSpecialists());
+    }
   };
 
   useEffect(() => {
@@ -79,23 +93,12 @@ const AdminDashboard = () => {
 
     loadData();
 
-    // Auto-refresh when specialists/centers register from another tab or same browser
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'specialists' || e.key === 'centers') {
-        loadData();
-        toast.info('📩 تم استلام طلب انضمام جديد! تحقق من قائمة الطلبات.');
-      }
-    };
-    window.addEventListener('storage', handleStorageChange);
-
-    // Poll every 5 seconds to catch same-tab registrations
+    // Poll every 5 seconds to catch new cloud registrations
     const pollInterval = setInterval(() => {
-      setCenters(getLocalCenters());
-      setSpecialists(getLocalSpecialists());
+      loadData();
     }, 5000);
 
     return () => {
-      window.removeEventListener('storage', handleStorageChange);
       clearInterval(pollInterval);
     };
   }, []);
@@ -197,6 +200,57 @@ const AdminDashboard = () => {
     setCenters(updated);
     saveLocalCenters(updated);
     toast.error(`تم تعطيل ورفض فرع: ${center.name}`);
+  };
+
+  // --- Supabase Cloud Registration Requests Handlers ---
+  const handleApproveSpecRequest = async (req: RegistrationRequest) => {
+    const ok = await approveSpecialistInDb(req);
+    if (ok) {
+      toast.success(`تم قبول وتفعيل حساب الأخصائي: ${req.full_name}`);
+      if (req.phone) {
+        const waPhone = formatPhoneForWhatsapp(req.phone);
+        const textMessage = `مرحباً بك أخصائي ${req.full_name}، تم قبول طلب انضمامك وتفعيل حسابك بنجاح في منصة واصل! يمكنك الآن تسجيل الدخول واستخدام لوحة التحكم الخاصة بك. أهلاً بك في عائلة واصل!`;
+        window.open(`https://api.whatsapp.com/send?phone=${waPhone}&text=${encodeURIComponent(textMessage)}`, '_blank');
+      }
+      loadData();
+    } else {
+      toast.error('حدث خطأ أثناء تفعيل الحساب.');
+    }
+  };
+
+  const handleRejectSpecRequest = async (req: RegistrationRequest) => {
+    const ok = await rejectRequest(req.id);
+    if (ok) {
+      toast.error(`تم رفض حساب: ${req.full_name}`);
+      loadData();
+    } else {
+      toast.error('حدث خطأ أثناء رفض الطلب.');
+    }
+  };
+
+  const handleApproveCenterRequest = async (req: RegistrationRequest) => {
+    const ok = await approveCenterInDb(req);
+    if (ok) {
+      toast.success(`تم قبول وتفعيل فرع: ${req.center_name || req.full_name}`);
+      if (req.phone) {
+        const waPhone = formatPhoneForWhatsapp(req.phone);
+        const textMessage = `مرحباً بك! تم قبول طلب تسجيل مركزكم "${req.center_name || req.full_name}" وتفعيله بنجاح في منصة واصل!`;
+        window.open(`https://api.whatsapp.com/send?phone=${waPhone}&text=${encodeURIComponent(textMessage)}`, '_blank');
+      }
+      loadData();
+    } else {
+      toast.error('حدث خطأ أثناء تفعيل المركز.');
+    }
+  };
+
+  const handleRejectCenterRequest = async (req: RegistrationRequest) => {
+    const ok = await rejectRequest(req.id);
+    if (ok) {
+      toast.error(`تم رفض فرع: ${req.center_name || req.full_name}`);
+      loadData();
+    } else {
+      toast.error('حدث خطأ أثناء رفض الطلب.');
+    }
   };
 
   // --- Specialist Handlers ---
@@ -311,10 +365,10 @@ const AdminDashboard = () => {
           <div>
             <h1 className="text-3xl font-bold text-gray-900 font-cairo">لوحة تحكم المسؤول (الادمن)</h1>
             <p className="text-gray-655 mt-1 font-semibold text-sm">إدارة الأخصائيين المعتمدين، قبول الفروع، وتفعيل أو تعطيل الحسابات مع إمكانية التغيير في أي وقت</p>
-            {(specialists.some(s => s.status === 'pending') || centers.some(c => c.status === 'pending')) && (
+            {pendingRequests.filter(r => r.status === 'pending').length > 0 && (
               <div className="mt-2 flex items-center gap-2">
                 <span className="animate-pulse inline-flex items-center gap-1.5 bg-amber-100 text-amber-800 text-xs font-bold px-3 py-1 rounded-full border border-amber-300">
-                  🔔 يوجد {specialists.filter(s => s.status === 'pending').length + centers.filter(c => c.status === 'pending').length} طلب انضمام جديد ينتظر موافقتك
+                  🔔 يوجد {pendingRequests.filter(r => r.status === 'pending').length} طلب انضمام جديد ينتظر موافقتك
                 </span>
               </div>
             )}
@@ -357,12 +411,12 @@ const AdminDashboard = () => {
               </Button>
             </div>
 
-            {/* A. Pending Specialists Requests Section */}
-            {specialists.some(s => s.status === 'pending') && (
+            {/* A. Pending Specialists Requests from Cloud */}
+            {pendingRequests.filter(r => r.type === 'specialist' && r.status === 'pending').length > 0 && (
               <div className="mb-8 bg-amber-50/50 p-6 rounded-xl border border-amber-200">
                 <h2 className="text-lg font-bold text-amber-900 mb-4 flex items-center gap-2">
                   <ShieldAlert className="h-5 w-5 text-amber-605 animate-pulse" />
-                  طلبات انضمام الأخصائيين قيد الانتظار ({specialists.filter(s => s.status === 'pending').length})
+                  طلبات انضمام الأخصائيين قيد الانتظار ({pendingRequests.filter(r => r.type === 'specialist' && r.status === 'pending').length})
                 </h2>
                 
                 <div className="overflow-x-auto bg-white rounded-lg border">
@@ -377,19 +431,19 @@ const AdminDashboard = () => {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {specialists
-                        .filter(s => s.status === 'pending')
-                        .map(spec => (
-                          <TableRow key={spec.id}>
-                            <TableCell className="font-bold">{spec.name}</TableCell>
-                            <TableCell className="text-gray-600 font-mono">{spec.username}</TableCell>
-                            <TableCell>{spec.role}</TableCell>
-                            <TableCell>{spec.phone || '-'}</TableCell>
+                      {pendingRequests
+                        .filter(r => r.type === 'specialist' && r.status === 'pending')
+                        .map(req => (
+                          <TableRow key={req.id}>
+                            <TableCell className="font-bold">{req.full_name}</TableCell>
+                            <TableCell className="text-gray-600 font-mono">{req.username}</TableCell>
+                            <TableCell>{req.role || '-'}</TableCell>
+                            <TableCell>{req.phone || '-'}</TableCell>
                             <TableCell>
                               <div className="flex gap-2">
                                 <Button 
                                   size="sm" 
-                                  onClick={() => handleApproveSpec(spec)}
+                                  onClick={() => handleApproveSpecRequest(req)}
                                   className="bg-green-600 hover:bg-green-700 text-white"
                                 >
                                   <Check className="h-4 w-4 ml-1" /> قبول وتفعيل
@@ -397,7 +451,7 @@ const AdminDashboard = () => {
                                 <Button 
                                   size="sm" 
                                   variant="destructive"
-                                  onClick={() => handleRejectSpec(spec)}
+                                  onClick={() => handleRejectSpecRequest(req)}
                                 >
                                   <X className="h-4 w-4 ml-1" /> رفض وتعطيل
                                 </Button>
@@ -538,12 +592,12 @@ const AdminDashboard = () => {
               </Button>
             </div>
 
-            {/* A. Pending Centers Registration Requests Section */}
-            {centers.some(c => c.status === 'pending') && (
+            {/* A. Pending Centers from Cloud */}
+            {pendingRequests.filter(r => r.type === 'center' && r.status === 'pending').length > 0 && (
               <div className="mb-8 bg-amber-50/50 p-6 rounded-xl border border-amber-200">
                 <h2 className="text-lg font-bold text-amber-900 mb-4 flex items-center gap-2">
                   <ShieldAlert className="h-5 w-5 text-amber-605 animate-pulse" />
-                  طلبات تسجيل فروع جديدة قيد الانتظار ({centers.filter(c => c.status === 'pending').length})
+                  طلبات تسجيل فروع جديدة قيد الانتظار ({pendingRequests.filter(r => r.type === 'center' && r.status === 'pending').length})
                 </h2>
                 
                 <div className="overflow-x-auto bg-white rounded-lg border">
@@ -558,19 +612,19 @@ const AdminDashboard = () => {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {centers
-                        .filter(c => c.status === 'pending')
-                        .map(center => (
-                          <TableRow key={center.id}>
-                            <TableCell className="font-bold">{center.name}</TableCell>
-                            <TableCell>{center.location}</TableCell>
-                            <TableCell className="max-w-xs truncate">{center.address}</TableCell>
-                            <TableCell>{center.phone}</TableCell>
+                      {pendingRequests
+                        .filter(r => r.type === 'center' && r.status === 'pending')
+                        .map(req => (
+                          <TableRow key={req.id}>
+                            <TableCell className="font-bold">{req.center_name || req.full_name}</TableCell>
+                            <TableCell>{req.location || '-'}</TableCell>
+                            <TableCell className="max-w-xs truncate">{req.address || '-'}</TableCell>
+                            <TableCell>{req.phone}</TableCell>
                             <TableCell>
                               <div className="flex gap-2">
                                 <Button 
                                   size="sm" 
-                                  onClick={() => handleApproveCenter(center)}
+                                  onClick={() => handleApproveCenterRequest(req)}
                                   className="bg-green-600 hover:bg-green-700 text-white"
                                 >
                                   <Check className="h-4 w-4 ml-1" /> قبول وتفعيل الفرع
@@ -578,7 +632,7 @@ const AdminDashboard = () => {
                                 <Button 
                                   size="sm" 
                                   variant="destructive"
-                                  onClick={() => handleRejectCenter(center)}
+                                  onClick={() => handleRejectCenterRequest(req)}
                                 >
                                   <X className="h-4 w-4 ml-1" /> رفض وتعطيل
                                 </Button>
