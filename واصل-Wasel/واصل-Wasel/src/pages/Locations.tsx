@@ -381,6 +381,7 @@ const Locations = () => {
                       </div>
                     ))}
                   </div>
+                </div>
                 {/* Medical Team at Branch */}
                 <div className="space-y-3">
                   <h3 className="font-bold text-gray-900 text-lg">فريق الأخصائيين بالفرع</h3>
