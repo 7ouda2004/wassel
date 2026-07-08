@@ -699,7 +699,7 @@ const SpecialistDashboard = () => {
                   name="phone"
                   value={currentPatient.phone}
                   onChange={handleInputChange}
-                  placeholder="01xxxxxxxxx"
+                  placeholder="رقم الهاتف"
                   required
                 />
               </div>
@@ -711,7 +711,7 @@ const SpecialistDashboard = () => {
                   name="condition"
                   value={currentPatient.condition}
                   onChange={handleInputChange}
-                  placeholder="وصف الحالة المرضية"
+                  placeholder="وصف الحالة"
                   required
                 />
               </div>
@@ -794,7 +794,7 @@ const SpecialistDashboard = () => {
                   name="notes"
                   value={currentPatient.notes}
                   onChange={handleInputChange}
-                  placeholder="أي ملاحظات إضافية"
+                  placeholder="ملاحظات إضافية"
                 />
               </div>
             </div>

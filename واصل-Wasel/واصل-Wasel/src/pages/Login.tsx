@@ -46,7 +46,7 @@ const Login = () => {
   const [regSpecPhone, setRegSpecPhone] = useState('');
   const [regSpecRole, setRegSpecRole] = useState('أخصائي أطراف صناعية وجبائر طبية');
   const [regSpecBio, setRegSpecBio] = useState('');
-  const [regSpecImage, setRegSpecImage] = useState('/images/new.jpg');
+  const [regSpecImage, setRegSpecImage] = useState('');
 
   // 4. Center Register State
   const [regCenterName, setRegCenterName] = useState('');
@@ -55,7 +55,7 @@ const Login = () => {
   const [regCenterPhone, setRegCenterPhone] = useState('');
   const [regCenterWorkingHours, setRegCenterWorkingHours] = useState('السبت - الخميس: 9 صباحاً - 9 مساءً');
   const [regCenterRegion, setRegCenterRegion] = useState('القاهرة الكبرى');
-  const [regCenterImage, setRegCenterImage] = useState('/images/ortho.png');
+  const [regCenterImage, setRegCenterImage] = useState('');
 
   useEffect(() => {
     document.documentElement.dir = 'rtl';
@@ -391,7 +391,7 @@ const Login = () => {
                         <div className="relative">
                           <Input 
                             id="patient-fullname"
-                            placeholder="الاسم الكامل للمريض"
+                            placeholder="الاسم بالكامل"
                             value={patientName}
                             onChange={(e) => setPatientName(e.target.value)}
                             required
@@ -406,7 +406,7 @@ const Login = () => {
                         <div className="relative">
                           <Input 
                             id="patient-phone-num"
-                            placeholder="01xxxxxxxxx"
+                            placeholder="رقم الهاتف"
                             value={patientPhone}
                             onChange={(e) => setPatientPhone(e.target.value)}
                             required
@@ -423,7 +423,7 @@ const Login = () => {
                             <Input 
                               id="patient-age-input"
                               type="number"
-                              placeholder="مثال: 32"
+                              placeholder="العمر"
                               value={patientAge}
                               onChange={(e) => setPatientAge(e.target.value)}
                             />
@@ -565,7 +565,7 @@ const Login = () => {
                                 id="reg-spec-name"
                                 value={regSpecName}
                                 onChange={(e) => setRegSpecName(e.target.value)}
-                                placeholder="الاسم الثلاثي"
+                                placeholder="الاسم بالكامل"
                                 required
                               />
                             </div>
@@ -575,7 +575,7 @@ const Login = () => {
                                 id="reg-spec-username"
                                 value={regSpecUsername}
                                 onChange={(e) => setRegSpecUsername(e.target.value)}
-                                placeholder="مثال: nader_ibrahim"
+                                placeholder="اسم المستخدم"
                                 required
                               />
                             </div>
@@ -586,7 +586,7 @@ const Login = () => {
                                 type="password"
                                 value={regSpecPassword}
                                 onChange={(e) => setRegSpecPassword(e.target.value)}
-                                placeholder="•••••••• (6 خانات على الأقل)"
+                                placeholder="كلمة المرور"
                                 required
                               />
                             </div>
@@ -596,7 +596,7 @@ const Login = () => {
                                 id="reg-spec-phone"
                                 value={regSpecPhone}
                                 onChange={(e) => setRegSpecPhone(e.target.value)}
-                                placeholder="01xxxxxxxxx"
+                                placeholder="رقم الهاتف"
                                 required
                               />
                             </div>
@@ -622,9 +622,11 @@ const Login = () => {
                                 onChange={(e) => handleImageUpload(e, 'spec')}
                                 className="mt-1 text-xs"
                               />
-                              <div className="mt-2 h-14 w-14 rounded-full overflow-hidden border bg-gray-50 flex items-center justify-center">
-                                <img src={regSpecImage} alt="المعاينة" className="w-full h-full object-cover" />
-                              </div>
+                              {regSpecImage && (
+                                <div className="mt-2 h-14 w-14 rounded-full overflow-hidden border bg-gray-50 flex items-center justify-center">
+                                  <img src={regSpecImage} alt="المعاينة" className="w-full h-full object-cover" />
+                                </div>
+                              )}
                             </div>
                             <div>
                               <Label htmlFor="reg-spec-bio">نبذة تعريفية سريعة</Label>
@@ -671,7 +673,7 @@ const Login = () => {
                                 id="reg-ctr-name"
                                 value={regCenterName}
                                 onChange={(e) => setRegCenterName(e.target.value)}
-                                placeholder="مثال: مركز واصل - فرع سوهاج"
+                                placeholder="اسم المركز / الفرع"
                                 required
                               />
                             </div>
@@ -681,7 +683,7 @@ const Login = () => {
                                 id="reg-ctr-location"
                                 value={regCenterLocation}
                                 onChange={(e) => setRegCenterLocation(e.target.value)}
-                                placeholder="مثال: سوهاج"
+                                placeholder="المحافظة"
                                 required
                               />
                             </div>
@@ -691,7 +693,7 @@ const Login = () => {
                                 id="reg-ctr-address"
                                 value={regCenterAddress}
                                 onChange={(e) => setRegCenterAddress(e.target.value)}
-                                placeholder="الشارع، المعالم، المدينة"
+                                placeholder="العنوان بالتفصيل"
                                 required
                               />
                             </div>
@@ -701,7 +703,7 @@ const Login = () => {
                                 id="reg-ctr-phone"
                                 value={regCenterPhone}
                                 onChange={(e) => setRegCenterPhone(e.target.value)}
-                                placeholder="01xxxxxxxxx"
+                                placeholder="رقم الهاتف"
                                 required
                               />
                             </div>
@@ -744,9 +746,11 @@ const Login = () => {
                                 onChange={(e) => handleImageUpload(e, 'center')}
                                 className="mt-1 text-xs"
                               />
-                              <div className="mt-2 h-14 w-20 rounded-md overflow-hidden border bg-gray-50 flex items-center justify-center">
-                                <img src={regCenterImage} alt="المعاينة" className="w-full h-full object-cover" />
-                              </div>
+                              {regCenterImage && (
+                                <div className="mt-2 h-14 w-20 rounded-md overflow-hidden border bg-gray-50 flex items-center justify-center">
+                                  <img src={regCenterImage} alt="المعاينة" className="w-full h-full object-cover" />
+                                </div>
+                              )}
                             </div>
                           </div>
 

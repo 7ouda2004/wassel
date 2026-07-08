@@ -96,7 +96,7 @@ const AdminDashboard = () => {
       address: '',
       phone: '',
       workingHours: 'السبت - الخميس: 9 صباحاً - 9 مساءً',
-      image: '/images/ortho.png',
+      image: '',
       region: 'القاهرة الكبرى',
       status: 'active'
     });
@@ -133,12 +133,17 @@ const AdminDashboard = () => {
       return;
     }
 
+    const centerWithFallback = {
+      ...currentCenter,
+      image: currentCenter.image || '/images/ortho.png'
+    };
+
     let updated: Center[];
     if (isAddingCenter) {
-      updated = [...centers, currentCenter];
+      updated = [...centers, centerWithFallback];
       toast.success('تم إضافة المركز بنجاح');
     } else {
-      updated = centers.map(c => c.id === currentCenter.id ? currentCenter : c);
+      updated = centers.map(c => c.id === currentCenter.id ? centerWithFallback : c);
       toast.success('تم تعديل بيانات المركز بنجاح');
     }
 
@@ -179,7 +184,7 @@ const AdminDashboard = () => {
       password: '',
       role: '',
       bio: '',
-      image: '/images/new.jpg',
+      image: '',
       expertise: [],
       status: 'active',
       phone: '',
@@ -228,6 +233,7 @@ const AdminDashboard = () => {
 
     const updatedSpec = {
       ...currentSpec,
+      image: currentSpec.image || '/images/new.jpg',
       expertise: expArray
     };
 
@@ -673,7 +679,7 @@ const AdminDashboard = () => {
             <div className="space-y-4">
               <div>
                 <Label htmlFor="spec-role">الوظيفة / التخصص العلمي *</Label>
-                <Input id="spec-role" name="role" value={currentSpec.role} onChange={handleSpecInputChange} placeholder="أخصائي أطراف صناعية" required />
+                <Input id="spec-role" name="role" value={currentSpec.role} onChange={handleSpecInputChange} placeholder="الوظيفة أو التخصص" required />
               </div>
               
               {/* File Uploader for Specialist Image */}
@@ -698,9 +704,11 @@ const AdminDashboard = () => {
                   }}
                   className="mt-1 text-xs"
                 />
-                <div className="mt-2 h-14 w-14 rounded-full overflow-hidden border bg-gray-50 flex items-center justify-center">
-                  <img src={currentSpec.image || '/images/new.jpg'} alt="المعاينة" className="w-full h-full object-cover" />
-                </div>
+                {currentSpec.image && (
+                  <div className="mt-2 h-14 w-14 rounded-full overflow-hidden border bg-gray-50 flex items-center justify-center">
+                    <img src={currentSpec.image} alt="المعاينة" className="w-full h-full object-cover" />
+                  </div>
+                )}
               </div>
 
               <div>
@@ -709,7 +717,7 @@ const AdminDashboard = () => {
                   id="spec-expertise" 
                   value={specExpertiseInput} 
                   onChange={(e) => setSpecExpertiseInput(e.target.value)} 
-                  placeholder="جبائر الركبة، أطراف علوية"
+                  placeholder="التخصصات الفرعية"
                 />
               </div>
               <div>
@@ -769,22 +777,22 @@ const AdminDashboard = () => {
             <div className="space-y-4">
               <div>
                 <Label htmlFor="center-name">اسم المركز *</Label>
-                <Input id="center-name" name="name" value={currentCenter.name} onChange={handleCenterInputChange} placeholder="مركز واصل - القاهرة" required />
+                <Input id="center-name" name="name" value={currentCenter.name} onChange={handleCenterInputChange} placeholder="اسم المركز" required />
               </div>
               <div>
                 <Label htmlFor="center-location">المحافظة / المدينة *</Label>
-                <Input id="center-location" name="location" value={currentCenter.location} onChange={handleCenterInputChange} placeholder="القاهرة" required />
+                <Input id="center-location" name="location" value={currentCenter.location} onChange={handleCenterInputChange} placeholder="المحافظة / المدينة" required />
               </div>
               <div>
                 <Label htmlFor="center-address">العنوان التفصيلي *</Label>
-                <Input id="center-address" name="address" value={currentCenter.address} onChange={handleCenterInputChange} placeholder="شارع التحرير" required />
+                <Input id="center-address" name="address" value={currentCenter.address} onChange={handleCenterInputChange} placeholder="العنوان التفصيلي" required />
               </div>
             </div>
             
             <div className="space-y-4">
               <div>
                 <Label htmlFor="center-phone">رقم الهاتف *</Label>
-                <Input id="center-phone" name="phone" value={currentCenter.phone} onChange={handleCenterInputChange} placeholder="مثال: 01012345678" required />
+                <Input id="center-phone" name="phone" value={currentCenter.phone} onChange={handleCenterInputChange} placeholder="رقم الهاتف" required />
               </div>
               <div>
                 <Label htmlFor="center-workingHours">ساعات العمل</Label>
@@ -824,9 +832,11 @@ const AdminDashboard = () => {
                   }}
                   className="mt-1 text-xs"
                 />
-                <div className="mt-2 h-14 w-20 rounded-md overflow-hidden border bg-gray-50 flex items-center justify-center">
-                  <img src={currentCenter.image || '/images/ortho.png'} alt="معاينة" className="w-full h-full object-cover" />
-                </div>
+                {currentCenter.image && (
+                  <div className="mt-2 h-14 w-20 rounded-md overflow-hidden border bg-gray-50 flex items-center justify-center">
+                    <img src={currentCenter.image} alt="معاينة" className="w-full h-full object-cover" />
+                  </div>
+                )}
               </div>
             </div>
           </div>
