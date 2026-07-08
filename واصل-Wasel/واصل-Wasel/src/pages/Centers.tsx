@@ -190,97 +190,105 @@ const Centers = () => {
                     </div>
                   </button>
                   
-                  {expandedLocation === locationName && (
-                    <div className="p-6 bg-gray-50/30 border-t border-gray-100 grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {locationCenters.map(center => {
-                        const centerSpecs = specialists.filter(s => s.centerId === center.id);
-                        return (
-                          <motion.div
-                            key={center.id}
-                            initial={{ opacity: 0, y: 15 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.3 }}
-                            className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 flex flex-col justify-between"
-                          >
-                            <img
-                              src={center.image || '/images/ortho.png'}
-                              alt={center.name}
-                              className="w-full h-40 object-cover"
-                              onError={(e) => {
-                                e.currentTarget.src = '/images/ortho.png';
-                              }}
-                            />
-                            <div className="p-5 flex-grow flex flex-col justify-between">
-                              <div>
-                                <h3 className="text-lg font-bold text-gray-900 mb-3">{center.name}</h3>
-                                <div className="space-y-2 mb-4 text-sm text-gray-600">
-                                  <div className="flex items-start">
-                                    <MapPin className="h-4 w-4 ml-2 mt-0.5 text-medical-500 flex-shrink-0" />
-                                    <span>{center.address}</span>
-                                  </div>
-                                  <div className="flex items-center">
-                                    <Phone className="h-4 w-4 ml-2 text-medical-500 flex-shrink-0" />
-                                    <span>{center.phone}</span>
-                                  </div>
-                                  <div className="flex items-start">
-                                    <Clock className="h-4 w-4 ml-2 mt-0.5 text-medical-500 flex-shrink-0" />
-                                    <span>{center.workingHours}</span>
-                                  </div>
-                                </div>
-
-                                {/* Specialists list for this specific center */}
-                                {centerSpecs.length > 0 && (
-                                  <div className="border-t pt-3 mt-3 mb-4">
-                                    <h4 className="text-xs font-bold text-gray-400 mb-2 font-cairo flex items-center gap-1">
-                                      <Users className="h-3.5 w-3.5 text-medical-500" />
-                                      الأخصائيون المعتمدون بالفرع:
-                                    </h4>
-                                    <div className="flex flex-wrap gap-1.5">
-                                      {centerSpecs.map(spec => (
-                                        <button
-                                          key={spec.id}
-                                          onClick={() => setSelectedSpec(spec)}
-                                          className="flex items-center gap-1.5 bg-gray-50 hover:bg-medical-50 border border-gray-100 hover:border-medical-200 rounded-full px-2 py-0.5 transition-all text-xs text-gray-700"
-                                        >
-                                          <img
-                                            src={spec.image || '/images/new.jpg'}
-                                            alt={spec.name}
-                                            className="h-5 w-5 rounded-full object-cover border"
-                                            onError={(e) => { e.currentTarget.src = '/images/new.jpg'; }}
-                                          />
-                                          <span className="font-bold line-clamp-1">{spec.name}</span>
-                                        </button>
-                                      ))}
+                  <AnimatePresence initial={false}>
+                    {expandedLocation === locationName && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.3, ease: 'easeInOut' }}
+                        className="p-6 bg-gray-50/30 border-t border-gray-100 grid grid-cols-1 md:grid-cols-2 gap-6 overflow-hidden"
+                      >
+                        {locationCenters.map(center => {
+                          const centerSpecs = specialists.filter(s => s.centerId === center.id);
+                          return (
+                            <motion.div
+                              key={center.id}
+                              initial={{ opacity: 0, y: 15 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ duration: 0.3 }}
+                              className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 flex flex-col justify-between"
+                            >
+                              <img
+                                src={center.image || '/images/ortho.png'}
+                                alt={center.name}
+                                className="w-full h-40 object-cover"
+                                onError={(e) => {
+                                  e.currentTarget.src = '/images/ortho.png';
+                                }}
+                              />
+                              <div className="p-5 flex-grow flex flex-col justify-between">
+                                <div>
+                                  <h3 className="text-lg font-bold text-gray-900 mb-3">{center.name}</h3>
+                                  <div className="space-y-2 mb-4 text-sm text-gray-600">
+                                    <div className="flex items-start">
+                                      <MapPin className="h-4 w-4 ml-2 mt-0.5 text-medical-500 flex-shrink-0" />
+                                      <span>{center.address}</span>
+                                    </div>
+                                    <div className="flex items-center">
+                                      <Phone className="h-4 w-4 ml-2 text-medical-500 flex-shrink-0" />
+                                      <span>{center.phone}</span>
+                                    </div>
+                                    <div className="flex items-start">
+                                      <Clock className="h-4 w-4 ml-2 mt-0.5 text-medical-500 flex-shrink-0" />
+                                      <span>{center.workingHours}</span>
                                     </div>
                                   </div>
-                                )}
+
+                                  {/* Specialists list for this specific center */}
+                                  {centerSpecs.length > 0 && (
+                                    <div className="border-t pt-3 mt-3 mb-4">
+                                      <h4 className="text-xs font-bold text-gray-400 mb-2 font-cairo flex items-center gap-1">
+                                        <Users className="h-3.5 w-3.5 text-medical-500" />
+                                        الأخصائيون المعتمدون بالفرع:
+                                      </h4>
+                                      <div className="flex flex-wrap gap-1.5">
+                                        {centerSpecs.map(spec => (
+                                          <button
+                                            key={spec.id}
+                                            onClick={() => setSelectedSpec(spec)}
+                                            className="flex items-center gap-1.5 bg-gray-50 hover:bg-medical-50 border border-gray-100 hover:border-medical-200 rounded-full px-2.5 py-1 transition-all text-xs text-gray-700 font-semibold"
+                                          >
+                                            <img
+                                              src={spec.image || '/images/new.jpg'}
+                                              alt={spec.name}
+                                              className="h-5 w-5 rounded-full object-cover border"
+                                              onError={(e) => { e.currentTarget.src = '/images/new.jpg'; }}
+                                            />
+                                            <span className="font-bold line-clamp-1">{spec.name}</span>
+                                          </button>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                                <div className="flex gap-2">
+                                  <Link 
+                                    to={`/booking?center=${center.id}`}
+                                    className="flex-grow"
+                                  >
+                                    <Button className="w-full text-xs py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg border-none transition-colors">
+                                      حجز موعد بالفرع
+                                    </Button>
+                                  </Link>
+                                  <a 
+                                    href={`https://wa.me/${center.phone.replace(/[^0-9]/g, '')}`} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer" 
+                                    className="flex-1"
+                                  >
+                                    <Button className="w-full text-xs py-2 bg-green-600 hover:bg-green-700 text-white border-none font-bold rounded-lg">
+                                      واتساب
+                                    </Button>
+                                  </a>
+                                </div>
                               </div>
-                              <div className="flex gap-2">
-                                <a 
-                                  href={`tel:${center.phone}`} 
-                                  className="flex-1"
-                                >
-                                  <Button variant="outline" className="w-full text-xs py-2">
-                                    اتصال هاتفي
-                                  </Button>
-                                </a>
-                                <a 
-                                  href={`https://wa.me/${center.phone.replace(/[^0-9]/g, '')}`} 
-                                  target="_blank" 
-                                  rel="noopener noreferrer" 
-                                  className="flex-1"
-                                >
-                                  <Button className="w-full text-xs py-2 bg-green-600 hover:bg-green-700 text-white border-none">
-                                    واتساب
-                                  </Button>
-                                </a>
-                              </div>
-                            </div>
-                          </motion.div>
-                        );
-                      })}
-                    </div>
-                  )}
+                            </motion.div>
+                          );
+                        })}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               ))
             ) : (
@@ -375,13 +383,24 @@ const Centers = () => {
                 )}
 
                 {selectedSpec.phone && (
-                  <div className="flex items-center justify-between bg-gray-50 p-3 rounded-lg border">
+                  <div className="flex items-center justify-between bg-gray-50 p-3 rounded-lg border mb-4">
                     <span className="text-sm font-bold text-gray-700">رقم الهاتف للتواصل:</span>
                     <a href={`tel:${selectedSpec.phone}`} className="text-sm font-bold text-medical-600 hover:underline font-mono">
                       {selectedSpec.phone}
                     </a>
                   </div>
                 )}
+
+                {/* Direct Booking with Specialist Button */}
+                <Link
+                  to={`/booking?center=${selectedSpec.centerId || ''}&specialist=${selectedSpec.id}`}
+                  onClick={() => setSelectedSpec(null)}
+                  className="block w-full mt-4"
+                >
+                  <Button className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 rounded-xl transition-all duration-200">
+                    حجز موعد كشف ومقابلة الأخصائي
+                  </Button>
+                </Link>
               </div>
             </div>
           )}
