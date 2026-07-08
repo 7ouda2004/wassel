@@ -1,7 +1,7 @@
 
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { MapPin, Phone, Mail, Clock, Send, CheckCircle, MessageCircle, ArrowLeft } from 'lucide-react';
+import { MapPin, Phone, Mail, Clock, Send, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -9,55 +9,14 @@ import { Label } from '@/components/ui/label';
 import { toast } from "sonner";
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { useTranslation } from 'react-i18next';
 
-// Since contactInfo is defined outside the component, we'll need to define it inside or translate it inline.
-// I will move contactInfo inside the component to use the hook.
 const Contact = () => {
-  const { t } = useTranslation();
-
-  const contactInfo = [
-    {
-      icon: Phone,
-      title: t('contact.phone_title'),
-      subtitle: t('contact.phone_subtitle'),
-      value: '+201119056895',
-      href: 'tel:+201119056895',
-      color: 'from-blue-500 to-blue-600'
-    },
-    {
-      icon: Mail,
-      title: t('contact.email_title'),
-      subtitle: t('contact.email_subtitle'),
-      value: 'mahmoudebrahim049@gmail.com',
-      href: 'mailto:mahmoudebrahim049@gmail.com',
-      color: 'from-purple-500 to-purple-600'
-    },
-    {
-      icon: MapPin,
-      title: t('contact.address_title'),
-      subtitle: t('contact.address_subtitle'),
-      value: t('contact.address_value'),
-      href: '#map',
-      color: 'from-red-500 to-red-600'
-    },
-    {
-      icon: Clock,
-      title: t('contact.working_hours_title'),
-      subtitle: t('contact.working_hours_subtitle'),
-      value: t('contact.working_hours_value'),
-      href: null,
-      color: 'from-amber-500 to-amber-600'
-    }
-  ];
-
   useEffect(() => {
     document.documentElement.dir = 'rtl';
     document.body.classList.add('font-cairo');
     window.scrollTo(0, 0);
   }, []);
 
-  const formRef = useRef<HTMLFormElement>(null);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -65,56 +24,37 @@ const Contact = () => {
     subject: '',
     message: ''
   });
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [sendVia, setSendVia] = useState<'email' | 'whatsapp'>('email');
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-
-    if (sendVia === 'whatsapp') {
-      const msg = encodeURIComponent(
-        `*رسالة جديدة من موقع واصل*\n\n` +
-        `👤 *الاسم:* ${formData.name}\n` +
-        `📧 *الإيميل:* ${formData.email}\n` +
-        `📱 *الهاتف:* ${formData.phone}\n` +
-        `📋 *الموضوع:* ${formData.subject}\n\n` +
-        `💬 *الرسالة:*\n${formData.message}`
-      );
-      window.open(`https://wa.me/201119056895?text=${msg}`, '_blank');
+    
+    // Simulate API call
+    setTimeout(() => {
       setIsSubmitting(false);
       setSubmitted(true);
-      toast.success('تم فتح واتساب بالرسالة الجاهزة!');
-    } else {
-      // Send via email (mailto fallback + EmailJS when configured)
-      try {
-        // EmailJS integration (uncomment when installed):
-        // await emailjs.sendForm('SERVICE_ID', 'TEMPLATE_ID', formRef.current!, 'PUBLIC_KEY');
-
-        const subject = encodeURIComponent(formData.subject || 'رسالة من موقع واصل');
-        const body = encodeURIComponent(
-          `الاسم: ${formData.name}\nالهاتف: ${formData.phone}\nالإيميل: ${formData.email}\n\nالرسالة:\n${formData.message}`
-        );
-        window.open(`mailto:mahmoudebrahim049@gmail.com?subject=${subject}&body=${body}`, '_blank');
-
-        setIsSubmitting(false);
-        setSubmitted(true);
-        toast.success('تم فتح برنامج الإيميل بالرسالة الجاهزة!');
-      } catch {
-        setIsSubmitting(false);
-        toast.error('حدث خطأ. يرجى المحاولة مرة أخرى.');
-      }
-    }
-
-    // Reset
-    setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
-    setTimeout(() => setSubmitted(false), 5000);
+      toast.success('تم إرسال رسالتك بنجاح، سنتواصل معك قريبًا');
+      
+      // Reset form
+      setFormData({
+        name: '',
+        email: '',
+        phone: '',
+        subject: '',
+        message: ''
+      });
+      
+      // Reset submitted state after some time
+      setTimeout(() => setSubmitted(false), 3000);
+    }, 1500);
   };
 
   return (
@@ -122,170 +62,225 @@ const Contact = () => {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="relative py-20 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-bl from-medical-50 via-white to-indigo-50">
-          <motion.div animate={{ scale: [1, 1.2, 1], y: [0, -20, 0] }} transition={{ duration: 8, repeat: Infinity }} className="absolute top-20 right-20 w-72 h-72 rounded-full bg-medical-200/30 blur-3xl" />
-          <motion.div animate={{ scale: [1, 1.3, 1] }} transition={{ duration: 10, repeat: Infinity, delay: 1 }} className="absolute bottom-20 left-20 w-96 h-96 rounded-full bg-indigo-200/20 blur-3xl" />
-        </div>
-        <div className="relative container mx-auto px-4 text-center">
-          <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}>
-            <div className="inline-flex items-center gap-2 bg-medical-100 text-medical-700 px-4 py-2 rounded-full text-sm font-bold mb-4">
-              <Mail className="w-4 h-4" />
-              {t('contact.contact_us_badge')}
+      <section className="py-20 bg-gradient-to-b from-medical-100 to-white overflow-hidden">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto text-center">
+            <div className="inline-block oval-header">
+              <span>تواصل معنا</span>
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">
-              <span className="bg-gradient-to-l from-medical-600 to-indigo-600 bg-clip-text text-transparent">
-                {t('contact.contact_us_title')}
-              </span>
+            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+              نحن هنا لمساعدتك
             </h1>
-            <p className="text-gray-500 text-lg max-w-2xl mx-auto">
-              {t('contact.contact_us_desc')}
+            <p className="text-xl text-gray-600 mb-8">
+              سواء كنت تبحث عن معلومات أو ترغب في حجز موعد أو لديك استفسارات،
+              فريقنا مستعد للرد على جميع أسئلتك وتقديم المساعدة اللازمة.
             </p>
-          </motion.div>
+          </div>
         </div>
       </section>
 
-      {/* Contact Cards */}
-      <section className="py-6 -mt-10 relative z-10">
+      {/* Contact Information */}
+      <section className="py-20 bg-white">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-            {contactInfo.map((item, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-              >
-                <motion.div whileHover={{ y: -5 }} className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-all duration-300 h-full">
-                  <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${item.color} flex items-center justify-center mb-4 shadow-lg`}>
-                    <item.icon className="w-6 h-6 text-white" />
-                  </div>
-                  <h3 className="text-lg font-bold text-gray-900 mb-1">{item.title}</h3>
-                  <p className="text-gray-500 text-sm mb-2">{item.subtitle}</p>
-                  {item.href ? (
-                    <a href={item.href} className="text-medical-600 hover:text-medical-800 font-medium text-sm transition-colors break-all">
-                      {item.value}
-                    </a>
-                  ) : (
-                    <p className="text-gray-800 font-medium text-sm">{item.value}</p>
-                  )}
-                </motion.div>
-              </motion.div>
-            ))}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <motion.div 
+              className="bg-white rounded-lg shadow-md p-6 border border-gray-100"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              viewport={{ once: true }}
+            >
+              <div className="h-12 w-12 rounded-full bg-medical-100 flex items-center justify-center mb-4">
+                <Phone className="h-6 w-6 text-medical-600" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">الهاتف</h3>
+              <p className="text-gray-600 mb-3">اتصل بنا على:</p>
+              <a href="tel:+201119056895" className="text-medical-600 hover:text-medical-700 font-medium">
+                +201119056895
+              </a>
+            </motion.div>
+            
+            <motion.div 
+              className="bg-white rounded-lg shadow-md p-6 border border-gray-100"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              viewport={{ once: true }}
+            >
+              <div className="h-12 w-12 rounded-full bg-medical-100 flex items-center justify-center mb-4">
+                <Mail className="h-6 w-6 text-medical-600" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">البريد الإلكتروني</h3>
+              <p className="text-gray-600 mb-3">راسلنا على:</p>
+              <a href="mailto:mahmoudebrahim049@gmail.com" className="text-medical-600 hover:text-medical-700 font-medium break-all">
+                mahmoudebrahim049@gmail.com
+              </a>
+            </motion.div>
+            
+            <motion.div 
+              className="bg-white rounded-lg shadow-md p-6 border border-gray-100"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              viewport={{ once: true }}
+            >
+              <div className="h-12 w-12 rounded-full bg-medical-100 flex items-center justify-center mb-4">
+                <MapPin className="h-6 w-6 text-medical-600" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">العنوان</h3>
+              <p className="text-gray-600 mb-3">المركز الرئيسي:</p>
+              <p className="text-gray-800">
+                15 شارع جامعة الدول العربية،<br />
+                المهندسين، القاهرة
+              </p>
+            </motion.div>
+            
+            <motion.div 
+              className="bg-white rounded-lg shadow-md p-6 border border-gray-100"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              viewport={{ once: true }}
+            >
+              <div className="h-12 w-12 rounded-full bg-medical-100 flex items-center justify-center mb-4">
+                <Clock className="h-6 w-6 text-medical-600" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">ساعات العمل</h3>
+              <p className="text-gray-600 mb-3">مواعيد العمل:</p>
+              <ul className="text-gray-800 space-y-1">
+                <li>السبت - الخميس: 9 صباحًا - 6 مساءً</li>
+                <li>الجمعة: مغلق</li>
+              </ul>
+            </motion.div>
           </div>
         </div>
       </section>
 
       {/* Contact Form & Map */}
-      <section className="py-16">
+      <section className="py-20 bg-medical-50">
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
-            <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">
+            <div className="bg-white rounded-xl shadow-md overflow-hidden">
               <div className="md:flex">
-                {/* Form */}
-                <div className="md:w-1/2 p-8 md:p-10">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('contact.send_message_title')}</h2>
-                  <p className="text-gray-500 text-sm mb-6">{t('contact.send_message_subtitle')}</p>
-
+                <div className="md:w-1/2 p-8">
+                  <h2 className="text-2xl font-bold mb-6">أرسل لنا رسالة</h2>
+                  
                   {submitted ? (
-                    <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="text-center py-12">
-                      <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
-                        <CheckCircle className="w-10 h-10 text-green-600" />
+                    <div className="text-center py-8">
+                      <div className="mx-auto w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mb-4">
+                        <CheckCircle className="h-8 w-8 text-green-600" />
                       </div>
-                      <h3 className="text-xl font-bold text-gray-900 mb-2">{t('contact.sent_success')}</h3>
-                      <p className="text-gray-600">{t('contact.sent_success_desc')}</p>
-                    </motion.div>
+                      <h3 className="text-xl font-semibold mb-2">تم إرسال رسالتك بنجاح!</h3>
+                      <p className="text-gray-600">
+                        شكرًا للتواصل معنا. سيقوم فريقنا بالرد عليك في أقرب وقت ممكن.
+                      </p>
+                    </div>
                   ) : (
-                    <form ref={formRef} onSubmit={handleSubmit} className="space-y-4">
-                      {/* Send Method Toggle */}
-                      <div className="flex gap-3 mb-2">
-                        <button type="button" onClick={() => setSendVia('email')}
-                          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all ${
-                            sendVia === 'email' ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/20' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                          }`}>
-                          <Mail className="w-4 h-4" /> {t('contact.send_via_email')}
-                        </button>
-                        <button type="button" onClick={() => setSendVia('whatsapp')}
-                          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all ${
-                            sendVia === 'whatsapp' ? 'bg-green-500 text-white shadow-lg shadow-green-500/20' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                          }`}>
-                          <MessageCircle className="w-4 h-4" /> {t('contact.send_via_whatsapp')}
-                        </button>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="name" className="text-sm font-semibold text-gray-700">{t('contact.form_name')}</Label>
-                          <Input id="name" name="name" value={formData.name} onChange={handleChange} placeholder={t('contact.form_name_placeholder')} required className="rounded-xl mt-1 h-11" />
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="name">الاسم</Label>
+                          <Input 
+                            id="name"
+                            name="name"
+                            value={formData.name}
+                            onChange={handleChange}
+                            placeholder="الاسم الكامل"
+                            required
+                          />
                         </div>
-                        <div>
-                          <Label htmlFor="phone" className="text-sm font-semibold text-gray-700">{t('contact.form_phone')}</Label>
-                          <Input id="phone" name="phone" value={formData.phone} onChange={handleChange} placeholder={t('contact.form_phone_placeholder')} required className="rounded-xl mt-1 h-11" />
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="phone">رقم الهاتف</Label>
+                          <Input 
+                            id="phone"
+                            name="phone"
+                            value={formData.phone}
+                            onChange={handleChange}
+                            placeholder="رقم الهاتف"
+                            required
+                          />
                         </div>
                       </div>
-
-                      <div>
-                        <Label htmlFor="email" className="text-sm font-semibold text-gray-700">{t('contact.form_email')}</Label>
-                        <Input id="email" name="email" type="email" value={formData.email} onChange={handleChange} placeholder={t('contact.form_email')} className="rounded-xl mt-1 h-11" />
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="email">البريد الإلكتروني</Label>
+                        <Input 
+                          id="email"
+                          name="email"
+                          type="email"
+                          value={formData.email}
+                          onChange={handleChange}
+                          placeholder="البريد الإلكتروني"
+                          required
+                        />
                       </div>
-
-                      <div>
-                        <Label htmlFor="subject" className="text-sm font-semibold text-gray-700">{t('contact.form_subject')}</Label>
-                        <select id="subject" name="subject" value={formData.subject} onChange={handleChange} required
-                          className="w-full rounded-xl border border-gray-200 p-2.5 h-11 focus:ring-2 focus:ring-medical-500 focus:border-transparent bg-white text-sm mt-1">
-                          <option value="" disabled>{t('contact.form_subject_placeholder')}</option>
-                          <option value="استفسار عام">{t('contact.subject_1')}</option>
-                          <option value="حجز موعد">{t('contact.subject_2')}</option>
-                          <option value="استشارة فنية">{t('contact.subject_3')}</option>
-                          <option value="خدمة ما بعد البيع">{t('contact.subject_4')}</option>
-                          <option value="شكوى أو اقتراح">{t('contact.subject_5')}</option>
-                          <option value="أخرى">{t('contact.subject_6')}</option>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="subject">الموضوع</Label>
+                        <select
+                          id="subject"
+                          name="subject"
+                          value={formData.subject}
+                          onChange={handleChange}
+                          className="w-full rounded-md border border-gray-300 p-2 focus:ring-2 focus:ring-medical-500 focus:border-transparent"
+                          required
+                        >
+                          <option value="" disabled>اختر الموضوع</option>
+                          <option value="استفسار عام">استفسار عام</option>
+                          <option value="حجز موعد">حجز موعد</option>
+                          <option value="استشارة فنية">استشارة فنية</option>
+                          <option value="خدمة ما بعد البيع">خدمة ما بعد البيع</option>
+                          <option value="أخرى">أخرى</option>
                         </select>
                       </div>
-
-                      <div>
-                        <Label htmlFor="message" className="text-sm font-semibold text-gray-700">{t('contact.form_message')}</Label>
-                        <Textarea id="message" name="message" value={formData.message} onChange={handleChange} placeholder={t('contact.form_message_placeholder')} rows={4} required className="rounded-xl mt-1 resize-none" />
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="message">الرسالة</Label>
+                        <Textarea 
+                          id="message"
+                          name="message"
+                          value={formData.message}
+                          onChange={handleChange}
+                          placeholder="اكتب رسالتك هنا..."
+                          rows={5}
+                          required
+                        />
                       </div>
-
-                      <Button type="submit" disabled={isSubmitting}
-                        className={`w-full rounded-xl py-3 text-base font-bold shadow-xl ${
-                          sendVia === 'whatsapp'
-                            ? 'bg-gradient-to-l from-green-500 to-green-600 shadow-green-500/20'
-                            : 'bg-gradient-to-l from-blue-500 to-blue-600 shadow-blue-500/20'
-                        }`}>
+                      
+                      <Button type="submit" className="w-full medical-btn" disabled={isSubmitting}>
                         {isSubmitting ? (
-                          <span className="flex items-center justify-center gap-2">
-                            <svg className="animate-spin w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                          <span className="flex items-center">
+                            <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
-                            {t('contact.sending')}
+                            جاري الإرسال...
                           </span>
                         ) : (
-                          <span className="flex items-center justify-center gap-2">
-                            {sendVia === 'whatsapp' ? <MessageCircle className="w-5 h-5" /> : <Send className="w-5 h-5" />}
-                            {sendVia === 'whatsapp' ? t('contact.send_whatsapp') : t('contact.send_email')}
+                          <span className="flex items-center">
+                            <Send className="h-5 w-5 mr-2" />
+                            إرسال الرسالة
                           </span>
                         )}
                       </Button>
                     </form>
                   )}
                 </div>
-
-                {/* Map */}
-                <div className="md:w-1/2 min-h-[400px]" id="map">
-                  <iframe
-                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3453.2881743856403!2d31.195894275777928!3d30.059242474992!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x14584132d6eb5851%3A0xb19c7600694af9c5!2z2KfZhNmF2YfZhtiv2LPZitmG2Iwg2KfZhNis2YrYstip!5e0!3m2!1sar!2seg!4v1708440655752!5m2!1sar!2seg"
-                    width="100%"
-                    height="100%"
-                    style={{ border: 0, minHeight: '400px' }}
-                    allowFullScreen
-                    loading="lazy"
-                    referrerPolicy="no-referrer-when-downgrade"
-                    title={t('contact.map_title')}
-                  />
+                
+                <div className="md:w-1/2">
+                  <div className="h-full">
+                    <iframe 
+                      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3453.2881743856403!2d31.195894275777928!3d30.059242474992!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x14584132d6eb5851%3A0xb19c7600694af9c5!2z2KfZhNmF2YfZhtiv2LPZitmG2Iwg2KfZhNis2YrYstip!5e0!3m2!1sar!2seg!4v1708440655752!5m2!1sar!2seg" 
+                      width="100%" 
+                      height="100%" 
+                      style={{ border: 0 }} 
+                      allowFullScreen 
+                      loading="lazy" 
+                      referrerPolicy="no-referrer-when-downgrade"
+                      title="موقع المركز الرئيسي"
+                    ></iframe>
+                  </div>
                 </div>
               </div>
             </div>
@@ -293,37 +288,38 @@ const Contact = () => {
         </div>
       </section>
 
-      {/* WhatsApp CTA */}
-      <section className="py-16">
+      {/* WhatsApp Section */}
+      <section className="py-16 bg-white">
         <div className="container mx-auto px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="max-w-3xl mx-auto"
-          >
-            <div className="bg-gradient-to-l from-green-500 to-green-600 rounded-3xl p-10 text-center shadow-2xl shadow-green-500/20 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-64 h-64 rounded-full bg-white/5 -translate-y-1/2 translate-x-1/2" />
-              <div className="relative z-10">
-                <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center mx-auto mb-4">
-                  <MessageCircle className="w-8 h-8 text-white" />
-                </div>
-                <h2 className="text-3xl font-bold text-white mb-3">{t('contact.whatsapp_cta_title')}</h2>
-                <p className="text-white/80 text-lg mb-6 max-w-lg mx-auto">
-                  {t('contact.whatsapp_cta_desc')}
-                </p>
-                <a href="https://wa.me/201119056895" target="_blank" rel="noopener noreferrer">
-                  <Button className="bg-white text-green-600 hover:bg-green-50 px-8 py-3 rounded-xl text-lg font-bold shadow-xl">
-                    <MessageCircle className="w-5 h-5 ml-2" />
-                    {t('contact.open_whatsapp')}
-                  </Button>
-                </a>
-              </div>
+          <div className="max-w-3xl mx-auto text-center">
+            <div className="h-20 w-20 mx-auto mb-6">
+              <img 
+                src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/WhatsApp.svg/1200px-WhatsApp.svg.png" 
+                alt="WhatsApp" 
+                className="h-full w-full object-contain"
+              />
             </div>
-          </motion.div>
+            <h2 className="text-3xl font-bold mb-4">تواصل معنا عبر واتساب</h2>
+            <p className="text-xl text-gray-600 mb-8">
+              للحصول على استجابة سريعة، يمكنك التواصل معنا مباشرة عبر تطبيق واتساب.
+              نحن متاحون للرد على استفساراتك وحجز المواعيد وتقديم المساعدة.
+            </p>
+            <a 
+              href="https://wa.me/201119056895" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center bg-green-500 text-white px-6 py-3 rounded-full font-medium hover:bg-green-600 transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 mr-2">
+                <path d="M17.6 6.3A8.3 8.3 0 0 0 3.3 15.6L2 22l6.5-1.7a8.3 8.3 0 0 0 4 1 8.3 8.3 0 0 0 5.3-14.7zm-5.2 12.7a6.9 6.9 0 0 1-3.5-1l-.3-.1-2.7.7.7-2.7-.1-.3a6.9 6.9 0 0 1-1-3.5 6.9 6.9 0 0 1 11.9-4.7A6.9 6.9 0 0 1 12.4 19z"/>
+                <path d="M17.4 14.5c-.2-.1-1.3-.6-1.5-.7-.2-.1-.3-.1-.4.1-.1.2-.6.7-.7.9-.1.1-.2.1-.4 0-.6-.3-1.2-.5-1.7-1.2-.4-.4-.8-.9-1-1.3 0-.2 0-.3.1-.3l.4-.3.2-.4c.1-.1 0-.3 0-.4l-.6-1.5c-.2-.4-.3-.4-.5-.4h-.4c-.2 0-.4.1-.5.2-.6.7-.9 1.4-.9 2.2a3.8 3.8 0 0 0 .8 2c1 1.2 1.7 1.5 2.8 2 .4.1.8.2 1.2.2.3.1.7 0 1-.1.3-.1.9-.4 1.1-.8.2-.3.2-.7.1-.8 0-.2-.2-.1-.4-.2z"/>
+              </svg>
+              التواصل عبر واتساب
+            </a>
+          </div>
         </div>
       </section>
-
+      
       <Footer />
     </div>
   );

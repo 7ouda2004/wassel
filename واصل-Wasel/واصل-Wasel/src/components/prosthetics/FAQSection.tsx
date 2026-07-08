@@ -1,141 +1,62 @@
 
 import React from 'react';
-import { motion } from 'framer-motion';
-import { Info, MessageCircleQuestion, HelpCircle } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger
+import { Info } from 'lucide-react';
+import { 
+  Accordion, 
+  AccordionContent, 
+  AccordionItem, 
+  AccordionTrigger 
 } from '@/components/ui/accordion';
 
 const faqItems = [
   {
     question: "كيف يتم تحديد نوع الطرف الصناعي المناسب لي؟",
-    answer: "يتم تحديد نوع الطرف الصناعي المناسب بناءً على عدة عوامل، منها مستوى البتر، ونمط الحياة، ومستوى النشاط، والحالة الصحية العامة، والأهداف الشخصية. يقوم فريق متخصص يضم أخصائي الأطراف الصناعية والمعالج الطبيعي والطبيب المعالج بتقييم شامل لحالتك واحتياجاتك لتحديد الخيار الأمثل.",
-    icon: "="
+    answer: "يتم تحديد نوع الطرف الصناعي المناسب بناءً على عدة عوامل، منها مستوى البتر، ونمط الحياة، ومستوى النشاط، والحالة الصحية العامة، والأهداف الشخصية. يقوم فريق متخصص يضم أخصائي الأطراف الصناعية والمعالج الطبيعي والطبيب المعالج بتقييم شامل لحالتك واحتياجاتك لتحديد الخيار الأمثل."
   },
   {
     question: "كم من الوقت يستغرق التأهيل مع الطرف الصناعي الجديد؟",
-    answer: "تختلف فترة التأهيل من شخص لآخر وحسب نوع البتر ومستواه. بشكل عام، قد تستغرق من عدة أسابيع إلى عدة أشهر. تبدأ بفترة تعود على السوكيت وتحمل الوزن تدريجياً، ثم التدريب على المشي والتوازن، وصولاً للأنشطة اليومية المتقدمة.",
-    icon: "="
+    answer: "تختلف فترة التأهيل من شخص لآخر وحسب نوع البتر ومستواه. بشكل عام، قد تستغرق من عدة أسابيع إلى عدة أشهر. تبدأ بفترة تعود على السوكيت وتحمل الوزن تدريجياً، ثم التدريب على المشي والتوازن، وصولاً للأنشطة اليومية المتقدمة. المواظبة على جلسات العلاج الطبيعي والتمارين المنزلية تساهم في تسريع عملية التأهيل."
   },
   {
     question: "ما هي مدة صلاحية الطرف الصناعي وهل يحتاج لصيانة؟",
-    answer: "يعتمد عمر الطرف الصناعي على عدة عوامل منها نوع المكونات، ومستوى النشاط، وظروف الاستخدام. بشكل عام، قد يدوم السوكيت من 3-5 سنوات، بينما يمكن أن تدوم المكونات الميكانيكية والهيدروليكية من 3-7 سنوات. تحتاج الأطراف الصناعية للصيانة الدورية كل 6-12 شهر.",
-    icon: "="
+    answer: "يعتمد عمر الطرف الصناعي على عدة عوامل منها نوع المكونات، ومستوى النشاط، وظروف الاستخدام. بشكل عام، قد يدوم السوكيت من 3-5 سنوات، بينما يمكن أن تدوم المكونات الميكانيكية والهيدروليكية من 3-7 سنوات. تحتاج الأطراف الصناعية للصيانة الدورية كل 6-12 شهر، ويجب زيارة أخصائي الأطراف إذا لاحظت أي تغيير في ملاءمة السوكيت أو أداء الطرف."
   },
   {
     question: "هل يمكنني ممارسة الرياضة مع الطرف الصناعي؟",
-    answer: "نعم، يمكن ممارسة العديد من الأنشطة الرياضية مع الطرف الصناعي المناسب. هناك أطراف صناعية مصممة خصيصاً للأنشطة الرياضية مثل الجري والسباحة والتزلج وغيرها. من المهم استشارة أخصائي الأطراف الصناعية لتحديد الطرف المناسب.",
-    icon: "="
+    answer: "نعم، يمكن ممارسة العديد من الأنشطة الرياضية مع الطرف الصناعي المناسب. هناك أطراف صناعية مصممة خصيصاً للأنشطة الرياضية مثل الجري والسباحة والتزلج وغيرها. من المهم استشارة أخصائي الأطراف الصناعية لتحديد الطرف المناسب للنشاط الذي ترغب في ممارسته، وقد تحتاج لطرف صناعي مخصص لنشاط معين إضافة للطرف اليومي."
   },
   {
     question: "هل يغطي التأمين الصحي تكاليف الأطراف الصناعية؟",
-    answer: "يختلف مدى تغطية التأمين للأطراف الصناعية بين شركات التأمين وأنواع البوالص. معظم التأمينات الصحية تغطي جزءًا من تكاليف الأطراف الصناعية الأساسية. توجد أيضاً برامج مساعدة حكومية وجمعيات خيرية تقدم الدعم المالي.",
-    icon: "💳"
+    answer: "يختلف مدى تغطية التأمين للأطراف الصناعية بين شركات التأمين وأنواع البوالص. معظم التأمينات الصحية تغطي جزءًا من تكاليف الأطراف الصناعية الأساسية، لكن قد لا تغطي المكونات المتقدمة أو الأطراف المتخصصة بالكامل. توجد أيضاً برامج مساعدة حكومية وجمعيات خيرية تقدم الدعم المالي للحصول على الأطراف الصناعية. ننصح بالتواصل مع شركة التأمين الخاصة بك والاستفسار عن تفاصيل التغطية."
   },
   {
     question: "كيف أتعامل مع التغيرات في حجم الطرف المتبقي؟",
-    answer: "من الطبيعي أن يتغير حجم الطرف المتبقي خلال الأشهر الأولى بعد البتر. يمكن استخدام جوارب خاصة (Stump Socks) بسماكات مختلفة للتعويض. إذا استمر التغير أو كان كبيراً، قد تحتاج لتعديل السوكيت أو عمل سوكيت جديد.",
-    icon: "📏"
+    answer: "من الطبيعي أن يتغير حجم الطرف المتبقي خلال الأشهر الأولى بعد البتر وقد يستمر بالتغير بسبب تقلبات الوزن أو احتباس السوائل. يمكن استخدام جوارب خاصة (Stump Socks) بسماكات مختلفة للتعويض عن النقص في الحجم. إذا استمر التغير أو كان كبيراً، قد تحتاج لتعديل السوكيت أو عمل سوكيت جديد. الحفاظ على وزن ثابت والالتزام بارتداء ضمادات ضاغطة (إذا وصفها الطبيب) يساعد في تقليل هذه التغيرات."
   }
 ];
 
 const FAQSection: React.FC = () => {
-  const { t } = useTranslation();
-
-  const faqData = t('prosthetics.faq.items', { returnObjects: true }) as Array<any>;
-  
-  const itemsWithData = faqItems.map((item, index) => ({
-    ...item,
-    ...(faqData[index] || {})
-  }));
-
   return (
-    <section id="faq" className="py-20 relative overflow-hidden">
-      {/* Background */}
-      <div className="absolute inset-0 bg-gradient-to-b from-white via-blue-50/30 to-white" />
-
-      <div className="relative container mx-auto px-4">
-        {/* Section Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.7 }}
-          className="text-center mb-14"
-        >
-          <div className="inline-flex items-center gap-2 bg-orange-100 text-orange-700 px-4 py-2 rounded-full text-sm font-bold mb-4">
-            <MessageCircleQuestion className="w-4 h-4" />
-            {t('prosthetics.faq.badge')}
-          </div>
-          <h2 className="text-4xl md:text-5xl font-bold mb-4">
-            <span className="bg-gradient-to-l from-orange-600 to-amber-600 bg-clip-text text-transparent">
-              {t('prosthetics.faq.title')}
-            </span>
-          </h2>
-          <p className="text-gray-500 text-lg max-w-2xl mx-auto">
-            {t('prosthetics.faq.desc')}
-          </p>
-        </motion.div>
-
-        {/* FAQ Cards */}
-        <div className="max-w-4xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            className="bg-white rounded-3xl shadow-xl p-8 border border-gray-100"
-          >
-            <Accordion type="single" collapsible className="w-full space-y-3">
-              {itemsWithData.map((item, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, x: 15 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.4, delay: index * 0.08 }}
-                >
-                  <AccordionItem
-                    value={`item-${index}`}
-                    className="border border-gray-100 rounded-xl px-4 hover:border-medical-200 hover:bg-medical-50/30 transition-all duration-200 data-[state=open]:border-medical-300 data-[state=open]:bg-medical-50/50"
-                  >
-                    <AccordionTrigger className="text-base md:text-lg font-semibold text-gray-800 hover:text-medical-700 py-5 gap-3">
-                      <div className="flex items-center gap-3 text-right">
-                        <span className="text-2xl">{item.icon}</span>
-                        {item.question}
-                      </div>
-                    </AccordionTrigger>
-                    <AccordionContent className="text-base text-gray-600 leading-relaxed pb-5 pl-12 pr-12">
-                      {item.answer}
-                    </AccordionContent>
-                  </AccordionItem>
-                </motion.div>
-              ))}
-            </Accordion>
-          </motion.div>
-
-          {/* Help CTA */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-            className="mt-10 text-center"
-          >
-            <div className="inline-flex items-center gap-3 bg-gradient-to-l from-medical-50 to-blue-50 text-medical-700 px-8 py-4 rounded-2xl border border-medical-200 shadow-sm">
-              <HelpCircle className="w-5 h-5" />
-              <p className="font-medium">
-                {t('prosthetics.faq.no_answer')}{' '}
-                <a href="/contact" className="text-medical-600 font-bold underline underline-offset-2 hover:text-medical-800 transition-colors">
-                  {t('prosthetics.faq.contact_us')}
-                </a>
-              </p>
-            </div>
-          </motion.div>
+    <section id="faq" className="py-16 bg-gradient-to-l from-gray-50 to-white">
+      <div className="container mx-auto px-4">
+        <div className="flex items-center gap-2 mb-12">
+          <Info className="h-8 w-8 text-medical-600" />
+          <h2 className="text-3xl font-bold text-gray-900">الأسئلة الشائعة</h2>
+        </div>
+        
+        <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-md p-6">
+          <Accordion type="single" collapsible className="w-full">
+            {faqItems.map((item, index) => (
+              <AccordionItem key={index} value={`item-${index}`}>
+                <AccordionTrigger className="text-lg font-semibold text-medical-700 hover:text-medical-800">
+                  {item.question}
+                </AccordionTrigger>
+                <AccordionContent className="text-base text-gray-600 leading-relaxed">
+                  {item.answer}
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
         </div>
       </div>
     </section>

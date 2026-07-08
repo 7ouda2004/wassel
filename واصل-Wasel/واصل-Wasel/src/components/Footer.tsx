@@ -1,15 +1,20 @@
 
 import { Link } from 'react-router-dom';
 import { Phone, Mail, MapPin, Facebook, Instagram, Twitter } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
+import { motion } from 'framer-motion';
 
 const Footer = () => {
-  const { t } = useTranslation();
   return (
-    <footer className="bg-medical-950 text-white py-12">
+    <footer className="bg-medical-950 text-white py-12 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="space-y-4">
+          <motion.div 
+            className="space-y-4"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+          >
             <div className="flex items-center mb-6">
               <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-medical-500 to-medical-700 flex items-center justify-center">
                 <span className="text-white font-bold text-lg">W</span>
@@ -17,76 +22,119 @@ const Footer = () => {
               <span className="mx-3 font-bold text-xl text-white">واصــل-Wasel</span>
             </div>
             <p className="text-gray-300 text-sm">
-              {t('footer.desc')}
+              أفضل حلول الجبائر الطبية والأطراف الصناعية في مصر بأحدث التقنيات والمعايير العالمية لعام 2025.
             </p>
             <div className="flex space-x-4 rtl:space-x-reverse pt-4">
-              <a href="#" className="text-gray-300 hover:text-white transition-colors">
+              <motion.a 
+                href="#" 
+                className="text-gray-300 hover:text-white transition-colors"
+                whileHover={{ scale: 1.2, rotate: 5 }}
+                transition={{ type: "spring", stiffness: 400 }}
+              >
                 <Facebook className="h-5 w-5" />
-              </a>
-              <a href="#" className="text-gray-300 hover:text-white transition-colors">
+              </motion.a>
+              <motion.a 
+                href="#" 
+                className="text-gray-300 hover:text-white transition-colors"
+                whileHover={{ scale: 1.2, rotate: -5 }}
+                transition={{ type: "spring", stiffness: 400 }}
+              >
                 <Instagram className="h-5 w-5" />
-              </a>
-              <a href="#" className="text-gray-300 hover:text-white transition-colors">
+              </motion.a>
+              <motion.a 
+                href="#" 
+                className="text-gray-300 hover:text-white transition-colors"
+                whileHover={{ scale: 1.2, rotate: 5 }}
+                transition={{ type: "spring", stiffness: 400 }}
+              >
                 <Twitter className="h-5 w-5" />
-              </a>
+              </motion.a>
             </div>
-          </div>
-
-          <div>
-            <h3 className="text-lg font-semibold mb-4">{t('footer.quick_links')}</h3>
+          </motion.div>
+          
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            viewport={{ once: true }}
+          >
+            <h3 className="text-lg font-semibold mb-4">روابط سريعة</h3>
             <ul className="space-y-2">
-              <li>
-                <Link to="/" className="text-gray-300 hover:text-white transition-colors">{t('nav.home')}</Link>
-              </li>
-              <li>
-                <Link to="/orthoses" className="text-gray-300 hover:text-white transition-colors">{t('nav.orthoses')}</Link>
-              </li>
-              <li>
-                <Link to="/prosthetics" className="text-gray-300 hover:text-white transition-colors">{t('nav.prosthetics')}</Link>
-              </li>
-              <li>
-                <Link to="/about" className="text-gray-300 hover:text-white transition-colors">{t('nav.about')}</Link>
-              </li>
-              <li>
-                <Link to="/team" className="text-gray-300 hover:text-white transition-colors">{t('nav.team', 'فريق العمل')}</Link>
-              </li>
-              <li>
-                <Link to="/locations" className="text-gray-300 hover:text-white transition-colors">{t('nav.centers')}</Link>
-              </li>
-              <li>
-                <Link to="/contact" className="text-gray-300 hover:text-white transition-colors">{t('nav.contact')}</Link>
-              </li>
+              {[
+                { to: "/", label: "الرئيسية" },
+                { to: "/orthoses", label: "الجبائر الطبية" },
+                { to: "/prosthetics", label: "الأطراف الصناعية" },
+                { to: "/about", label: "عن التطبيق" },
+                { to: "/team", label: "فريق العمل" },
+                { to: "/locations", label: "مراكزنا" },
+                { to: "/contact", label: "تواصل معنا" }
+              ].map((link, index) => (
+                <motion.li 
+                  key={link.to}
+                  initial={{ opacity: 0, x: -20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.4, delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                >
+                  <Link to={link.to} className="text-gray-300 hover:text-white transition-colors hover:translate-x-2 inline-block transform duration-200">
+                    {link.label}
+                  </Link>
+                </motion.li>
+              ))}
             </ul>
-          </div>
-
-          <div>
-            <h3 className="text-lg font-semibold mb-4">{t('footer.contact_us')}</h3>
+          </motion.div>
+          
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            viewport={{ once: true }}
+          >
+            <h3 className="text-lg font-semibold mb-4">تواصل معنا</h3>
             <ul className="space-y-3">
-              <li className="flex items-start">
+              <motion.li 
+                className="flex items-start"
+                whileHover={{ scale: 1.05 }}
+                transition={{ type: "spring", stiffness: 300 }}
+              >
                 <Phone className="h-5 w-5 mr-2 text-medical-400" />
                 <a href="https://wa.me/201119056895" className="text-gray-300 hover:text-white transition-colors">
                   +201119056895
                 </a>
-              </li>
-              <li className="flex items-start">
+              </motion.li>
+              <motion.li 
+                className="flex items-start"
+                whileHover={{ scale: 1.05 }}
+                transition={{ type: "spring", stiffness: 300 }}
+              >
                 <Mail className="h-5 w-5 mr-2 text-medical-400" />
                 <a href="mailto:mahmoudebrahim049@gmail.com" className="text-gray-300 hover:text-white transition-colors">
                   mahmoudebrahim049@gmail.com
                 </a>
-              </li>
-              <li className="flex items-start">
+              </motion.li>
+              <motion.li 
+                className="flex items-start"
+                whileHover={{ scale: 1.05 }}
+                transition={{ type: "spring", stiffness: 300 }}
+              >
                 <MapPin className="h-5 w-5 mr-2 text-medical-400" />
-                <span className="text-gray-300 mx-2">
-                  {t('footer.location')}
+                <span className="text-gray-300">
+                  المنصورة , مصر
                 </span>
-              </li>
+              </motion.li>
             </ul>
-          </div>
+          </motion.div>
         </div>
-
-        <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400 text-sm">
-          <p>{t('footer.copyright', { year: new Date().getFullYear() })}</p>
-        </div>
+        
+        <motion.div 
+          className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400 text-sm"
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          transition={{ duration: 0.8, delay: 0.6 }}
+          viewport={{ once: true }}
+        >
+          <p>&copy; حقوق النشر {new Date().getFullYear()}  جميع الحقوق محفوظة لدى محمود إبراهيم مسعد</p>
+        </motion.div>
       </div>
     </footer>
   );

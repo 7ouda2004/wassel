@@ -7,6 +7,15 @@ export interface Center {
   workingHours: string;
   image: string;
   region: string;
+  description?: string;
+  services?: string[];
+  reviews?: {
+    id: string;
+    author: string;
+    rating: number;
+    comment: string;
+    date: string;
+  }[];
 }
 
 export const defaultCenters: Center[] = [
@@ -284,15 +293,70 @@ export const defaultCenters: Center[] = [
 
 export function getLocalCenters(): Center[] {
   const saved = localStorage.getItem('centers');
+  let centers: Center[] = [];
   if (saved) {
     try {
-      return JSON.parse(saved);
+      centers = JSON.parse(saved);
     } catch (e) {
       console.error('Error parsing centers:', e);
+      centers = defaultCenters;
     }
+  } else {
+    centers = defaultCenters;
   }
-  localStorage.setItem('centers', JSON.stringify(defaultCenters));
-  return defaultCenters;
+
+  // Auto-enrich any centers missing description, services, or reviews
+  let modified = false;
+  const enriched = centers.map(center => {
+    let updated = { ...center };
+    let cMod = false;
+    
+    if (!updated.description) {
+      updated.description = `مركز واصل المعتمد في محافظة ${center.location}، يقدّم حلولاً متكاملة وخبرات متطورة في تصميم وتركيب الأطراف الصناعية والجبائر الطبية المبتكرة لمساعدة عملائنا على استعادة الحركة الكاملة والاستقلالية التامة.`;
+      cMod = true;
+    }
+    
+    if (!updated.services || updated.services.length === 0) {
+      updated.services = [
+        'تصميم وتركيب الأطراف الصناعية الذكية (علوية وسفلية)',
+        'جبائر تقويم العظام المخصصة (AFO, KAFO)',
+        'تصميم الفرش الطبي والأحذية الطبية المخصصة باستخدام تقنيات قياس الضغط',
+        'صيانة دورية فورية وتعديل مقاسات الأجهزة والجبائر',
+        'جلسات تدريب وتأهيل حركي مجانية للمرضى الجدد'
+      ];
+      cMod = true;
+    }
+    
+    if (!updated.reviews || updated.reviews.length === 0) {
+      updated.reviews = [
+        {
+          id: `r1_${center.id}`,
+          author: 'محمد مصطفى',
+          rating: 5,
+          comment: 'تعامل راقي جداً واحترافية متناهية في أخذ المقاسات وضبط الجبيرة. طفلي يتحسن بفضل الله ثم فروع واصل.',
+          date: '2026-06-20'
+        },
+        {
+          id: `r2_${center.id}`,
+          author: 'أميرة عبد الرحمن',
+          rating: 5,
+          comment: 'الطرف الصناعي جودته ممتازة وخفيف والتدريب والمتابعة كانوا مفيدين جداً لي. شكراً جزيلاً لكم.',
+          date: '2026-07-01'
+        }
+      ];
+      cMod = true;
+    }
+    
+    if (cMod) {
+      modified = true;
+    }
+    return updated;
+  });
+
+  if (modified || !saved) {
+    localStorage.setItem('centers', JSON.stringify(enriched));
+  }
+  return enriched;
 }
 
 export function saveLocalCenters(centers: Center[]): void {

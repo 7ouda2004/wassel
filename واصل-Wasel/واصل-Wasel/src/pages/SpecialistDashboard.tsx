@@ -3,8 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Users, FileText, PlusCircle, X, Edit, Trash, Save, 
-  Search, Download, Upload, ChevronDown, FileUp, UserCheck,
-  MapPin, Clock
+  Search, Download, Upload, ChevronDown, FileUp, UserCheck
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -32,7 +31,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { toast } from "sonner";
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { getLocalCenters, saveLocalCenters, type Center } from '@/lib/db';
 
 // Types
 type Patient = {
@@ -189,23 +187,6 @@ const SpecialistDashboard = () => {
   const [confirmDelete, setConfirmDelete] = useState<number | null>(null);
   const [uploadingFile, setUploadingFile] = useState(false);
 
-  // Centers State
-  const [centers, setCenters] = useState<Center[]>([]);
-  const [isAddingCenter, setIsAddingCenter] = useState(false);
-  const [isEditingCenter, setIsEditingCenter] = useState(false);
-  const [currentCenter, setCurrentCenter] = useState<Center>({
-    id: '',
-    name: '',
-    location: '',
-    address: '',
-    phone: '',
-    workingHours: 'السبت - الخميس: 9 صباحاً - 9 مساءً',
-    image: '/images/ortho.png',
-    region: 'القاهرة الكبرى'
-  });
-  const [centerSearchTerm, setCenterSearchTerm] = useState('');
-  const [confirmDeleteCenter, setConfirmDeleteCenter] = useState<string | null>(null);
-
   useEffect(() => {
     document.documentElement.dir = 'rtl';
     document.body.classList.add('font-cairo');
@@ -213,7 +194,7 @@ const SpecialistDashboard = () => {
     // Check if user is logged in
     const isSpecialist = sessionStorage.getItem('isSpecialist');
     if (isSpecialist !== 'true') {
-      window.location.href = '/login';
+      window.location.href = '/';
       return;
     }
 
@@ -228,9 +209,6 @@ const SpecialistDashboard = () => {
         toast.error('حدث خطأ في تحميل بيانات المرضى');
       }
     }
-
-    // Load centers from localStorage
-    setCenters(getLocalCenters());
   }, []);
 
   // Save patients to localStorage when they change
@@ -271,6 +249,7 @@ const SpecialistDashboard = () => {
 
   const handleEditPatient = (patient: Patient) => {
     setCurrentPatient({ ...patient });
+    setViewingPatient(null);
     setIsEditingPatient(true);
   };
 
@@ -405,76 +384,53 @@ const SpecialistDashboard = () => {
     toast.success('تم حذف الملف بنجاح');
   };
 
-  const handleAddCenter = () => {
-    const maxId = centers.reduce((max, c) => Math.max(max, parseInt(c.id) || 0), 0);
-    setCurrentCenter({
-      id: String(maxId + 1),
-      name: '',
-      location: '',
-      address: '',
-      phone: '',
-      workingHours: 'السبت - الخميس: 9 صباحاً - 9 مساءً',
-      image: '/images/ortho.png',
-      region: 'القاهرة الكبرى'
-    });
-    setIsAddingCenter(true);
-  };
-
-  const handleEditCenter = (center: Center) => {
-    setCurrentCenter({ ...center });
-    setIsEditingCenter(true);
-  };
-
-  const handleDeleteCenter = (id: string) => {
-    setConfirmDeleteCenter(id);
-  };
-
-  const confirmDeleteCenterFn = () => {
-    if (confirmDeleteCenter) {
-      const updated = centers.filter(c => c.id !== confirmDeleteCenter);
-      setCenters(updated);
-      saveLocalCenters(updated);
-      setConfirmDeleteCenter(null);
-      toast.success('تم حذف المركز بنجاح');
+  // Helper to render patient table rows
+  const renderPatientRows = (patientList: Patient[]) => {
+    if (patientList.length === 0) {
+      return (
+        <TableRow>
+          <TableCell colSpan={7} className="text-center h-32">
+            <div className="flex flex-col items-center justify-center text-gray-500">
+              <Users className="h-8 w-8 mb-2" />
+              <span>لا يوجد مرضى مطابقين لبحثك</span>
+            </div>
+          </TableCell>
+        </TableRow>
+      );
     }
-  };
-
-  const handleSaveCenter = () => {
-    if (!currentCenter.name || !currentCenter.location || !currentCenter.address || !currentCenter.phone) {
-      toast.error('يرجى ملء جميع الحقول المطلوبة');
-      return;
-    }
-    
-    let updatedCenters;
-    if (isAddingCenter) {
-      updatedCenters = [...centers, currentCenter];
-      toast.success('تمت إضافة المركز بنجاح');
-      setIsAddingCenter(false);
-    } else {
-      updatedCenters = centers.map(c => c.id === currentCenter.id ? currentCenter : c);
-      toast.success('تم تحديث بيانات المركز بنجاح');
-      setIsEditingCenter(false);
-    }
-    setCenters(updatedCenters);
-    saveLocalCenters(updatedCenters);
-    
-    setCurrentCenter({
-      id: '',
-      name: '',
-      location: '',
-      address: '',
-      phone: '',
-      workingHours: '',
-      image: '/images/ortho.png',
-      region: 'القاهرة الكبرى'
-    });
-  };
-
-  const handleCenterInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-    setCurrentCenter({ ...currentCenter, [name]: value });
+    return patientList.map((patient) => (
+      <TableRow key={patient.id}>
+        <TableCell className="font-medium">{patient.name}</TableCell>
+        <TableCell>{patient.age}</TableCell>
+        <TableCell>{patient.condition}</TableCell>
+        <TableCell>{patient.deviceType}</TableCell>
+        <TableCell>
+          <span 
+            className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${
+              patient.status === 'نشط' ? 'bg-green-100 text-green-800' :
+              patient.status === 'تحت المراقبة' ? 'bg-yellow-100 text-yellow-800' :
+              'bg-blue-100 text-blue-800'
+            }`}
+          >
+            {patient.status}
+          </span>
+        </TableCell>
+        <TableCell>{patient.lastVisit}</TableCell>
+        <TableCell>
+          <div className="flex space-x-2 rtl:space-x-reverse">
+            <Button variant="ghost" size="sm" onClick={() => handleViewPatient(patient)}>
+              عرض
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => handleEditPatient(patient)}>
+              <Edit className="h-4 w-4" />
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => handleDeletePatient(patient.id)}>
+              <Trash className="h-4 w-4" />
+            </Button>
+          </div>
+        </TableCell>
+      </TableRow>
+    ));
   };
 
   return (
@@ -487,7 +443,7 @@ const SpecialistDashboard = () => {
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">لوحة تحكم الأخصائي</h1>
-                <p className="text-gray-600">مرحبًا {localStorage.getItem('username') || 'أخصائي'}، إليك نظرة عامة على المرضى والتقارير</p>
+                <p className="text-gray-600">مرحبًا {sessionStorage.getItem('username') || 'أخصائي'}، إليك نظرة عامة على المرضى والتقارير</p>
               </div>
               <div className="mt-4 md:mt-0">
                 <Button onClick={handleAddPatient} className="medical-btn">
@@ -584,50 +540,7 @@ const SpecialistDashboard = () => {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {filteredPatients.length > 0 ? (
-                        filteredPatients.map((patient) => (
-                          <TableRow key={patient.id}>
-                            <TableCell className="font-medium">{patient.name}</TableCell>
-                            <TableCell>{patient.age}</TableCell>
-                            <TableCell>{patient.condition}</TableCell>
-                            <TableCell>{patient.deviceType}</TableCell>
-                            <TableCell>
-                              <span 
-                                className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${
-                                  patient.status === 'نشط' ? 'bg-green-100 text-green-800' :
-                                  patient.status === 'تحت المراقبة' ? 'bg-yellow-100 text-yellow-800' :
-                                  'bg-blue-100 text-blue-800'
-                                }`}
-                              >
-                                {patient.status}
-                              </span>
-                            </TableCell>
-                            <TableCell>{patient.lastVisit}</TableCell>
-                            <TableCell>
-                              <div className="flex space-x-2 rtl:space-x-reverse">
-                                <Button variant="ghost" size="sm" onClick={() => handleViewPatient(patient)}>
-                                  عرض
-                                </Button>
-                                <Button variant="ghost" size="sm" onClick={() => handleEditPatient(patient)}>
-                                  <Edit className="h-4 w-4" />
-                                </Button>
-                                <Button variant="ghost" size="sm" onClick={() => handleDeletePatient(patient.id)}>
-                                  <Trash className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ))
-                      ) : (
-                        <TableRow>
-                          <TableCell colSpan={7} className="text-center h-32">
-                            <div className="flex flex-col items-center justify-center text-gray-500">
-                              <Users className="h-8 w-8 mb-2" />
-                              <span>لا يوجد مرضى مطابقين لبحثك</span>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      )}
+                      {renderPatientRows(filteredPatients)}
                     </TableBody>
                   </Table>
                 </div>
@@ -649,52 +562,7 @@ const SpecialistDashboard = () => {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {filteredPatients.filter(p => p.deviceType.includes('طرف')).length > 0 ? (
-                        filteredPatients
-                          .filter(p => p.deviceType.includes('طرف'))
-                          .map((patient) => (
-                            <TableRow key={patient.id}>
-                              <TableCell className="font-medium">{patient.name}</TableCell>
-                              <TableCell>{patient.age}</TableCell>
-                              <TableCell>{patient.condition}</TableCell>
-                              <TableCell>{patient.deviceType}</TableCell>
-                              <TableCell>
-                                <span 
-                                  className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${
-                                    patient.status === 'نشط' ? 'bg-green-100 text-green-800' :
-                                    patient.status === 'تحت المراقبة' ? 'bg-yellow-100 text-yellow-800' :
-                                    'bg-blue-100 text-blue-800'
-                                  }`}
-                                >
-                                  {patient.status}
-                                </span>
-                              </TableCell>
-                              <TableCell>{patient.lastVisit}</TableCell>
-                              <TableCell>
-                                <div className="flex space-x-2 rtl:space-x-reverse">
-                                  <Button variant="ghost" size="sm" onClick={() => handleViewPatient(patient)}>
-                                    عرض
-                                  </Button>
-                                  <Button variant="ghost" size="sm" onClick={() => handleEditPatient(patient)}>
-                                    <Edit className="h-4 w-4" />
-                                  </Button>
-                                  <Button variant="ghost" size="sm" onClick={() => handleDeletePatient(patient.id)}>
-                                    <Trash className="h-4 w-4" />
-                                  </Button>
-                                </div>
-                              </TableCell>
-                            </TableRow>
-                          ))
-                      ) : (
-                        <TableRow>
-                          <TableCell colSpan={7} className="text-center h-32">
-                            <div className="flex flex-col items-center justify-center text-gray-500">
-                              <Users className="h-8 w-8 mb-2" />
-                              <span>لا يوجد مرضى أطراف صناعية مطابقين لبحثك</span>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      )}
+                      {renderPatientRows(filteredPatients.filter(p => p.deviceType.includes('طرف')))}
                     </TableBody>
                   </Table>
                 </div>
@@ -716,52 +584,7 @@ const SpecialistDashboard = () => {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {filteredPatients.filter(p => p.deviceType.includes('جبيرة')).length > 0 ? (
-                        filteredPatients
-                          .filter(p => p.deviceType.includes('جبيرة'))
-                          .map((patient) => (
-                            <TableRow key={patient.id}>
-                              <TableCell className="font-medium">{patient.name}</TableCell>
-                              <TableCell>{patient.age}</TableCell>
-                              <TableCell>{patient.condition}</TableCell>
-                              <TableCell>{patient.deviceType}</TableCell>
-                              <TableCell>
-                                <span 
-                                  className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${
-                                    patient.status === 'نشط' ? 'bg-green-100 text-green-800' :
-                                    patient.status === 'تحت المراقبة' ? 'bg-yellow-100 text-yellow-800' :
-                                    'bg-blue-100 text-blue-800'
-                                  }`}
-                                >
-                                  {patient.status}
-                                </span>
-                              </TableCell>
-                              <TableCell>{patient.lastVisit}</TableCell>
-                              <TableCell>
-                                <div className="flex space-x-2 rtl:space-x-reverse">
-                                  <Button variant="ghost" size="sm" onClick={() => handleViewPatient(patient)}>
-                                    عرض
-                                  </Button>
-                                  <Button variant="ghost" size="sm" onClick={() => handleEditPatient(patient)}>
-                                    <Edit className="h-4 w-4" />
-                                  </Button>
-                                  <Button variant="ghost" size="sm" onClick={() => handleDeletePatient(patient.id)}>
-                                    <Trash className="h-4 w-4" />
-                                  </Button>
-                                </div>
-                              </TableCell>
-                            </TableRow>
-                          ))
-                      ) : (
-                        <TableRow>
-                          <TableCell colSpan={7} className="text-center h-32">
-                            <div className="flex flex-col items-center justify-center text-gray-500">
-                              <Users className="h-8 w-8 mb-2" />
-                              <span>لا يوجد مرضى جبائر طبية مطابقين لبحثك</span>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      )}
+                      {renderPatientRows(filteredPatients.filter(p => p.deviceType.includes('جبيرة')))}
                     </TableBody>
                   </Table>
                 </div>
@@ -777,48 +600,13 @@ const SpecialistDashboard = () => {
                         <TableHead className="text-right">العمر</TableHead>
                         <TableHead className="text-right">الحالة</TableHead>
                         <TableHead className="text-right">نوع الجهاز</TableHead>
+                        <TableHead className="text-right">الحالة</TableHead>
                         <TableHead className="text-right">آخر زيارة</TableHead>
-                        <TableHead className="text-right">الزيارة القادمة</TableHead>
                         <TableHead className="text-right">الإجراءات</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {filteredPatients.filter(p => p.status === 'نشط').length > 0 ? (
-                        filteredPatients
-                          .filter(p => p.status === 'نشط')
-                          .map((patient) => (
-                            <TableRow key={patient.id}>
-                              <TableCell className="font-medium">{patient.name}</TableCell>
-                              <TableCell>{patient.age}</TableCell>
-                              <TableCell>{patient.condition}</TableCell>
-                              <TableCell>{patient.deviceType}</TableCell>
-                              <TableCell>{patient.lastVisit}</TableCell>
-                              <TableCell>{patient.nextVisit}</TableCell>
-                              <TableCell>
-                                <div className="flex space-x-2 rtl:space-x-reverse">
-                                  <Button variant="ghost" size="sm" onClick={() => handleViewPatient(patient)}>
-                                    عرض
-                                  </Button>
-                                  <Button variant="ghost" size="sm" onClick={() => handleEditPatient(patient)}>
-                                    <Edit className="h-4 w-4" />
-                                  </Button>
-                                  <Button variant="ghost" size="sm" onClick={() => handleDeletePatient(patient.id)}>
-                                    <Trash className="h-4 w-4" />
-                                  </Button>
-                                </div>
-                              </TableCell>
-                            </TableRow>
-                          ))
-                      ) : (
-                        <TableRow>
-                          <TableCell colSpan={7} className="text-center h-32">
-                            <div className="flex flex-col items-center justify-center text-gray-500">
-                              <Users className="h-8 w-8 mb-2" />
-                              <span>لا يوجد مرضى نشطين مطابقين لبحثك</span>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      )}
+                      {renderPatientRows(filteredPatients.filter(p => p.status === 'نشط'))}
                     </TableBody>
                   </Table>
                 </div>
@@ -828,271 +616,6 @@ const SpecialistDashboard = () => {
         </div>
       </div>
 
-      {/* Add/Edit Patient Dialog */}
-      <Dialog 
-        open={isAddingPatient || isEditingPatient} 
-        onOpenChange={(open) => {
-          if (!open) {
-            setIsAddingPatient(false);
-            setIsEditingPatient(false);
-          }
-        }}
-      >
-        <DialogContent className="max-w-3xl">
-          <DialogHeader>
-            <DialogTitle>
-              {isAddingPatient ? 'إضافة مريض جديد' : 'تعديل بيانات المريض'}
-            </DialogTitle>
-          </DialogHeader>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="name">اسم المريض</Label>
-                <Input 
-                  id="name"
-                  name="name"
-                  value={currentPatient.name}
-                  onChange={handleInputChange}
-                  placeholder="الاسم الكامل"
-                  required
-                />
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="age">العمر</Label>
-                  <Input 
-                    id="age"
-                    name="age"
-                    type="number"
-                    value={currentPatient.age}
-                    onChange={handleInputChange}
-                    placeholder="العمر"
-                    required
-                  />
-                </div>
-                
-                <div>
-                  <Label htmlFor="gender">الجنس</Label>
-                  <select
-                    id="gender"
-                    name="gender"
-                    value={currentPatient.gender}
-                    onChange={handleInputChange}
-                    className="w-full rounded-md border border-gray-300 p-2 focus:ring-2 focus:ring-medical-500 focus:border-transparent"
-                    required
-                  >
-                    <option value="" disabled>اختر</option>
-                    <option value="ذكر">ذكر</option>
-                    <option value="أنثى">أنثى</option>
-                  </select>
-                </div>
-              </div>
-              
-              <div>
-                <Label htmlFor="phone">رقم الهاتف</Label>
-                <Input 
-                  id="phone"
-                  name="phone"
-                  value={currentPatient.phone}
-                  onChange={handleInputChange}
-                  placeholder="رقم الهاتف"
-                  required
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="condition">الحالة</Label>
-                <Input 
-                  id="condition"
-                  name="condition"
-                  value={currentPatient.condition}
-                  onChange={handleInputChange}
-                  placeholder="وصف الحالة"
-                  required
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="deviceType">نوع الجهاز</Label>
-                <select
-                  id="deviceType"
-                  name="deviceType"
-                  value={currentPatient.deviceType}
-                  onChange={handleInputChange}
-                  className="w-full rounded-md border border-gray-300 p-2 focus:ring-2 focus:ring-medical-500 focus:border-transparent"
-                  required
-                >
-                  <option value="" disabled>اختر نوع الجهاز</option>
-                  <option value="جبيرة AFO">جبيرة الكاحل والقدم (AFO)</option>
-                  <option value="جبيرة KAFO">جبيرة الركبة والكاحل والقدم (KAFO)</option>
-                  <option value="طرف صناعي تحت الركبة">طرف صناعي تحت الركبة</option>
-                  <option value="طرف صناعي فوق الركبة">طرف صناعي فوق الركبة</option>
-                </select>
-              </div>
-              
-              <div>
-                <Label htmlFor="status">الحالة</Label>
-                <select
-                  id="status"
-                  name="status"
-                  value={currentPatient.status}
-                  onChange={handleInputChange}
-                  className="w-full rounded-md border border-gray-300 p-2 focus:ring-2 focus:ring-medical-500 focus:border-transparent"
-                  required
-                >
-                  <option value="جديد">جديد</option>
-                  <option value="نشط">نشط</option>
-                  <option value="تحت المراقبة">تحت المراقبة</option>
-                </select>
-              </div>
-            </div>
-            
-            <div className="space-y-4">
-              {currentPatient.deviceType && (
-                <div>
-                  <Label className="mb-2 block">القياسات</Label>
-                  <div className="space-y-2 max-h-40 overflow-y-auto p-2 bg-gray-50 rounded-md">
-                    {measurementFields[currentPatient.deviceType]?.map((field) => (
-                      <div key={field.id} className="flex items-center">
-                        <Label htmlFor={field.id} className="w-1/2 text-sm">
-                          {field.label}:
-                        </Label>
-                        <div className="flex-1 flex items-center">
-                          <Input 
-                            id={field.id}
-                            value={currentPatient.measurements[field.id] || ''}
-                            onChange={(e) => handleMeasurementChange(field.id, e.target.value)}
-                            placeholder="القيمة"
-                            className="text-sm py-1"
-                          />
-                          {field.unit && (
-                            <span className="mr-2 text-sm text-gray-500">{field.unit}</span>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="lastVisit">تاريخ آخر زيارة</Label>
-                  <Input 
-                    id="lastVisit"
-                    name="lastVisit"
-                    type="date"
-                    value={currentPatient.lastVisit}
-                    onChange={handleInputChange}
-                  />
-                </div>
-                
-                <div>
-                  <Label htmlFor="nextVisit">تاريخ الزيارة القادمة</Label>
-                  <Input 
-                    id="nextVisit"
-                    name="nextVisit"
-                    type="date"
-                    value={currentPatient.nextVisit}
-                    onChange={handleInputChange}
-                  />
-                </div>
-              </div>
-              
-              <div>
-                <Label htmlFor="notes">ملاحظات</Label>
-                <Textarea 
-                  id="notes"
-                  name="notes"
-                  value={currentPatient.notes}
-                  onChange={handleInputChange}
-                  placeholder="ملاحظات إضافية"
-                  rows={3}
-                />
-              </div>
-              
-              <div>
-                <Label className="mb-2 block">الملفات المرفقة</Label>
-                <div className="space-y-2">
-                  {currentPatient.files.length > 0 ? (
-                    <div className="space-y-2 max-h-32 overflow-y-auto p-2 bg-gray-50 rounded-md">
-                      {currentPatient.files.map((file, index) => (
-                        <div key={index} className="flex items-center justify-between text-sm">
-                          <span className="flex items-center">
-                            <FileText className="h-4 w-4 mr-2 text-gray-500" />
-                            {file}
-                          </span>
-                          <div className="flex space-x-2 rtl:space-x-reverse">
-                            <Button 
-                              variant="ghost" 
-                              size="sm"
-                              onClick={() => handleDownloadFile(file)}
-                            >
-                              <Download className="h-4 w-4" />
-                            </Button>
-                            <Button 
-                              variant="ghost" 
-                              size="sm"
-                              onClick={() => handleDeleteFile(file)}
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-gray-500 text-sm">لا يوجد ملفات مرفقة</div>
-                  )}
-                  
-                  <Button 
-                    variant="outline" 
-                    className="mt-2 w-full"
-                    onClick={simulateFileUpload}
-                    disabled={uploadingFile}
-                  >
-                    {uploadingFile ? (
-                      <span className="flex items-center">
-                        <svg className="animate-spin -ml-1 mr-3 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        جاري الرفع...
-                      </span>
-                    ) : (
-                      <span className="flex items-center">
-                        <FileUp className="h-4 w-4 mr-2" />
-                        رفع ملف
-                      </span>
-                    )}
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <DialogFooter>
-            <Button 
-              variant="outline"
-              onClick={() => {
-                setIsAddingPatient(false);
-                setIsEditingPatient(false);
-              }}
-              className="ml-2"
-            >
-              إلغاء
-            </Button>
-            <Button onClick={handleSavePatient} className="medical-btn">
-              <Save className="h-4 w-4 mr-2" />
-              حفظ
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* View Patient Dialog */}
       {/* Add/Edit Patient Dialog */}
       <Dialog
         open={isAddingPatient || isEditingPatient}
@@ -1287,7 +810,8 @@ const SpecialistDashboard = () => {
             >
               إلغاء
             </Button>
-            <Button onClick={handleSavePatient}>
+            <Button onClick={handleSavePatient} className="medical-btn">
+              <Save className="h-4 w-4 mr-2" />
               {isAddingPatient ? 'إضافة المريض' : 'حفظ التغييرات'}
             </Button>
           </DialogFooter>
@@ -1498,7 +1022,6 @@ const SpecialistDashboard = () => {
             </Button>
           </DialogFooter>
         </DialogContent>
-      </Dialog>
       </Dialog>
 
       <Footer />
