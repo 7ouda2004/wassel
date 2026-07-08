@@ -1,17 +1,20 @@
-// Vercel Serverless Function — Cloud Registration Database
-// This function stores registration data in Vercel's edge cache using a simple
-// JSON blob approach. All data is stored in a single blob for simplicity.
+// Vercel Serverless Function — Cloud Registration Database proxy
+// This proxies database operations to the jsonbin-zeta.vercel.app storage bin.
+// This solves all CORS issues because the browser talks to the same origin (Vercel).
 
-// In-memory fallback — Vercel serverless functions are stateless between invocations,
-// so we use an external free JSON storage that supports CORS from server-side.
-const STORAGE_URL = 'https://extendsclass.com/api/json-storage/bin/aefffdb';
+const STORAGE_URL = 'https://jsonbin-zeta.vercel.app/api/bins/WEnPaFzwcT';
 
 // Helper: Get the whole DB from cloud
 async function getDb() {
   try {
     const res = await fetch(STORAGE_URL);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return await res.json();
+    const data = await res.json();
+    return {
+      registration_requests: data.registration_requests || [],
+      specialists: data.specialists || [],
+      centers: data.centers || []
+    };
   } catch (err) {
     console.error('getDb error:', err);
     return { registration_requests: [], specialists: [], centers: [] };
