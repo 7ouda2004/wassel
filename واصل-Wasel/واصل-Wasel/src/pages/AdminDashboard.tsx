@@ -65,6 +65,8 @@ const EGYPT_GOVERNORATES = [
 ];
 
 const AdminDashboard = () => {
+  const isUpdatingRef = React.useRef(false);
+
   // Centers state
   const [centers, setCenters] = useState<Center[]>([]);
   const [isAddingCenter, setIsAddingCenter] = useState(false);
@@ -92,6 +94,7 @@ const AdminDashboard = () => {
   const [pendingRequests, setPendingRequests] = useState<RegistrationRequest[]>([]);
 
   const loadData = async () => {
+    if (isUpdatingRef.current) return;
     try {
       await syncDatabase();
       setCenters(getLocalCenters());
@@ -168,6 +171,7 @@ const AdminDashboard = () => {
 
   // Helper to sync local state and storage with Cloud Database
   const syncWithCloud = async (updatedSpecs: Specialist[], updatedCenters: Center[]) => {
+    isUpdatingRef.current = true;
     setSpecialists(updatedSpecs);
     setCenters(updatedCenters);
     saveLocalSpecialists(updatedSpecs);
@@ -176,6 +180,10 @@ const AdminDashboard = () => {
       await uploadLocalData(updatedSpecs, updatedCenters);
     } catch (e) {
       console.error('syncWithCloud error:', e);
+    } finally {
+      setTimeout(() => {
+        isUpdatingRef.current = false;
+      }, 1000);
     }
   };
 
@@ -248,52 +256,80 @@ const AdminDashboard = () => {
 
   // --- Supabase Cloud Registration Requests Handlers ---
   const handleApproveSpecRequest = async (req: RegistrationRequest) => {
-    const ok = await approveSpecialistInDb(req);
-    if (ok) {
-      toast.success(`تم قبول وتفعيل حساب الأخصائي: ${req.full_name}`);
-      if (req.phone) {
-        const waPhone = formatPhoneForWhatsapp(req.phone);
-        const textMessage = `مرحباً بك أخصائي ${req.full_name}، تم قبول طلب انضمامك وتفعيل حسابك بنجاح في منصة واصل! يمكنك الآن تسجيل الدخول واستخدام لوحة التحكم الخاصة بك. أهلاً بك في عائلة واصل!`;
-        window.open(`https://api.whatsapp.com/send?phone=${waPhone}&text=${encodeURIComponent(textMessage)}`, '_blank');
+    isUpdatingRef.current = true;
+    try {
+      const ok = await approveSpecialistInDb(req);
+      if (ok) {
+        toast.success(`تم قبول وتفعيل حساب الأخصائي: ${req.full_name}`);
+        if (req.phone) {
+          const waPhone = formatPhoneForWhatsapp(req.phone);
+          const textMessage = `مرحباً بك أخصائي ${req.full_name}، تم قبول طلب انضمامك وتفعيل حسابك بنجاح في منصة واصل! يمكنك الآن تسجيل الدخول واستخدام لوحة التحكم الخاصة بك. أهلاً بك في عائلة واصل!`;
+          window.open(`https://api.whatsapp.com/send?phone=${waPhone}&text=${encodeURIComponent(textMessage)}`, '_blank');
+        }
+        await loadData();
+      } else {
+        toast.error('حدث خطأ أثناء تفعيل الحساب.');
       }
-      loadData();
-    } else {
-      toast.error('حدث خطأ أثناء تفعيل الحساب.');
+    } finally {
+      setTimeout(() => {
+        isUpdatingRef.current = false;
+      }, 1000);
     }
   };
 
   const handleRejectSpecRequest = async (req: RegistrationRequest) => {
-    const ok = await rejectRequest(req.id);
-    if (ok) {
-      toast.error(`تم رفض حساب: ${req.full_name}`);
-      loadData();
-    } else {
-      toast.error('حدث خطأ أثناء رفض الطلب.');
+    isUpdatingRef.current = true;
+    try {
+      const ok = await rejectRequest(req.id);
+      if (ok) {
+        toast.error(`تم رفض حساب: ${req.full_name}`);
+        await loadData();
+      } else {
+        toast.error('حدث خطأ أثناء رفض الطلب.');
+      }
+    } finally {
+      setTimeout(() => {
+        isUpdatingRef.current = false;
+      }, 1000);
     }
   };
 
   const handleApproveCenterRequest = async (req: RegistrationRequest) => {
-    const ok = await approveCenterInDb(req);
-    if (ok) {
-      toast.success(`تم قبول وتفعيل فرع: ${req.center_name || req.full_name}`);
-      if (req.phone) {
-        const waPhone = formatPhoneForWhatsapp(req.phone);
-        const textMessage = `مرحباً بك! تم قبول طلب تسجيل مركزكم "${req.center_name || req.full_name}" وتفعيله بنجاح في منصة واصل!`;
-        window.open(`https://api.whatsapp.com/send?phone=${waPhone}&text=${encodeURIComponent(textMessage)}`, '_blank');
+    isUpdatingRef.current = true;
+    try {
+      const ok = await approveCenterInDb(req);
+      if (ok) {
+        toast.success(`تم قبول وتفعيل فرع: ${req.center_name || req.full_name}`);
+        if (req.phone) {
+          const waPhone = formatPhoneForWhatsapp(req.phone);
+          const textMessage = `مرحباً بك! تم قبول طلب تسجيل مركزكم "${req.center_name || req.full_name}" وتفعيله بنجاح في منصة واصل!`;
+          window.open(`https://api.whatsapp.com/send?phone=${waPhone}&text=${encodeURIComponent(textMessage)}`, '_blank');
+        }
+        await loadData();
+      } else {
+        toast.error('حدث خطأ أثناء تفعيل المركز.');
       }
-      loadData();
-    } else {
-      toast.error('حدث خطأ أثناء تفعيل المركز.');
+    } finally {
+      setTimeout(() => {
+        isUpdatingRef.current = false;
+      }, 1000);
     }
   };
 
   const handleRejectCenterRequest = async (req: RegistrationRequest) => {
-    const ok = await rejectRequest(req.id);
-    if (ok) {
-      toast.error(`تم رفض فرع: ${req.center_name || req.full_name}`);
-      loadData();
-    } else {
-      toast.error('حدث خطأ أثناء رفض الطلب.');
+    isUpdatingRef.current = true;
+    try {
+      const ok = await rejectRequest(req.id);
+      if (ok) {
+        toast.error(`تم رفض فرع: ${req.center_name || req.full_name}`);
+        await loadData();
+      } else {
+        toast.error('حدث خطأ أثناء رفض الطلب.');
+      }
+    } finally {
+      setTimeout(() => {
+        isUpdatingRef.current = false;
+      }, 1000);
     }
   };
 

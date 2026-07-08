@@ -8,8 +8,10 @@
 
 import { defaultSpecialists, defaultCenters, type Specialist, type Center } from './db';
 
-// Use relative path so it works on both localhost and Vercel
-const API_BASE = '/api/registrations';
+// Use relative path on production, fallback to Vercel URL on localhost to enable CORS-enabled database writes
+const API_BASE = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+  ? 'https://wassel-phi.vercel.app/api/registrations'
+  : '/api/registrations';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
