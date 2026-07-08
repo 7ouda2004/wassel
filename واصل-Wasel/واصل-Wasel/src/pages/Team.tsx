@@ -15,9 +15,10 @@ const Team = () => {
     document.documentElement.dir = 'rtl';
     document.body.classList.add('font-cairo');
     window.scrollTo(0, 0);
-    // Load active specialists only
+    // Load only the first 3 active specialists (core founding team)
     const all = getLocalSpecialists();
-    setSpecialists(all.filter(s => s.status === 'active'));
+    const active = all.filter(s => s.status === 'active');
+    setSpecialists(active.slice(0, 3));
   }, []);
 
   return (

@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { MapPin, Phone, Clock, ChevronRight, Search, Filter } from 'lucide-react';
+import { MapPin, Phone, Clock, ChevronRight, Search, Users, ExternalLink, Calendar } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 
-import { getLocalCenters, type Center } from '@/lib/db';
+import { getLocalCenters, getLocalSpecialists, type Center, type Specialist } from '@/lib/db';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 const regions = ['الكل', 'القاهرة الكبرى', 'الإسكندرية', 'الدلتا', 'الصعيد', 'القناة', 'الحدود'];
 
@@ -18,11 +19,18 @@ const Centers = () => {
   const [filteredCenters, setFilteredCenters] = useState<Center[]>([]);
   const [expandedLocation, setExpandedLocation] = useState<string | null>(null);
 
+  // Specialists state
+  const [specialists, setSpecialists] = useState<Specialist[]>([]);
+  const [selectedSpec, setSelectedSpec] = useState<Specialist | null>(null);
+
   useEffect(() => {
     document.documentElement.dir = 'rtl';
     document.body.classList.add('font-cairo');
     window.scrollTo(0, 0);
     setCentersList(getLocalCenters());
+    // Load all active specialists from DB
+    const activeSpecs = getLocalSpecialists().filter(s => s.status === 'active');
+    setSpecialists(activeSpecs);
   }, []);
 
   useEffect(() => {
@@ -184,64 +192,93 @@ const Centers = () => {
                   
                   {expandedLocation === locationName && (
                     <div className="p-6 bg-gray-50/30 border-t border-gray-100 grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {locationCenters.map(center => (
-                        <motion.div
-                          key={center.id}
-                          initial={{ opacity: 0, y: 15 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.3 }}
-                          className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 flex flex-col justify-between"
-                        >
-                          <img
-                            src={center.image || '/images/ortho.png'}
-                            alt={center.name}
-                            className="w-full h-40 object-cover"
-                            onError={(e) => {
-                              // fallback if image not found
-                              e.currentTarget.src = '/images/ortho.png';
-                            }}
-                          />
-                          <div className="p-5 flex-grow flex flex-col justify-between">
-                            <div>
-                              <h3 className="text-lg font-bold text-gray-900 mb-3">{center.name}</h3>
-                              <div className="space-y-2 mb-5 text-sm text-gray-600">
-                                <div className="flex items-start">
-                                  <MapPin className="h-4 w-4 ml-2 mt-0.5 text-medical-500 flex-shrink-0" />
-                                  <span>{center.address}</span>
+                      {locationCenters.map(center => {
+                        const centerSpecs = specialists.filter(s => s.centerId === center.id);
+                        return (
+                          <motion.div
+                            key={center.id}
+                            initial={{ opacity: 0, y: 15 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.3 }}
+                            className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 flex flex-col justify-between"
+                          >
+                            <img
+                              src={center.image || '/images/ortho.png'}
+                              alt={center.name}
+                              className="w-full h-40 object-cover"
+                              onError={(e) => {
+                                e.currentTarget.src = '/images/ortho.png';
+                              }}
+                            />
+                            <div className="p-5 flex-grow flex flex-col justify-between">
+                              <div>
+                                <h3 className="text-lg font-bold text-gray-900 mb-3">{center.name}</h3>
+                                <div className="space-y-2 mb-4 text-sm text-gray-600">
+                                  <div className="flex items-start">
+                                    <MapPin className="h-4 w-4 ml-2 mt-0.5 text-medical-500 flex-shrink-0" />
+                                    <span>{center.address}</span>
+                                  </div>
+                                  <div className="flex items-center">
+                                    <Phone className="h-4 w-4 ml-2 text-medical-500 flex-shrink-0" />
+                                    <span>{center.phone}</span>
+                                  </div>
+                                  <div className="flex items-start">
+                                    <Clock className="h-4 w-4 ml-2 mt-0.5 text-medical-500 flex-shrink-0" />
+                                    <span>{center.workingHours}</span>
+                                  </div>
                                 </div>
-                                <div className="flex items-center">
-                                  <Phone className="h-4 w-4 ml-2 text-medical-500 flex-shrink-0" />
-                                  <span>{center.phone}</span>
-                                </div>
-                                <div className="flex items-start">
-                                  <Clock className="h-4 w-4 ml-2 mt-0.5 text-medical-500 flex-shrink-0" />
-                                  <span>{center.workingHours}</span>
-                                </div>
+
+                                {/* Specialists list for this specific center */}
+                                {centerSpecs.length > 0 && (
+                                  <div className="border-t pt-3 mt-3 mb-4">
+                                    <h4 className="text-xs font-bold text-gray-400 mb-2 font-cairo flex items-center gap-1">
+                                      <Users className="h-3.5 w-3.5 text-medical-500" />
+                                      الأخصائيون المعتمدون بالفرع:
+                                    </h4>
+                                    <div className="flex flex-wrap gap-1.5">
+                                      {centerSpecs.map(spec => (
+                                        <button
+                                          key={spec.id}
+                                          onClick={() => setSelectedSpec(spec)}
+                                          className="flex items-center gap-1.5 bg-gray-50 hover:bg-medical-50 border border-gray-100 hover:border-medical-200 rounded-full px-2 py-0.5 transition-all text-xs text-gray-700"
+                                        >
+                                          <img
+                                            src={spec.image || '/images/new.jpg'}
+                                            alt={spec.name}
+                                            className="h-5 w-5 rounded-full object-cover border"
+                                            onError={(e) => { e.currentTarget.src = '/images/new.jpg'; }}
+                                          />
+                                          <span className="font-bold line-clamp-1">{spec.name}</span>
+                                        </button>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                              <div className="flex gap-2">
+                                <a 
+                                  href={`tel:${center.phone}`} 
+                                  className="flex-1"
+                                >
+                                  <Button variant="outline" className="w-full text-xs py-2">
+                                    اتصال هاتفي
+                                  </Button>
+                                </a>
+                                <a 
+                                  href={`https://wa.me/${center.phone.replace(/[^0-9]/g, '')}`} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer" 
+                                  className="flex-1"
+                                >
+                                  <Button className="w-full text-xs py-2 bg-green-600 hover:bg-green-700 text-white border-none">
+                                    واتساب
+                                  </Button>
+                                </a>
                               </div>
                             </div>
-                            <div className="flex gap-2">
-                              <a 
-                                href={`tel:${center.phone}`} 
-                                className="flex-1"
-                              >
-                                <Button variant="outline" className="w-full text-xs py-2">
-                                  اتصال هاتفي
-                                </Button>
-                              </a>
-                              <a 
-                                href={`https://wa.me/${center.phone.replace(/[^0-9]/g, '')}`} 
-                                target="_blank" 
-                                rel="noopener noreferrer" 
-                                className="flex-1"
-                              >
-                                <Button className="w-full text-xs py-2 bg-green-600 hover:bg-green-700 text-white border-none">
-                                  واتساب
-                                </Button>
-                              </a>
-                            </div>
-                          </div>
-                        </motion.div>
-                      ))}
+                          </motion.div>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
@@ -249,6 +286,114 @@ const Centers = () => {
             ) : (
               <div className="text-center bg-white p-12 rounded-xl shadow-sm border border-gray-100">
                 <MapPin className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                <p className="text-gray-500 text-lg">لا توجد مراكز مطابقة لبحثك في المحافظات المحددة.</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* Accredited Specialists Grid Section at the bottom */}
+      {specialists.length > 0 && (
+        <section className="py-16 bg-white border-t border-gray-100">
+          <div className="container mx-auto px-4">
+            <div className="max-w-4xl mx-auto text-center mb-10">
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3 font-cairo">فريق أخصائيي واصل المعتمدين بالفروع</h2>
+              <p className="text-gray-600 text-sm md:text-base max-w-xl mx-auto font-medium">تضم شبكتنا نخبة من أفضل الأخصائيين المعتمدين في فروعنا لمتابعة وتأهيل الحالات حركياً.</p>
+            </div>
+            
+            <div className="max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-4">
+              {specialists.map(spec => (
+                <motion.div
+                  key={spec.id}
+                  whileHover={{ y: -5 }}
+                  onClick={() => setSelectedSpec(spec)}
+                  className="bg-gray-50/50 hover:bg-medical-50/30 border border-gray-100 hover:border-medical-200 p-4 rounded-xl text-center cursor-pointer transition-all duration-300 flex flex-col items-center justify-between"
+                >
+                  <div className="flex flex-col items-center">
+                    <img
+                      src={spec.image || '/images/new.jpg'}
+                      alt={spec.name}
+                      className="h-16 w-16 rounded-full object-cover border-2 border-white shadow-xs mb-3"
+                      onError={(e) => { e.currentTarget.src = '/images/new.jpg'; }}
+                    />
+                    <h3 className="font-bold text-sm text-gray-900 line-clamp-1">{spec.name}</h3>
+                    <p className="text-xs text-gray-550 mt-1 line-clamp-1">{spec.role}</p>
+                  </div>
+                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full mt-3 inline-block">
+                    {spec.centerName || 'فرع معتمد'}
+                  </span>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Specialist Details Dialog */}
+      <Dialog open={selectedSpec !== null} onOpenChange={(o) => { if (!o) setSelectedSpec(null); }}>
+        <DialogContent className="max-w-md font-cairo">
+          <DialogHeader>
+            <DialogTitle className="text-center font-bold text-xl text-gray-900">الملف التعريفي للأخصائي</DialogTitle>
+          </DialogHeader>
+          
+          {selectedSpec && (
+            <div className="py-4 text-center">
+              <img
+                src={selectedSpec.image || '/images/new.jpg'}
+                alt={selectedSpec.name}
+                className="w-24 h-24 rounded-full object-cover mx-auto border-4 border-medical-50 shadow-md mb-4"
+                onError={(e) => { e.currentTarget.src = '/images/new.jpg'; }}
+              />
+              <h3 className="text-xl font-bold text-gray-900 mb-1">{selectedSpec.name}</h3>
+              <p className="text-sm text-medical-600 font-semibold mb-4">{selectedSpec.role}</p>
+              
+              {selectedSpec.centerName && (
+                <div className="bg-emerald-50 text-emerald-850 px-3 py-1.5 rounded-lg text-xs font-bold inline-flex items-center gap-1 mb-4">
+                  <MapPin className="h-3.5 w-3.5" />
+                  يعمل لدى: {selectedSpec.centerName}
+                </div>
+              )}
+
+              <div className="text-right space-y-4 border-t pt-4 mt-2">
+                <div>
+                  <h4 className="font-bold text-sm text-gray-900 mb-1">نبذة عن الأخصائي:</h4>
+                  <p className="text-sm text-gray-600 leading-relaxed font-semibold">{selectedSpec.bio || 'أخصائي معتمد لدى شبكة واصل الطبية للأطراف الصناعية والأجهزة التقويمية.'}</p>
+                </div>
+
+                {selectedSpec.expertise && selectedSpec.expertise.length > 0 && (
+                  <div>
+                    <h4 className="font-bold text-sm text-gray-900 mb-2">مجالات التخصص:</h4>
+                    <div className="flex flex-wrap gap-1.5">
+                      {selectedSpec.expertise.map((exp, i) => (
+                        <span key={i} className="text-xs bg-medical-50 text-medical-800 px-2.5 py-1 rounded-full font-bold">
+                          {exp}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {selectedSpec.phone && (
+                  <div className="flex items-center justify-between bg-gray-50 p-3 rounded-lg border">
+                    <span className="text-sm font-bold text-gray-700">رقم الهاتف للتواصل:</span>
+                    <a href={`tel:${selectedSpec.phone}`} className="text-sm font-bold text-medical-600 hover:underline font-mono">
+                      {selectedSpec.phone}
+                    </a>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <Footer />
+    </div>
+  );
+};
+
+export default Centers;0 mx-auto mb-4" />
                 <p className="text-gray-500 text-lg">لا توجد مراكز مطابقة لبحثك في المحافظات المحددة.</p>
               </div>
             )}
