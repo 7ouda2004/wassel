@@ -60,6 +60,11 @@ const AdminDashboard = () => {
   const [confirmDeleteSpec, setConfirmDeleteSpec] = useState<string | null>(null);
   const [specExpertiseInput, setSpecExpertiseInput] = useState('');
 
+  const loadData = () => {
+    setCenters(getLocalCenters());
+    setSpecialists(getLocalSpecialists());
+  };
+
   useEffect(() => {
     document.documentElement.dir = 'rtl';
     document.body.classList.add('font-cairo');
@@ -72,8 +77,27 @@ const AdminDashboard = () => {
       return;
     }
 
-    setCenters(getLocalCenters());
-    setSpecialists(getLocalSpecialists());
+    loadData();
+
+    // Auto-refresh when specialists/centers register from another tab or same browser
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'specialists' || e.key === 'centers') {
+        loadData();
+        toast.info('📩 تم استلام طلب انضمام جديد! تحقق من قائمة الطلبات.');
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+
+    // Poll every 5 seconds to catch same-tab registrations
+    const pollInterval = setInterval(() => {
+      setCenters(getLocalCenters());
+      setSpecialists(getLocalSpecialists());
+    }, 5000);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(pollInterval);
+    };
   }, []);
 
   // Format Egypt Phone Numbers to International Standard for WhatsApp API
@@ -287,8 +311,24 @@ const AdminDashboard = () => {
           <div>
             <h1 className="text-3xl font-bold text-gray-900 font-cairo">لوحة تحكم المسؤول (الادمن)</h1>
             <p className="text-gray-655 mt-1 font-semibold text-sm">إدارة الأخصائيين المعتمدين، قبول الفروع، وتفعيل أو تعطيل الحسابات مع إمكانية التغيير في أي وقت</p>
+            {(specialists.some(s => s.status === 'pending') || centers.some(c => c.status === 'pending')) && (
+              <div className="mt-2 flex items-center gap-2">
+                <span className="animate-pulse inline-flex items-center gap-1.5 bg-amber-100 text-amber-800 text-xs font-bold px-3 py-1 rounded-full border border-amber-300">
+                  🔔 يوجد {specialists.filter(s => s.status === 'pending').length + centers.filter(c => c.status === 'pending').length} طلب انضمام جديد ينتظر موافقتك
+                </span>
+              </div>
+            )}
           </div>
-          <Building className="h-10 w-10 text-red-500 hidden sm:block" />
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => { loadData(); toast.success('تم تحديث البيانات'); }}
+              className="flex items-center gap-1.5 text-sm text-red-600 border border-red-300 rounded-lg px-3 py-1.5 hover:bg-red-50 transition-colors"
+              title="تحديث البيانات يدوياً"
+            >
+              🔄 تحديث
+            </button>
+            <Building className="h-10 w-10 text-red-500 hidden sm:block" />
+          </div>
         </div>
 
         <Tabs defaultValue="specs">
