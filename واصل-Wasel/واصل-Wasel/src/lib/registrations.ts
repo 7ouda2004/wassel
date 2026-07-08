@@ -165,7 +165,9 @@ export async function syncDatabase() {
         image: dbSpec.image || '/images/new.jpg',
         expertise: dbSpec.expertise || [],
         status: dbSpec.status || 'active',
-        phone: dbSpec.phone
+        phone: dbSpec.phone,
+        centerId: dbSpec.centerId || dbSpec.center_id,
+        centerName: dbSpec.centerName || dbSpec.center_name
       };
 
       const idx = mergedSpecs.findIndex(s => s.username === mappedSpec.username);
@@ -216,3 +218,31 @@ export async function syncDatabase() {
     console.error('syncDatabase error:', err);
   }
 }
+
+// ─── Upload Local Database to Cloud ──────────────────────────────────────────
+
+export async function uploadLocalData(specialists: Specialist[], centers: Center[]): Promise<boolean> {
+  try {
+    // 1. Get full db to preserve registration requests
+    const dbRes = await fetch(`${API_BASE}?action=db`);
+    if (!dbRes.ok) return false;
+    const db = await dbRes.json();
+
+    // 2. Overwrite specialists and centers with the latest local data
+    db.specialists = specialists;
+    db.centers = centers;
+
+    // 3. Save back to cloud via the update_db action
+    const saveRes = await fetch(`${API_BASE}?action=update_db`, {
+      method: 'POST',
+      body: JSON.stringify({ db }),
+      headers: { 'Content-Type': 'application/json' }
+    });
+
+    return saveRes.ok;
+  } catch (err) {
+    console.error('uploadLocalData error:', err);
+    return false;
+  }
+}
+

@@ -383,6 +383,8 @@ export interface Specialist {
   facebook?: string;
   instagram?: string;
   linkedin?: string;
+  centerId?: string;
+  centerName?: string;
 }
 
 export const defaultSpecialists: Specialist[] = [

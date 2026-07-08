@@ -36,7 +36,7 @@ import {
 } from '@/lib/db';
 import { 
   getPendingRequests, approveSpecialistInDb, approveCenterInDb, 
-  rejectRequest, type RegistrationRequest, syncDatabase 
+  rejectRequest, type RegistrationRequest, syncDatabase, uploadLocalData 
 } from '@/lib/registrations';
 
 const AdminDashboard = () => {
@@ -58,7 +58,8 @@ const AdminDashboard = () => {
   const [isEditingSpec, setIsEditingSpec] = useState(false);
   const [currentSpec, setCurrentSpec] = useState<Specialist>({
     id: '', name: '', username: '', password: '', role: '', bio: '',
-    image: '/images/new.jpg', expertise: [], status: 'active', phone: ''
+    image: '/images/new.jpg', expertise: [], status: 'active', phone: '',
+    centerId: '', centerName: ''
   });
   const [specSearchTerm, setSpecSearchTerm] = useState('');
   const [confirmDeleteSpec, setConfirmDeleteSpec] = useState<string | null>(null);
@@ -139,13 +140,27 @@ const AdminDashboard = () => {
     setConfirmDeleteCenter(id);
   };
 
+  // Helper to sync local state and storage with Cloud Database
+  const syncWithCloud = async (updatedSpecs: Specialist[], updatedCenters: Center[]) => {
+    setSpecialists(updatedSpecs);
+    setCenters(updatedCenters);
+    saveLocalSpecialists(updatedSpecs);
+    saveLocalCenters(updatedCenters);
+    try {
+      await uploadLocalData(updatedSpecs, updatedCenters);
+    } catch (e) {
+      console.error('syncWithCloud error:', e);
+    }
+  };
+
   const confirmDeleteCenterFn = () => {
     if (confirmDeleteCenter) {
       const updated = centers.filter(c => c.id !== confirmDeleteCenter);
-      setCenters(updated);
-      saveLocalCenters(updated);
+      // Remove this center association from specialists too
+      const updatedSpecs = specialists.map(s => s.centerId === confirmDeleteCenter ? { ...s, centerId: '', centerName: '' } : s);
+      syncWithCloud(updatedSpecs, updated);
       setConfirmDeleteCenter(null);
-      toast.success('تم حذف المركز نهائياً من قاعدة البيانات');
+      toast.success('تم حذف المركز نهائياً من قاعدة البيانات السحابية');
     }
   };
 
@@ -168,22 +183,26 @@ const AdminDashboard = () => {
     let updated: Center[];
     if (isAddingCenter) {
       updated = [...centers, centerWithFallback];
-      toast.success('تم إضافة المركز بنجاح');
+      toast.success('تم إضافة المركز سحابياً بنجاح');
     } else {
       updated = centers.map(c => c.id === currentCenter.id ? centerWithFallback : c);
-      toast.success('تم تعديل بيانات المركز بنجاح');
+      // Update center name for assigned specialists too
+      const updatedSpecs = specialists.map(s => s.centerId === currentCenter.id ? { ...s, centerName: currentCenter.name } : s);
+      syncWithCloud(updatedSpecs, updated);
+      setIsAddingCenter(false);
+      setIsEditingCenter(false);
+      toast.success('تم تعديل بيانات المركز وسينك السحابي بنجاح');
+      return;
     }
 
-    setCenters(updated);
-    saveLocalCenters(updated);
+    syncWithCloud(specialists, updated);
     setIsAddingCenter(false);
     setIsEditingCenter(false);
   };
 
   const handleApproveCenter = (center: Center) => {
     const updated = centers.map(c => c.id === center.id ? { ...c, status: 'active' as const } : c);
-    setCenters(updated);
-    saveLocalCenters(updated);
+    syncWithCloud(specialists, updated);
     toast.success(`تم قبول وتفعيل فرع: ${center.name}`);
 
     // Send WhatsApp notification
@@ -197,8 +216,7 @@ const AdminDashboard = () => {
 
   const handleRejectCenter = (center: Center) => {
     const updated = centers.map(c => c.id === center.id ? { ...c, status: 'rejected' as const } : c);
-    setCenters(updated);
-    saveLocalCenters(updated);
+    syncWithCloud(specialists, updated);
     toast.error(`تم تعطيل ورفض فرع: ${center.name}`);
   };
 
@@ -268,7 +286,9 @@ const AdminDashboard = () => {
       phone: '',
       facebook: '',
       instagram: '',
-      linkedin: ''
+      linkedin: '',
+      centerId: '',
+      centerName: ''
     });
     setSpecExpertiseInput('');
     setIsAddingSpec(true);
@@ -287,16 +307,25 @@ const AdminDashboard = () => {
   const confirmDeleteSpecFn = () => {
     if (confirmDeleteSpec) {
       const updated = specialists.filter(s => s.id !== confirmDeleteSpec);
-      setSpecialists(updated);
-      saveLocalSpecialists(updated);
+      syncWithCloud(updated, centers);
       setConfirmDeleteSpec(null);
-      toast.success('تم حذف حساب الأخصائي نهائياً');
+      toast.success('تم حذف حساب الأخصائي نهائياً وسينك السحابي بنجاح');
     }
   };
 
-  const handleSpecInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleSpecInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setCurrentSpec(prev => ({ ...prev, [name]: value }));
+    
+    if (name === 'centerId') {
+      const selectedCenter = centers.find(c => c.id === value);
+      setCurrentSpec(prev => ({
+        ...prev,
+        centerId: value,
+        centerName: selectedCenter ? selectedCenter.name : ''
+      }));
+    } else {
+      setCurrentSpec(prev => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleSaveSpec = () => {
@@ -328,16 +357,14 @@ const AdminDashboard = () => {
       toast.success('تم تعديل حساب الأخصائي بنجاح');
     }
 
-    setSpecialists(updatedList);
-    saveLocalSpecialists(updatedList);
+    syncWithCloud(updatedList, centers);
     setIsAddingSpec(false);
     setIsEditingSpec(false);
   };
 
   const handleApproveSpec = (spec: Specialist) => {
     const updated = specialists.map(s => s.id === spec.id ? { ...s, status: 'active' as const } : s);
-    setSpecialists(updated);
-    saveLocalSpecialists(updated);
+    syncWithCloud(updated, centers);
     toast.success(`تم قبول وتفعيل حساب الأخصائي: ${spec.name}`);
 
     // Send WhatsApp notification
@@ -351,8 +378,7 @@ const AdminDashboard = () => {
 
   const handleRejectSpec = (spec: Specialist) => {
     const updated = specialists.map(s => s.id === spec.id ? { ...s, status: 'rejected' as const } : s);
-    setSpecialists(updated);
-    saveLocalSpecialists(updated);
+    syncWithCloud(updated, centers);
     toast.error(`تم تعطيل ورفض حساب: ${spec.name}`);
   };
 
@@ -467,7 +493,7 @@ const AdminDashboard = () => {
 
             {/* B. Active Specialists List */}
             <div className="bg-white rounded-xl border p-6 mb-8">
-              <h2 className="text-lg font-bold text-gray-900 mb-4">الأخصائيين المعتمدين والنشطين</h2>
+              <h2 className="text-lg font-bold text-gray-900 mb-4 font-cairo">الأخصائيين المعتمدين والنشطين</h2>
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
@@ -475,7 +501,9 @@ const AdminDashboard = () => {
                       <TableHead className="text-right">الصورة</TableHead>
                       <TableHead className="text-right">الاسم</TableHead>
                       <TableHead className="text-right">اسم المستخدم</TableHead>
+                      <TableHead className="text-right">كلمة المرور</TableHead>
                       <TableHead className="text-right">الدور / التخصص</TableHead>
+                      <TableHead className="text-right">المركز التابع له</TableHead>
                       <TableHead className="text-right">الهاتف</TableHead>
                       <TableHead className="text-right">الإجراءات</TableHead>
                     </TableRow>
@@ -496,15 +524,17 @@ const AdminDashboard = () => {
                             />
                           </TableCell>
                           <TableCell className="font-semibold">{spec.name}</TableCell>
-                          <TableCell className="text-gray-500 font-mono">{spec.username}</TableCell>
+                          <TableCell className="text-blue-700 font-mono font-bold bg-blue-50 px-2 py-0.5 rounded text-center inline-block mt-2">{spec.username}</TableCell>
+                          <TableCell className="text-gray-700 font-mono font-semibold select-all">{spec.password || 'لا يوجد'}</TableCell>
                           <TableCell>{spec.role}</TableCell>
+                          <TableCell className="font-semibold text-emerald-700">{spec.centerName || 'غير معين'}</TableCell>
                           <TableCell>{spec.phone || '-'}</TableCell>
                           <TableCell>
                             <div className="flex gap-1">
                               <Button variant="outline" size="sm" onClick={() => handleEditSpec(spec)} className="h-8">
                                 تعديل
                               </Button>
-                              <Button variant="destructive" size="sm" onClick={() => handleRejectSpec(spec)} className="h-8 bg-amber-600 hover:bg-amber-700">
+                              <Button variant="destructive" size="sm" onClick={() => handleRejectSpec(spec)} className="h-8 bg-amber-600 hover:bg-amber-700 text-white">
                                 تعطيل/رفض
                               </Button>
                               <Button variant="ghost" size="sm" onClick={() => handleDeleteSpec(spec.id)} className="h-8 text-red-600 hover:bg-red-50">
@@ -522,7 +552,7 @@ const AdminDashboard = () => {
             {/* C. Rejected/Deactivated Specialists List */}
             {specialists.some(s => s.status === 'rejected') && (
               <div className="bg-red-50/30 rounded-xl border border-red-200 p-6">
-                <h2 className="text-lg font-bold text-red-900 mb-4 flex items-center gap-2">
+                <h2 className="text-lg font-bold text-red-900 mb-4 flex items-center gap-2 font-cairo">
                   <AlertTriangle className="h-5 w-5 text-red-605" />
                   حسابات الأخصائيين المرفوضة / المعطلة (يمكن إعادة تفعيلها)
                 </h2>
@@ -532,6 +562,8 @@ const AdminDashboard = () => {
                       <TableRow>
                         <TableHead className="text-right">الاسم</TableHead>
                         <TableHead className="text-right">اسم المستخدم</TableHead>
+                        <TableHead className="text-right">كلمة المرور</TableHead>
+                        <TableHead className="text-right">المركز التابع له</TableHead>
                         <TableHead className="text-right">الهاتف</TableHead>
                         <TableHead className="text-right">الإجراءات</TableHead>
                       </TableRow>
@@ -543,6 +575,8 @@ const AdminDashboard = () => {
                           <TableRow key={spec.id}>
                             <TableCell className="font-bold text-gray-500 line-through">{spec.name}</TableCell>
                             <TableCell className="text-gray-400 font-mono">{spec.username}</TableCell>
+                            <TableCell className="text-gray-400 font-mono">{spec.password || 'لا يوجد'}</TableCell>
+                            <TableCell className="text-gray-400">{spec.centerName || 'غير معين'}</TableCell>
                             <TableCell>{spec.phone || '-'}</TableCell>
                             <TableCell>
                               <div className="flex gap-2">
@@ -757,16 +791,37 @@ const AdminDashboard = () => {
                 <Input id="spec-name" name="name" value={currentSpec.name} onChange={handleSpecInputChange} required />
               </div>
               <div>
-                <Label htmlFor="spec-username">اسم المستخدم *</Label>
-                <Input id="spec-username" name="username" value={currentSpec.username} onChange={handleSpecInputChange} required />
+                <Label htmlFor="spec-username">اسم المستخدم (للدخول) *</Label>
+                <Input id="spec-username" name="username" value={currentSpec.username} onChange={handleSpecInputChange} required className="font-mono font-bold text-blue-700" />
               </div>
               <div>
-                <Label htmlFor="spec-password">كلمة المرور {isEditingSpec && '(اتركه فارغاً لعدم التعديل)'}</Label>
-                <Input id="spec-password" name="password" type="password" value={currentSpec.password || ''} onChange={handleSpecInputChange} />
+                <Label htmlFor="spec-password">كلمة المرور {isEditingSpec && <span className="text-xs text-gray-400">(اتركه فارغاً لإبقاء القديمة)</span>}</Label>
+                <Input id="spec-password" name="password" type="text" value={currentSpec.password || ''} onChange={handleSpecInputChange} className="font-mono" placeholder="أدخل كلمة المرور" />
               </div>
               <div>
                 <Label htmlFor="spec-phone">رقم الهاتف *</Label>
                 <Input id="spec-phone" name="phone" value={currentSpec.phone || ''} onChange={handleSpecInputChange} required />
+              </div>
+              <div>
+                <Label htmlFor="spec-center">تعيين الأخصائي لمركز</Label>
+                <select
+                  id="spec-center"
+                  name="centerId"
+                  value={currentSpec.centerId || ''}
+                  onChange={handleSpecInputChange}
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <option value="">— بدون مركز —</option>
+                  {centers
+                    .filter(c => c.status === 'active')
+                    .map(c => (
+                      <option key={c.id} value={c.id}>{c.name} ({c.location})</option>
+                    ))
+                  }
+                </select>
+                {currentSpec.centerName && (
+                  <p className="text-xs text-emerald-600 mt-1">✓ معين في: {currentSpec.centerName}</p>
+                )}
               </div>
             </div>
 

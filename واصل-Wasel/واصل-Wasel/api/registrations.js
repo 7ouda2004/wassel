@@ -56,22 +56,33 @@ export default async function handler(req, res) {
   Object.entries(corsHeaders()).forEach(([k, v]) => res.setHeader(k, v));
 
   const { action } = req.query;
+  const currentAction = action || (req.body && req.body.action);
 
   try {
+    // POST /api/registrations?action=update_db — update full db (specs & centers)
+    if (req.method === 'POST' && currentAction === 'update_db') {
+      const newDb = req.body.db;
+      if (!newDb) {
+        return res.status(400).json({ ok: false, error: 'محتوى قاعدة البيانات مفقود' });
+      }
+      const ok = await saveDb(newDb);
+      return res.status(200).json({ ok });
+    }
+
     // GET /api/registrations?action=pending — get all pending requests
-    if (req.method === 'GET' && action === 'pending') {
+    if (req.method === 'GET' && currentAction === 'pending') {
       const db = await getDb();
       return res.status(200).json(db.registration_requests || []);
     }
 
     // GET /api/registrations?action=db — get full db for sync
-    if (req.method === 'GET' && action === 'db') {
+    if (req.method === 'GET' && currentAction === 'db') {
       const db = await getDb();
       return res.status(200).json(db);
     }
 
     // POST /api/registrations?action=submit — submit a new request
-    if (req.method === 'POST' && action === 'submit') {
+    if (req.method === 'POST' && currentAction === 'submit') {
       const db = await getDb();
       const body = req.body;
 
@@ -94,7 +105,7 @@ export default async function handler(req, res) {
     }
 
     // POST /api/registrations?action=approve — approve a request
-    if (req.method === 'POST' && action === 'approve') {
+    if (req.method === 'POST' && currentAction === 'approve') {
       const { id, type } = req.body;
       const db = await getDb();
 
@@ -119,7 +130,9 @@ export default async function handler(req, res) {
           image: reqItem.image || '/images/new.jpg',
           expertise: [],
           status: 'active',
-          phone: reqItem.phone
+          phone: reqItem.phone,
+          centerId: reqItem.centerId || reqItem.center_id,
+          centerName: reqItem.centerName || reqItem.center_name
         });
       } else if (reqItem.type === 'center') {
         db.centers = db.centers || [];
@@ -141,7 +154,7 @@ export default async function handler(req, res) {
     }
 
     // POST /api/registrations?action=reject — reject a request
-    if (req.method === 'POST' && action === 'reject') {
+    if (req.method === 'POST' && currentAction === 'reject') {
       const { id } = req.body;
       const db = await getDb();
 
@@ -158,7 +171,7 @@ export default async function handler(req, res) {
     }
 
     // POST /api/registrations?action=check_username — check if username is taken
-    if (req.method === 'POST' && action === 'check_username') {
+    if (req.method === 'POST' && currentAction === 'check_username') {
       const { username } = req.body;
       const db = await getDb();
 
