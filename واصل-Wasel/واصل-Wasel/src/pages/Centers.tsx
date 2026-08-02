@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 
-import { getLocalCenters, getLocalSpecialists, type Center, type Specialist, EGYPT_GOVERNORATES, FALLBACK_CENTER_IMAGES, FALLBACK_SPECIALIST_IMAGES } from '@/lib/db';
+import { getLocalCenters, getLocalSpecialists, type Center, type Specialist, EGYPT_GOVERNORATES, FALLBACK_CENTER_IMAGES, FALLBACK_SPECIALIST_IMAGES, DEFAULT_AVATAR } from '@/lib/db';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 const REGIONS = ['الكل', 'القاهرة الكبرى', 'الإسكندرية', 'الدلتا', 'الصعيد', 'القناة', 'الحدود'] as const;
@@ -304,10 +304,10 @@ const Centers = () => {
                                               className="flex items-center gap-2 bg-gray-50 hover:bg-medical-50 border border-gray-200/80 hover:border-medical-200 rounded-xl px-2.5 py-1.5 transition-all text-xs group"
                                             >
                                               <img
-                                                src={spec.image || FALLBACK_SPECIALIST_IMAGES[0]}
+                                                src={spec.image || DEFAULT_AVATAR}
                                                 alt={spec.name}
                                                 className="h-6 w-6 rounded-full object-cover border border-white shadow-xs"
-                                                onError={(e) => { e.currentTarget.src = FALLBACK_SPECIALIST_IMAGES[0]; }}
+                                                onError={(e) => { e.currentTarget.src = DEFAULT_AVATAR; }}
                                               />
                                               <span className="font-bold text-gray-800 text-[11px]">{spec.name}</span>
                                             </button>
@@ -431,10 +431,10 @@ const Centers = () => {
           {selectedSpec && (
             <div className="py-2 text-center">
               <img
-                src={selectedSpec.image || FALLBACK_SPECIALIST_IMAGES[0]}
+                src={selectedSpec.image || DEFAULT_AVATAR}
                 alt={selectedSpec.name}
                 className="w-24 h-24 rounded-full object-cover mx-auto border-3 border-medical-100 shadow-md mb-3"
-                onError={(e) => { e.currentTarget.src = FALLBACK_SPECIALIST_IMAGES[0]; }}
+                onError={(e) => { e.currentTarget.src = DEFAULT_AVATAR; }}
               />
               
               <h3 className="text-xl font-bold text-gray-900 mb-0.5">{selectedSpec.name}</h3>

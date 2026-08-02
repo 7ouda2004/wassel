@@ -90,11 +90,13 @@ export const FALLBACK_CENTER_IMAGES = [
   'https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=1000&q=80'
 ];
 
+export const DEFAULT_AVATAR = '/images/default_avatar.jpg';
+
 export const FALLBACK_SPECIALIST_IMAGES = [
+  '/images/default_avatar.jpg',
   'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=600&q=80',
   'https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&w=600&q=80',
-  'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=600&q=80',
-  'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&w=600&q=80'
+  'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=600&q=80'
 ];
 
 export const DEFAULT_CASES: CaseStudy[] = [
