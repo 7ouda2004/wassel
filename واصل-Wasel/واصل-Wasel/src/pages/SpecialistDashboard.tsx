@@ -56,7 +56,7 @@ const samplePatients: Patient[] = [
     name: 'أحمد محمد',
     age: 35,
     gender: 'ذكر',
-    phone: '01012345678',
+    phone: '01119056895',
     condition: 'بتر تحت الركبة - الساق اليمنى',
     deviceType: 'طرف صناعي تحت الركبة',
     measurements: {
@@ -77,7 +77,7 @@ const samplePatients: Patient[] = [
     name: 'فاطمة خالد',
     age: 28,
     gender: 'أنثى',
-    phone: '01098765432',
+    phone: '01119056895',
     condition: 'ضعف عضلات القدم والكاحل',
     deviceType: 'جبيرة AFO',
     measurements: {

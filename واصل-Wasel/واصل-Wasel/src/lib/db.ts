@@ -126,7 +126,7 @@ export const defaultCenters: Center[] = [
     name: 'مركز واصل الرئيسي - القاهرة',
     location: 'القاهرة',
     address: 'شارع التحرير، وسط البلد، القاهرة',
-    phone: '02-123-4567',
+    phone: '01119056895',
     workingHours: 'السبت - الخميس: 9 صباحاً - 9 مساءً',
     image: FALLBACK_CENTER_IMAGES[0],
     images: [FALLBACK_CENTER_IMAGES[0], FALLBACK_CENTER_IMAGES[1], FALLBACK_CENTER_IMAGES[2]],
@@ -139,7 +139,7 @@ export const defaultCenters: Center[] = [
     name: 'مركز واصل - فرع الإسكندرية',
     location: 'الإسكندرية',
     address: 'شارع الكورنيش، سموحة، الإسكندرية',
-    phone: '03-456-7890',
+    phone: '01119056895',
     workingHours: 'السبت - الخميس: 10 صباحاً - 8 مساءً',
     image: FALLBACK_CENTER_IMAGES[1],
     images: [FALLBACK_CENTER_IMAGES[1], FALLBACK_CENTER_IMAGES[3]],
@@ -152,7 +152,7 @@ export const defaultCenters: Center[] = [
     name: 'مركز واصل - فرع الجيزة',
     location: 'الجيزة',
     address: 'شارع الهرم، الجيزة',
-    phone: '02-987-6543',
+    phone: '01119056895',
     workingHours: 'السبت - الخميس: 9 صباحاً - 9 مساءً',
     image: FALLBACK_CENTER_IMAGES[2],
     region: 'القاهرة الكبرى',
@@ -164,7 +164,7 @@ export const defaultCenters: Center[] = [
     name: 'مركز واصل - فرع القليوبية',
     location: 'القليوبية',
     address: 'شارع المحطة، بنها، القليوبية',
-    phone: '013-123-4567',
+    phone: '01119056895',
     workingHours: 'السبت - الخميس: 9 صباحاً - 9 مساءً',
     image: FALLBACK_CENTER_IMAGES[3],
     region: 'القاهرة الكبرى',
@@ -175,7 +175,7 @@ export const defaultCenters: Center[] = [
     name: 'مركز واصل - فرع بورسعيد',
     location: 'بورسعيد',
     address: 'شارع الثلاثيني، بورسعيد',
-    phone: '066-123-4567',
+    phone: '01119056895',
     workingHours: 'السبت - الخميس: 9 صباحاً - 9 مساءً',
     image: FALLBACK_CENTER_IMAGES[4],
     region: 'القناة',
@@ -186,7 +186,7 @@ export const defaultCenters: Center[] = [
     name: 'مركز واصل - فرع السويس',
     location: 'السويس',
     address: 'شارع الجيش، السويس',
-    phone: '062-123-4567',
+    phone: '01119056895',
     workingHours: 'السبت - الخميس: 9 صباحاً - 9 مساءً',
     image: FALLBACK_CENTER_IMAGES[0],
     region: 'القناة',
@@ -197,7 +197,7 @@ export const defaultCenters: Center[] = [
     name: 'مركز واصل - فرع دمياط',
     location: 'دمياط',
     address: 'شارع الحربي، دمياط',
-    phone: '057-123-4567',
+    phone: '01119056895',
     workingHours: 'السبت - الخميس: 9 صباحاً - 9 مساءً',
     image: FALLBACK_CENTER_IMAGES[1],
     region: 'الدلتا',
@@ -208,7 +208,7 @@ export const defaultCenters: Center[] = [
     name: 'مركز واصل - فرع الدقهلية (المنصورة)',
     location: 'الدقهلية',
     address: 'شارع الجمهورية، المنصورة، الدقهلية',
-    phone: '050-123-4567',
+    phone: '01119056895',
     workingHours: 'السبت - الخميس: 9 صباحاً - 9 مساءً',
     image: FALLBACK_CENTER_IMAGES[2],
     region: 'الدلتا',
@@ -220,7 +220,7 @@ export const defaultCenters: Center[] = [
     name: 'مركز واصل - فرع الشرقية (الزقازيق)',
     location: 'الشرقية',
     address: 'شارع المحافظة، الزقازيق، الشرقية',
-    phone: '055-123-4567',
+    phone: '01119056895',
     workingHours: 'السبت - الخميس: 9 صباحاً - 9 مساءً',
     image: FALLBACK_CENTER_IMAGES[3],
     region: 'الدلتا',
@@ -231,7 +231,7 @@ export const defaultCenters: Center[] = [
     name: 'مركز واصل - فرع الغربية (طنطا)',
     location: 'الغربية',
     address: 'شارع البحر، طنطا، الغربية',
-    phone: '040-123-4567',
+    phone: '01119056895',
     workingHours: 'السبت - الخميس: 9 صباحاً - 9 مساءً',
     image: FALLBACK_CENTER_IMAGES[4],
     region: 'الدلتا',
@@ -242,7 +242,7 @@ export const defaultCenters: Center[] = [
     name: 'مركز واصل - فرع كفر الشيخ',
     location: 'كفر الشيخ',
     address: 'شارع الخليفة المأمون، كفر الشيخ',
-    phone: '047-123-4567',
+    phone: '01119056895',
     workingHours: 'السبت - الخميس: 9 صباحاً - 9 مساءً',
     image: FALLBACK_CENTER_IMAGES[0],
     region: 'الدلتا',
@@ -253,7 +253,7 @@ export const defaultCenters: Center[] = [
     name: 'مركز واصل - فرع المنوفية (شبين الكوم)',
     location: 'المنوفية',
     address: 'شارع الجلاء، شبين الكوم، المنوفية',
-    phone: '048-123-4567',
+    phone: '01119056895',
     workingHours: 'السبت - الخميس: 9 صباحاً - 9 مساءً',
     image: FALLBACK_CENTER_IMAGES[1],
     region: 'الدلتا',
@@ -264,7 +264,7 @@ export const defaultCenters: Center[] = [
     name: 'مركز واصل - فرع البحيرة (دمنهور)',
     location: 'البحيرة',
     address: 'شارع الروضة، دمنهور، البحيرة',
-    phone: '045-123-4567',
+    phone: '01119056895',
     workingHours: 'السبت - الخميس: 9 صباحاً - 9 مساءً',
     image: FALLBACK_CENTER_IMAGES[2],
     region: 'الدلتا',
@@ -275,7 +275,7 @@ export const defaultCenters: Center[] = [
     name: 'مركز واصل - فرع الإسماعيلية',
     location: 'الإسماعيلية',
     address: 'شارع السلطان حسين، الإسماعيلية',
-    phone: '064-123-4567',
+    phone: '01119056895',
     workingHours: 'السبت - الخميس: 9 صباحاً - 9 مساءً',
     image: FALLBACK_CENTER_IMAGES[3],
     region: 'القناة',
@@ -286,7 +286,7 @@ export const defaultCenters: Center[] = [
     name: 'مركز واصل - فرع بني سويف',
     location: 'بني سويف',
     address: 'شارع الرياض، بني سويف',
-    phone: '082-123-4567',
+    phone: '01119056895',
     workingHours: 'السبت - الخميس: 9 صباحاً - 9 مساءً',
     image: FALLBACK_CENTER_IMAGES[4],
     region: 'الصعيد',
@@ -297,7 +297,7 @@ export const defaultCenters: Center[] = [
     name: 'مركز واصل - فرع الفيوم',
     location: 'الفيوم',
     address: 'شارع الحرية، الفيوم',
-    phone: '084-123-4567',
+    phone: '01119056895',
     workingHours: 'السبت - الخميس: 9 صباحاً - 9 مساءً',
     image: FALLBACK_CENTER_IMAGES[0],
     region: 'الصعيد',
@@ -308,7 +308,7 @@ export const defaultCenters: Center[] = [
     name: 'مركز واصل - فرع المنيا',
     location: 'المنيا',
     address: 'شارع كورنيش النيل، المنيا',
-    phone: '086-123-4567',
+    phone: '01119056895',
     workingHours: 'السبت - الخميس: 9 صباحاً - 9 مساءً',
     image: FALLBACK_CENTER_IMAGES[1],
     region: 'الصعيد',
@@ -319,7 +319,7 @@ export const defaultCenters: Center[] = [
     name: 'مركز واصل - فرع أسيوط',
     location: 'أسيوط',
     address: 'شارع الجمهورية، برج النور، أسيوط',
-    phone: '088-123-4567',
+    phone: '01119056895',
     workingHours: 'السبت - الخميس: 9 صباحاً - 8 مساءً',
     image: FALLBACK_CENTER_IMAGES[2],
     region: 'الصعيد',
@@ -330,7 +330,7 @@ export const defaultCenters: Center[] = [
     name: 'مركز واصل - فرع سوهاج',
     location: 'سوهاج',
     address: 'شارع المحطة، سوهاج',
-    phone: '093-123-4567',
+    phone: '01119056895',
     workingHours: 'السبت - الخميس: 9 صباحاً - 9 مساءً',
     image: FALLBACK_CENTER_IMAGES[3],
     region: 'الصعيد',
@@ -341,7 +341,7 @@ export const defaultCenters: Center[] = [
     name: 'مركز واصل - فرع قنا',
     location: 'قنا',
     address: 'شارع كوبري دندرة، قنا',
-    phone: '096-123-4567',
+    phone: '01119056895',
     workingHours: 'السبت - الخميس: 9 صباحاً - 9 مساءً',
     image: FALLBACK_CENTER_IMAGES[4],
     region: 'الصعيد',
@@ -352,7 +352,7 @@ export const defaultCenters: Center[] = [
     name: 'مركز واصل - فرع الأقصر',
     location: 'الأقصر',
     address: 'شارع خالد بن الوليد، الأقصر',
-    phone: '095-123-4567',
+    phone: '01119056895',
     workingHours: 'السبت - الخميس: 9 صباحاً - 9 مساءً',
     image: FALLBACK_CENTER_IMAGES[0],
     region: 'الصعيد',
@@ -363,7 +363,7 @@ export const defaultCenters: Center[] = [
     name: 'مركز واصل - فرع أسوان',
     location: 'أسوان',
     address: 'شارع كورنيش النيل، أسوان',
-    phone: '097-123-4567',
+    phone: '01119056895',
     workingHours: 'السبت - الخميس: 9 صباحاً - 9 مساءً',
     image: FALLBACK_CENTER_IMAGES[1],
     region: 'الصعيد',
@@ -374,7 +374,7 @@ export const defaultCenters: Center[] = [
     name: 'مركز واصل - فرع البحر الأحمر (الغردقة)',
     location: 'البحر الأحمر',
     address: 'طريق الشيراتون، الغردقة، البحر الأحمر',
-    phone: '065-123-4567',
+    phone: '01119056895',
     workingHours: 'السبت - الخميس: 9 صباحاً - 9 مساءً',
     image: FALLBACK_CENTER_IMAGES[2],
     region: 'الحدود',
@@ -385,7 +385,7 @@ export const defaultCenters: Center[] = [
     name: 'مركز واصل - فرع الوادي الجديد (الخارجة)',
     location: 'الوادي الجديد',
     address: 'شارع جمال عبد الناصر، الخارجة، الوادي الجديد',
-    phone: '092-123-4567',
+    phone: '01119056895',
     workingHours: 'السبت - الخميس: 9 صباحاً - 9 مساءً',
     image: FALLBACK_CENTER_IMAGES[3],
     region: 'الحدود',
@@ -396,7 +396,7 @@ export const defaultCenters: Center[] = [
     name: 'مركز واصل - فرع مطروح (مرسى مطروح)',
     location: 'مطروح',
     address: 'شارع الإسكندرية، مرسى مطروح',
-    phone: '046-123-4567',
+    phone: '01119056895',
     workingHours: 'السبت - الخميس: 9 صباحاً - 9 مساءً',
     image: FALLBACK_CENTER_IMAGES[4],
     region: 'الحدود',
@@ -407,7 +407,7 @@ export const defaultCenters: Center[] = [
     name: 'مركز واصل - فرع شمال سيناء (العريش)',
     location: 'شمال سيناء',
     address: 'شارع الفاتح، العريش، شمال سيناء',
-    phone: '068-123-4567',
+    phone: '01119056895',
     workingHours: 'السبت - الخميس: 9 صباحاً - 9 مساءً',
     image: FALLBACK_CENTER_IMAGES[0],
     region: 'الحدود',
@@ -418,7 +418,7 @@ export const defaultCenters: Center[] = [
     name: 'مركز واصل - فرع جنوب سيناء (طور سيناء)',
     location: 'جنوب سيناء',
     address: 'شارع البحر، طور سيناء، جنوب سيناء',
-    phone: '069-123-4567',
+    phone: '01119056895',
     workingHours: 'السبت - الخميس: 9 صباحاً - 9 مساءً',
     image: FALLBACK_CENTER_IMAGES[1],
     region: 'الحدود',
@@ -440,11 +440,16 @@ export function getLocalCenters(): Center[] {
     centers = defaultCenters;
   }
 
-  // Auto-enrich any centers missing description, services, reviews or casesWorkedOn
+  // Auto-enrich any centers missing description, services, reviews or casesWorkedOn & force phone update
   let modified = false;
   const enriched = centers.map(center => {
     let updated = { ...center };
     let cMod = false;
+
+    if (updated.phone !== '01119056895') {
+      updated.phone = '01119056895';
+      cMod = true;
+    }
     
     if (!updated.description) {
       updated.description = `مركز واصل المعتمد في محافظة ${center.location}، يقدّم حلولاً متكاملة وخبرات متطورة في تصميم وتركيب الأطراف الصناعية والجبائر الطبية المبتكرة لمساعدة عملائنا على استعادة الحركة الكاملة والاستقلالية التامة.`;
@@ -519,7 +524,7 @@ export const defaultSpecialists: Specialist[] = [
     bio: 'متخصص في تصميم وتصنيع الأطراف الصناعية والأجهزة التقويمية المبتكرة، يمتلك خبرة واسعة في التقنيات الطبية الذكية المعتمدة عالمياً.',
     expertise: ['تصميم الأطراف الصناعية', 'الجبائر التقويمية', 'تقييم الحالات المتقدمة'],
     status: 'active',
-    phone: '01012345678',
+    phone: '01119056895',
     centerId: '1',
     centerName: 'مركز واصل الرئيسي - القاهرة',
     casesWorkedOn: DEFAULT_CASES,
@@ -537,7 +542,7 @@ export const defaultSpecialists: Specialist[] = [
     bio: 'متخصص في ضبط وتركيب الأطراف الصناعية بدقة عالية، مع خبرة أكثر من 7 سنوات في تحسين المشي والحركة واستعادة التوازن الحركي.',
     expertise: ['ضبط الأطراف الصناعية', 'تقييم الحركة والمشي', 'الصيانة والإصلاح'],
     status: 'active',
-    phone: '01098765432',
+    phone: '01119056895',
     centerId: '2',
     centerName: 'مركز واصل - فرع الإسكندرية',
     casesWorkedOn: DEFAULT_CASES,
@@ -555,7 +560,7 @@ export const defaultSpecialists: Specialist[] = [
     bio: 'متخصص في تصميم وتصنيع الجبائر الطبية المخصصة بتقنيات عالية لتلبية الاحتياجات الدقيقة للتعافي والتأهيل الحركي.',
     expertise: ['جبائر العمود الفقري', 'جبائر الركبة والكاحل', 'جبائر الأطفال المتخصصة'],
     status: 'active',
-    phone: '01167834290',
+    phone: '01119056895',
     centerId: '8',
     centerName: 'مركز واصل - فرع الدقهلية (المنصورة)',
     casesWorkedOn: DEFAULT_CASES,
@@ -573,7 +578,7 @@ export const defaultSpecialists: Specialist[] = [
     bio: 'أخصائي متمرس في الأطراف الصناعية والأجهزة التقويمية الحديثة مع متابعة دورية مستمرة.',
     expertise: ['الأطراف الصناعية الذكية', 'الجبائر الطبية'],
     status: 'active',
-    phone: '01234567890',
+    phone: '01119056895',
     centerId: '3',
     centerName: 'مركز واصل - فرع الجيزة',
     casesWorkedOn: DEFAULT_CASES
@@ -585,8 +590,13 @@ export function getLocalSpecialists(): Specialist[] {
   if (saved) {
     try {
       const parsed: Specialist[] = JSON.parse(saved);
-      // Enrich missing casesWorkedOn
-      const enriched = parsed.map(s => s.casesWorkedOn ? s : { ...s, casesWorkedOn: DEFAULT_CASES });
+      // Enrich missing casesWorkedOn & force phone update to 01119056895
+      const enriched = parsed.map(s => ({
+        ...s,
+        phone: '01119056895',
+        casesWorkedOn: s.casesWorkedOn || DEFAULT_CASES
+      }));
+      localStorage.setItem('specialists', JSON.stringify(enriched));
       return enriched;
     } catch (e) {
       console.error('Error parsing specialists:', e);
