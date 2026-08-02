@@ -40,7 +40,7 @@ const CenterDetails = () => {
 
   const galleryImages = (center.images && center.images.length > 0) 
     ? center.images 
-    : [center.image || FALLBACK_CENTER_IMAGES[0], FALLBACK_CENTER_IMAGES[1], FALLBACK_CENTER_IMAGES[2]];
+    : (center.image ? [center.image] : []);
 
   const casesList = center.casesWorkedOn && center.casesWorkedOn.length > 0 ? center.casesWorkedOn : DEFAULT_CASES;
 
@@ -57,13 +57,23 @@ const CenterDetails = () => {
             {/* Image Slider */}
             <div className="w-full lg:w-1/2">
               <div className="relative h-80 rounded-3xl overflow-hidden shadow-2xl border border-white/10 group">
-                <img
-                  src={galleryImages[activeImageIndex] || FALLBACK_CENTER_IMAGES[0]}
-                  alt={center.name}
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                  onError={(e) => { e.currentTarget.src = FALLBACK_CENTER_IMAGES[0]; }}
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                {galleryImages.length > 0 ? (
+                  <>
+                    <img
+                      src={galleryImages[activeImageIndex]}
+                      alt={center.name}
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                      onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                  </>
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-medical-800 to-medical-950">
+                    <Building2 className="w-16 h-16 text-medical-400 mb-3" />
+                    <span className="text-sm text-medical-300 font-bold">فرع واصل المعتمد</span>
+                    <span className="text-xs text-medical-400/70 mt-1">{center.location}</span>
+                  </div>
+                )}
                 <div className="absolute bottom-4 right-4">
                   <span className="bg-white/90 backdrop-blur-md text-gray-900 text-xs font-bold px-3 py-1 rounded-full shadow-sm">
                     {center.location} ({center.region})
@@ -246,18 +256,7 @@ const CenterDetails = () => {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-              {(centerSpecs.length > 0 ? centerSpecs : [
-                {
-                  id: 'spec_def',
-                  name: 'د. محمود إبراهيم',
-                  role: 'أخصائي أطراف صناعية وجبائر تقويمية',
-                  image: DEFAULT_AVATAR,
-                  bio: 'خبرة متخصصة في تأهيل وتصميم الأجهزة الحركية والطرفية الذكية.',
-                  expertise: ['الأطراف الصناعية', 'الجبائر الطبية'],
-                  phone: center.phone,
-                  status: 'active'
-                }
-              ]).map((spec) => (
+              {centerSpecs.length > 0 ? centerSpecs.map((spec) => (
                 <div 
                   key={spec.id} 
                   onClick={() => {
@@ -281,7 +280,13 @@ const CenterDetails = () => {
                     <ChevronRight className="w-4 h-4 mr-1 rtl:rotate-180" />
                   </div>
                 </div>
-              ))}
+              )) : (
+                <div className="col-span-full text-center py-10 bg-slate-50/50 rounded-2xl border border-dashed border-gray-300">
+                  <Users className="w-10 h-10 text-gray-300 mx-auto mb-3" />
+                  <p className="text-gray-500 font-bold text-sm">لم يتم إضافة أخصائيين بعد</p>
+                  <p className="text-gray-400 text-xs mt-1">سيتم إضافة الأخصائيين المعتمدين لهذا الفرع قريباً</p>
+                </div>
+              )}
             </div>
           </div>
 
@@ -327,21 +332,10 @@ const CenterDetails = () => {
                 {/* Specialists Sidebar Selector */}
                 <div className="w-full md:w-1/3 bg-slate-50 border-b md:border-b-0 md:border-l border-gray-200 p-4 overflow-y-auto space-y-3 max-h-48 md:max-h-none">
                   <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wider block mb-1 px-1">
-                    أخصائيو الفرع المتاحون ({centerSpecs.length || 1})
+                    أخصائيو الفرع المتاحون ({centerSpecs.length})
                   </span>
 
-                  {(centerSpecs.length > 0 ? centerSpecs : [
-                    {
-                      id: 'spec_def',
-                      name: 'د. محمود إبراهيم',
-                      role: 'أخصائي أطراف صناعية وجبائر تقويمية',
-                      image: DEFAULT_AVATAR,
-                      bio: 'خبرة متخصصة في تأهيل وتصميم الأجهزة الحركية والطرفية الذكية.',
-                      expertise: ['الأطراف الصناعية', 'الجبائر الطبية'],
-                      phone: center.phone,
-                      status: 'active'
-                    }
-                  ]).map((spec) => {
+                  {centerSpecs.length > 0 ? centerSpecs.map((spec) => {
                     const isSelected = selectedSpecialist?.id === spec.id;
                     return (
                       <button
@@ -367,7 +361,12 @@ const CenterDetails = () => {
                         </div>
                       </button>
                     );
-                  })}
+                  }) : (
+                    <div className="text-center py-6 text-gray-400">
+                      <Users className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+                      <p className="text-xs font-bold">لم يتم إضافة أخصائيين بعد</p>
+                    </div>
+                  )}
                 </div>
 
                 {/* Right Area: Selected Specialist Full Detailed Profile */}

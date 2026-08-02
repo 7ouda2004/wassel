@@ -81,22 +81,12 @@ export const EGYPT_GOVERNORATES = [
   'الإسماعيلية'
 ] as const;
 
-// High quality reliable mobility & medical image URLs from Unsplash
-export const FALLBACK_CENTER_IMAGES = [
-  'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=1000&q=80',
-  'https://images.unsplash.com/photo-1586773860418-d37222d8fce3?auto=format&fit=crop&w=1000&q=80',
-  'https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=1000&q=80',
-  'https://images.unsplash.com/photo-1538108149393-fbbd81895907?auto=format&fit=crop&w=1000&q=80',
-  'https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=1000&q=80'
-];
+export const FALLBACK_CENTER_IMAGES: string[] = [];
 
 export const DEFAULT_AVATAR = '/images/default_avatar.jpg';
 
 export const FALLBACK_SPECIALIST_IMAGES = [
-  '/images/default_avatar.jpg',
-  'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=600&q=80',
-  'https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&w=600&q=80',
-  'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=600&q=80'
+  '/images/default_avatar.jpg'
 ];
 
 export const DEFAULT_CASES: CaseStudy[] = [
@@ -107,7 +97,7 @@ export const DEFAULT_CASES: CaseStudy[] = [
     patientAge: '34 سنة',
     description: 'تم أخذ المقاسات الدقيقة بتقنية المسح الضوئي وتصنيع سوكيت مخصص وساق كربونية مرنة لتقليل الصدمات أثناء المشي والجري.',
     outcome: 'استعاد المريض القدرة على المشي الطبيعي وركوب الدراجة خلال 3 أسابيع من التدريب الحركي المكثف.',
-    image: 'https://images.unsplash.com/photo-1586773860418-d37222d8fce3?auto=format&fit=crop&w=600&q=80',
+    image: '',
     date: '2026-05-15'
   },
   {
@@ -117,7 +107,7 @@ export const DEFAULT_CASES: CaseStudy[] = [
     patientAge: '7 سنوات',
     description: 'تم تصميم جبيرة خفيفة الوزن تمنع سقوط القدم وتساعد على تثبيت الركبة أثناء مراحل المشي المختلفة مع حشوة سيليكون مريحة.',
     outcome: 'تحسن اتزان الطفل بنسبة 80% وأصبح قادرًا على الذهاب للمدرسة والمشاركة في الأنشطة دون تعثر.',
-    image: 'https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=600&q=80',
+    image: '',
     date: '2026-06-10'
   }
 ];
@@ -130,8 +120,8 @@ export const defaultCenters: Center[] = [
     address: 'شارع التحرير، وسط البلد، القاهرة',
     phone: '01119056895',
     workingHours: 'السبت - الخميس: 9 صباحاً - 9 مساءً',
-    image: FALLBACK_CENTER_IMAGES[0],
-    images: [FALLBACK_CENTER_IMAGES[0], FALLBACK_CENTER_IMAGES[1], FALLBACK_CENTER_IMAGES[2]],
+    image: '',
+    images: [],
     region: 'القاهرة الكبرى',
     casesWorkedOn: DEFAULT_CASES,
     status: 'active'
@@ -143,8 +133,8 @@ export const defaultCenters: Center[] = [
     address: 'شارع الكورنيش، سموحة، الإسكندرية',
     phone: '01119056895',
     workingHours: 'السبت - الخميس: 10 صباحاً - 8 مساءً',
-    image: FALLBACK_CENTER_IMAGES[1],
-    images: [FALLBACK_CENTER_IMAGES[1], FALLBACK_CENTER_IMAGES[3]],
+    image: '',
+    images: [],
     region: 'الإسكندرية',
     casesWorkedOn: DEFAULT_CASES,
     status: 'active'

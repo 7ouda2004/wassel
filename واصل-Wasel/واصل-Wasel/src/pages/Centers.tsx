@@ -242,7 +242,6 @@ const Centers = () => {
                         <div className="p-5 bg-slate-50/50 border-t border-gray-100 grid grid-cols-1 md:grid-cols-2 gap-5">
                           {locationCenters.map((center, centerIdx) => {
                             const centerSpecs = specialists.filter(s => s.centerId === center.id || s.centerName === center.name);
-                            const displayImage = center.image || FALLBACK_CENTER_IMAGES[centerIdx % FALLBACK_CENTER_IMAGES.length];
                             
                             return (
                               <motion.div
@@ -252,17 +251,26 @@ const Centers = () => {
                                 transition={{ duration: 0.3, delay: centerIdx * 0.04 }}
                                 className="bg-white rounded-2xl shadow-xs overflow-hidden border border-gray-200/80 flex flex-col justify-between hover:border-medical-300 transition-all duration-300"
                               >
-                                {/* Center Image with Robust Fallback handling */}
+                                {/* Center Image - only show if has image */}
                                 <div className="relative h-44 bg-gray-100 overflow-hidden">
-                                  <img
-                                    src={displayImage}
-                                    alt={center.name}
-                                    className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-                                    onError={(e) => {
-                                      e.currentTarget.src = FALLBACK_CENTER_IMAGES[centerIdx % FALLBACK_CENTER_IMAGES.length];
-                                    }}
-                                  />
-                                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+                                  {center.image ? (
+                                    <>
+                                      <img
+                                        src={center.image}
+                                        alt={center.name}
+                                        className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                                        onError={(e) => {
+                                          e.currentTarget.style.display = 'none';
+                                        }}
+                                      />
+                                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+                                    </>
+                                  ) : (
+                                    <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-medical-50 to-slate-100">
+                                      <Building2 className="w-12 h-12 text-medical-300 mb-2" />
+                                      <span className="text-xs text-medical-400 font-bold">فرع واصل المعتمد</span>
+                                    </div>
+                                  )}
                                   <div className="absolute bottom-3 right-3">
                                     <span className="bg-white/95 text-gray-900 text-xs font-bold px-3 py-1 rounded-lg shadow-sm">
                                       {center.location}
@@ -368,58 +376,8 @@ const Centers = () => {
         </div>
       </section>
 
-      {/* Accredited Specialists Section - Blatchford Modern Aesthetics */}
-      {specialists.length > 0 && (
-        <section className="py-16 bg-white border-t border-gray-100">
-          <div className="container mx-auto px-4">
-            <div className="max-w-5xl mx-auto">
-              <div className="text-center mb-10">
-                <span className="text-xs font-bold text-medical-700 bg-medical-50 px-3.5 py-1 rounded-full border border-medical-100 inline-block mb-2">
-                  فريق الخبراء
-                </span>
-                <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 font-cairo">
-                  أخصائيو واصل المعتمدون بالجمهورية
-                </h2>
-                <p className="text-gray-500 text-sm max-w-xl mx-auto mt-2 font-medium">
-                  نخبة من الكوادر الطبية المتخصصة في تصميم وضبط وتقويم الأطراف والجبائر.
-                </p>
-              </div>
-              
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                {specialists.map((spec, idx) => (
-                  <motion.div
-                    key={spec.id}
-                    initial={{ opacity: 0, y: 15 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: idx * 0.04 }}
-                    viewport={{ once: true }}
-                    onClick={() => setSelectedSpec(spec)}
-                    className="bg-slate-50/70 hover:bg-white border border-gray-200/70 hover:border-medical-300 p-4 rounded-2xl text-center cursor-pointer transition-all duration-300 hover:shadow-md group flex flex-col justify-between"
-                  >
-                    <div>
-                      <div className="relative w-18 h-18 mx-auto mb-3">
-                        <img
-                          src={spec.image || FALLBACK_SPECIALIST_IMAGES[idx % FALLBACK_SPECIALIST_IMAGES.length]}
-                          alt={spec.name}
-                          className="h-18 w-18 rounded-full object-cover border-2 border-white shadow-xs mx-auto group-hover:scale-105 transition-transform duration-300"
-                          onError={(e) => { e.currentTarget.src = FALLBACK_SPECIALIST_IMAGES[idx % FALLBACK_SPECIALIST_IMAGES.length]; }}
-                        />
-                      </div>
-                      
-                      <h3 className="font-bold text-sm text-gray-900 line-clamp-1 group-hover:text-medical-700 transition-colors">{spec.name}</h3>
-                      <p className="text-[11px] text-gray-500 line-clamp-1 mt-0.5">{spec.role}</p>
-                    </div>
 
-                    <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg mt-3 inline-block border border-emerald-100">
-                      {spec.centerName || 'فرع معتمد'}
-                    </span>
-                  </motion.div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
+
 
       {/* Specialist Details Dialog */}
       <Dialog open={selectedSpec !== null} onOpenChange={(o) => { if (!o) setSelectedSpec(null); }}>

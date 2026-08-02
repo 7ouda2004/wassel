@@ -109,6 +109,9 @@ const SpecialistDashboard = () => {
   const [profileImage, setProfileImage] = useState('');
   const [profileExpertise, setProfileExpertise] = useState('');
   const [profileCases, setProfileCases] = useState<CaseStudy[]>([]);
+  const [profileFacebook, setProfileFacebook] = useState('');
+  const [profileInstagram, setProfileInstagram] = useState('');
+  const [profileLinkedin, setProfileLinkedin] = useState('');
 
   // New Case Input
   const [caseTitle, setCaseTitle] = useState('');
@@ -147,6 +150,9 @@ const SpecialistDashboard = () => {
       setProfileImage(found.image || FALLBACK_SPECIALIST_IMAGES[0]);
       setProfileExpertise(found.expertise ? found.expertise.join('، ') : '');
       setProfileCases(found.casesWorkedOn || DEFAULT_CASES);
+      setProfileFacebook(found.facebook || '');
+      setProfileInstagram(found.instagram || '');
+      setProfileLinkedin(found.linkedin || '');
 
       // Filter specialists in same center
       if (found.centerId || found.centerName) {
@@ -173,7 +179,10 @@ const SpecialistDashboard = () => {
       phone: profilePhone,
       image: profileImage || FALLBACK_SPECIALIST_IMAGES[0],
       expertise: expArray,
-      casesWorkedOn: profileCases
+      casesWorkedOn: profileCases,
+      facebook: profileFacebook,
+      instagram: profileInstagram,
+      linkedin: profileLinkedin
     };
 
     const allSpecs = getLocalSpecialists();
@@ -405,6 +414,40 @@ const SpecialistDashboard = () => {
                       rows={3}
                       className="rounded-xl"
                     />
+                  </div>
+
+                  {/* Social Media Links */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <Label className="text-xs font-bold text-gray-700 mb-1.5 block">رابط فيسبوك</Label>
+                      <Input 
+                        value={profileFacebook} 
+                        onChange={(e) => setProfileFacebook(e.target.value)}
+                        placeholder="https://facebook.com/..."
+                        className="rounded-xl h-11 text-xs"
+                        dir="ltr"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs font-bold text-gray-700 mb-1.5 block">رابط انستجرام</Label>
+                      <Input 
+                        value={profileInstagram} 
+                        onChange={(e) => setProfileInstagram(e.target.value)}
+                        placeholder="https://instagram.com/..."
+                        className="rounded-xl h-11 text-xs"
+                        dir="ltr"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs font-bold text-gray-700 mb-1.5 block">رابط لينكد إن</Label>
+                      <Input 
+                        value={profileLinkedin} 
+                        onChange={(e) => setProfileLinkedin(e.target.value)}
+                        placeholder="https://linkedin.com/in/..."
+                        className="rounded-xl h-11 text-xs"
+                        dir="ltr"
+                      />
+                    </div>
                   </div>
 
                   {/* Add Case Studies worked on */}
