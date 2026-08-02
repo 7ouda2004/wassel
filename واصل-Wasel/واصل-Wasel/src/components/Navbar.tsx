@@ -1,12 +1,13 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Menu, X, User, Phone } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { Link, useLocation } from 'react-router-dom';
+import { Menu, X, User, Phone, Home, Bone, Hand, Info, Users, MapPin, MessageCircle, Calendar, Building2 } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const location = useLocation();
 
   const toggleMenu = () => {
     setIsOpen(!isOpen);
@@ -30,23 +31,23 @@ const Navbar = () => {
   const loggedInName = sessionStorage.getItem('patientName') || sessionStorage.getItem('username') || 'مستخدم';
 
   const navLinks = [
-    { path: "/", label: "الرئيسية" },
-    { path: "/orthoses", label: "الجبائر الطبية" },
-    { path: "/prosthetics", label: "الأطراف الصناعية" },
-    { path: "/about", label: "عن التطبيق" },
-    { path: "/team", label: "فريق العمل" },
-    { path: "/locations", label: "مراكزنا" },
-    { path: "/contact", label: "تواصل معنا" },
-    { path: "/booking", label: "حجز موعد" }
+    { path: "/", label: "الرئيسية", icon: Home },
+    { path: "/orthoses", label: "الجبائر الطبية", icon: Bone },
+    { path: "/prosthetics", label: "الأطراف الصناعية", icon: Hand },
+    { path: "/about", label: "عن التطبيق", icon: Info },
+    { path: "/team", label: "فريق العمل", icon: Users },
+    { path: "/centers", label: "مراكزنا", icon: Building2 },
+    { path: "/contact", label: "تواصل معنا", icon: MessageCircle },
+    { path: "/booking", label: "حجز موعد", icon: Calendar }
   ];
 
   return (
-    <nav className="bg-white/90 backdrop-blur-md shadow-md sticky top-0 z-50 transition-all duration-300">
+    <nav className="bg-white/95 backdrop-blur-lg shadow-sm sticky top-0 z-50 border-b border-gray-100/80">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
-            <Link to="/" className="flex-shrink-0 flex items-center">
-              <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-medical-500 to-medical-700 flex items-center justify-center shadow-md">
+            <Link to="/" className="flex-shrink-0 flex items-center group">
+              <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-medical-500 to-medical-700 flex items-center justify-center shadow-md group-hover:shadow-lg transition-shadow duration-300">
                 <span className="text-white font-bold text-lg">W</span>
               </div>
               <span className="mx-3 font-bold text-xl text-medical-850 font-cairo">واصــــل</span>
@@ -54,31 +55,33 @@ const Navbar = () => {
           </div>
           
           {/* Desktop Navigation Links */}
-          <div className="hidden md:flex md:items-center md:space-x-6 md:rtl:space-x-reverse">
-            {navLinks.map((link, index) => (
-              <motion.div
-                key={link.path}
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.05 }}
-              >
+          <div className="hidden lg:flex lg:items-center lg:space-x-5 lg:rtl:space-x-reverse">
+            {navLinks.map((link) => {
+              const isActive = location.pathname === link.path;
+              const IconComponent = link.icon;
+              return (
                 <Link 
+                  key={link.path}
                   to={link.path} 
-                  className="text-gray-750 hover:text-medical-600 font-semibold relative group transition-colors duration-300 font-cairo"
+                  className={`flex items-center gap-1.5 text-sm font-semibold relative transition-colors duration-300 font-cairo py-1 ${
+                    isActive 
+                      ? 'text-medical-600' 
+                      : 'text-gray-600 hover:text-medical-600'
+                  }`}
                 >
+                  <IconComponent className={`h-3.5 w-3.5 transition-colors duration-300 ${isActive ? 'text-medical-500' : 'text-gray-400 group-hover:text-medical-400'}`} />
                   {link.label}
-                  <motion.span 
-                    className="absolute bottom-0 left-0 w-0 h-0.5 bg-medical-600 group-hover:w-full transition-all duration-300"
-                    initial={{ width: 0 }}
-                    whileHover={{ width: '100%' }}
-                  />
+                  {/* Active indicator */}
+                  <span className={`absolute -bottom-1 left-0 h-0.5 rounded-full bg-gradient-to-r from-medical-500 to-medical-400 transition-all duration-300 ${
+                    isActive ? 'w-full' : 'w-0'
+                  }`} />
                 </Link>
-              </motion.div>
-            ))}
+              );
+            })}
           </div>
           
           {/* Desktop Right Side Actions */}
-          <div className="flex items-center space-x-4 rtl:space-x-reverse">
+          <div className="flex items-center space-x-3 rtl:space-x-reverse">
             {isLoggedIn ? (
               <div className="flex items-center gap-2">
                 {isPatient ? (
@@ -87,48 +90,36 @@ const Navbar = () => {
                   </span>
                 ) : (
                   <Link to={isAdmin ? "/admin-dashboard" : "/specialist-dashboard"}>
-                    <Button variant="outline" className="flex items-center hover:scale-105 transition-transform duration-200 border-medical-200 text-medical-800 font-cairo">
+                    <Button variant="outline" className="flex items-center hover:scale-[1.02] transition-transform duration-200 border-medical-200 text-medical-800 font-cairo text-sm">
                       <User className="mr-1 h-4 w-4" />
                       لوحة التحكم ({loggedInName})
                     </Button>
                   </Link>
                 )}
-                <Button variant="destructive" onClick={handleLogout} className="hover:scale-105 transition-transform duration-200 font-cairo">
+                <Button variant="destructive" onClick={handleLogout} className="hover:scale-[1.02] transition-transform duration-200 font-cairo text-sm">
                   خروج
                 </Button>
               </div>
             ) : (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5, delay: 0.1 }}
-              >
-                <Link to="/login">
-                  <Button variant="outline" className="flex items-center hover:scale-105 transition-transform duration-200 border-medical-200 text-medical-800 hover:bg-medical-50 shadow-sm font-semibold font-cairo">
-                    <User className="mr-2 h-4 w-4 text-medical-600" />
-                    الدخول / التسجيل
-                  </Button>
-                </Link>
-              </motion.div>
+              <Link to="/login">
+                <Button variant="outline" className="flex items-center hover:scale-[1.02] transition-all duration-200 border-medical-200 text-medical-800 hover:bg-medical-50 shadow-sm font-semibold font-cairo text-sm">
+                  <User className="mr-2 h-4 w-4 text-medical-600" />
+                  الدخول / التسجيل
+                </Button>
+              </Link>
             )}
             
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-            >
-              <a href="https://wa.me/201119056895" target="_blank" rel="noopener noreferrer">
-                <Button variant="default" className="flex items-center medical-btn hover:scale-105 transition-transform duration-200 font-cairo">
-                  <Phone className="mr-2 h-4 w-4" />
-                  تواصل معنا
-                </Button>
-              </a>
-            </motion.div>
+            <a href="https://wa.me/201119056895" target="_blank" rel="noopener noreferrer">
+              <Button variant="default" className="flex items-center medical-btn shimmer-btn hover:scale-[1.02] transition-all duration-200 font-cairo text-sm">
+                <Phone className="mr-2 h-4 w-4" />
+                تواصل معنا
+              </Button>
+            </a>
             
-            <div className="md:hidden flex items-center">
+            <div className="lg:hidden flex items-center">
               <button
                 onClick={toggleMenu}
-                className="text-gray-700 hover:text-primary"
+                className="text-gray-700 hover:text-medical-600 transition-colors duration-200 p-1"
                 aria-label="Toggle menu"
               >
                 {isOpen ? (
@@ -145,34 +136,37 @@ const Navbar = () => {
         <AnimatePresence>
           {isOpen && (
             <motion.div 
-              className="md:hidden py-2 border-t border-gray-200 overflow-hidden"
+              className="lg:hidden py-3 border-t border-gray-100 overflow-hidden"
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.3 }}
+              transition={{ duration: 0.25, ease: 'easeInOut' }}
             >
               <div className="flex flex-col space-y-1">
-                {navLinks.map((link, index) => (
-                  <motion.div
-                    key={link.path}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.05 }}
-                  >
+                {navLinks.map((link) => {
+                  const isActive = location.pathname === link.path;
+                  const IconComponent = link.icon;
+                  return (
                     <Link 
+                      key={link.path}
                       to={link.path} 
-                      className="block py-2 px-3 rounded-md hover:bg-primary/10 transition-colors duration-200 font-semibold text-gray-750 font-cairo" 
+                      className={`flex items-center gap-3 py-2.5 px-4 rounded-xl transition-all duration-200 font-semibold font-cairo text-sm ${
+                        isActive 
+                          ? 'bg-medical-50 text-medical-700' 
+                          : 'text-gray-600 hover:bg-gray-50'
+                      }`}
                       onClick={toggleMenu}
                     >
+                      <IconComponent className={`h-4 w-4 ${isActive ? 'text-medical-500' : 'text-gray-400'}`} />
                       {link.label}
                     </Link>
-                  </motion.div>
-                ))}
+                  );
+                })}
                 
                 {/* Mobile login button */}
                 {!isLoggedIn && (
-                  <Link to="/login" onClick={toggleMenu} className="block w-full mt-2">
-                    <Button variant="outline" className="w-full font-cairo flex items-center justify-center">
+                  <Link to="/login" onClick={toggleMenu} className="block w-full mt-2 px-4">
+                    <Button variant="outline" className="w-full font-cairo flex items-center justify-center text-sm">
                       <User className="h-4 w-4 mr-2" /> الدخول / التسجيل
                     </Button>
                   </Link>

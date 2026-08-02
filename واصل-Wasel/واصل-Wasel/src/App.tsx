@@ -14,12 +14,14 @@ import Prosthetics from "./pages/Prosthetics";
 import About from "./pages/About";
 import Team from "./pages/Team";
 import Locations from "./pages/Locations";
+import Centers from "./pages/Centers";
 import Contact from "./pages/Contact";
 import SpecialistDashboard from "./pages/SpecialistDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
 import Booking from '@/pages/Booking';
 import Login from "./pages/Login";
+import Register from "./pages/Register";
 import { syncDatabase } from "@/lib/registrations";
 
 const queryClient = new QueryClient();
@@ -37,11 +39,13 @@ const AnimatedRoutes = () => {
         <Route path="/about" element={<About />} />
         <Route path="/team" element={<Team />} />
         <Route path="/locations" element={<Locations />} />
+        <Route path="/centers" element={<Centers />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/specialist-dashboard" element={<SpecialistDashboard />} />
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
         <Route path="/booking" element={<Booking />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </AnimatePresence>
