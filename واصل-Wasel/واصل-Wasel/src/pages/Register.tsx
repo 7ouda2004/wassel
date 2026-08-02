@@ -73,8 +73,25 @@ const Register = () => {
 
     setIsSubmitting(true);
     try {
-      await signUp(formData.email, formData.password, formData.fullName, formData.role);
-      toast.success(isAr ? 'تم إنشاء الحساب بنجاح! يمكنك الآن تسجيل الدخول' : 'Account created successfully!');
+      if (formData.role === 'center' || formData.role === 'insurance') {
+        await submitRegistration({
+          type: 'center',
+          full_name: formData.fullName,
+          phone: formData.phone,
+          username: formData.email,
+          password: formData.password,
+          center_name: formData.fullName,
+          location: 'القاهرة',
+          address: 'العنوان المسجل',
+          working_hours: 'السبت - الخميس: 9 صباحاً - 9 مساءً',
+          region: 'القاهرة الكبرى',
+          status: 'pending'
+        });
+        toast.success(isAr ? 'تم تقديم طلب تسجيل مركزك بنجاح! بانتظار موافقة المسؤول (الادمن) لتفعيل حسابك.' : 'Center registration submitted! Pending admin approval.');
+      } else {
+        await signUp(formData.email, formData.password, formData.fullName, formData.role);
+        toast.success(isAr ? 'تم إنشاء الحساب بنجاح! يمكنك الآن تسجيل الدخول' : 'Account created successfully!');
+      }
       navigate('/login');
     } catch (err: any) { 
       toast.error(err.message || (isAr ? 'حدث خطأ أثناء التسجيل' : 'Registration failed')); 

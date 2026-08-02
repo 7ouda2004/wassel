@@ -20,6 +20,52 @@ export interface Center {
   status?: 'pending' | 'active' | 'rejected';
 }
 
+export const EGYPT_GOVERNORATES = [
+  'القاهرة',
+  'الجيزة',
+  'الإسكندرية',
+  'القليوبية',
+  'الدقهلية',
+  'البحيرة',
+  'الشرقية',
+  'الغربية',
+  'المنوفية',
+  'دمياط',
+  'كفر الشيخ',
+  'الفيوم',
+  'بني سويف',
+  'المنيا',
+  'أسيوط',
+  'سوهاج',
+  'قنا',
+  'الأقصر',
+  'أسوان',
+  'البحر الأحمر',
+  'الوادي الجديد',
+  'مطروح',
+  'شمال سيناء',
+  'جنوب سيناء',
+  'بورسعيد',
+  'السويس',
+  'الإسماعيلية'
+] as const;
+
+// High quality reliable mobility & medical image URLs from Unsplash
+export const FALLBACK_CENTER_IMAGES = [
+  'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=800&q=80',
+  'https://images.unsplash.com/photo-1586773860418-d37222d8fce3?auto=format&fit=crop&w=800&q=80',
+  'https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=800&q=80',
+  'https://images.unsplash.com/photo-1538108149393-fbbd81895907?auto=format&fit=crop&w=800&q=80',
+  'https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=800&q=80'
+];
+
+export const FALLBACK_SPECIALIST_IMAGES = [
+  'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=600&q=80',
+  'https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&w=600&q=80',
+  'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=600&q=80',
+  'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&w=600&q=80'
+];
+
 export const defaultCenters: Center[] = [
   {
     id: '1',
@@ -28,8 +74,9 @@ export const defaultCenters: Center[] = [
     address: 'شارع التحرير، وسط البلد، القاهرة',
     phone: '02-123-4567',
     workingHours: 'السبت - الخميس: 9 صباحاً - 9 مساءً',
-    image: '/images/ortho.png',
-    region: 'القاهرة الكبرى'
+    image: FALLBACK_CENTER_IMAGES[0],
+    region: 'القاهرة الكبرى',
+    status: 'active'
   },
   {
     id: '2',
@@ -38,8 +85,9 @@ export const defaultCenters: Center[] = [
     address: 'شارع الكورنيش، سموحة، الإسكندرية',
     phone: '03-456-7890',
     workingHours: 'السبت - الخميس: 10 صباحاً - 8 مساءً',
-    image: '/images/ortho.png',
-    region: 'الإسكندرية'
+    image: FALLBACK_CENTER_IMAGES[1],
+    region: 'الإسكندرية',
+    status: 'active'
   },
   {
     id: '3',
@@ -48,8 +96,9 @@ export const defaultCenters: Center[] = [
     address: 'شارع الهرم، الجيزة',
     phone: '02-987-6543',
     workingHours: 'السبت - الخميس: 9 صباحاً - 9 مساءً',
-    image: '/images/ortho.png',
-    region: 'القاهرة الكبرى'
+    image: FALLBACK_CENTER_IMAGES[2],
+    region: 'القاهرة الكبرى',
+    status: 'active'
   },
   {
     id: '4',
@@ -58,8 +107,9 @@ export const defaultCenters: Center[] = [
     address: 'شارع المحطة، بنها، القليوبية',
     phone: '013-123-4567',
     workingHours: 'السبت - الخميس: 9 صباحاً - 9 مساءً',
-    image: '/images/ortho.png',
-    region: 'القاهرة الكبرى'
+    image: FALLBACK_CENTER_IMAGES[3],
+    region: 'القاهرة الكبرى',
+    status: 'active'
   },
   {
     id: '5',
@@ -68,8 +118,9 @@ export const defaultCenters: Center[] = [
     address: 'شارع الثلاثيني، بورسعيد',
     phone: '066-123-4567',
     workingHours: 'السبت - الخميس: 9 صباحاً - 9 مساءً',
-    image: '/images/new.jpg',
-    region: 'القناة'
+    image: FALLBACK_CENTER_IMAGES[4],
+    region: 'القناة',
+    status: 'active'
   },
   {
     id: '6',
@@ -78,8 +129,9 @@ export const defaultCenters: Center[] = [
     address: 'شارع الجيش، السويس',
     phone: '062-123-4567',
     workingHours: 'السبت - الخميس: 9 صباحاً - 9 مساءً',
-    image: '/images/new.jpg',
-    region: 'القناة'
+    image: FALLBACK_CENTER_IMAGES[0],
+    region: 'القناة',
+    status: 'active'
   },
   {
     id: '7',
@@ -88,38 +140,42 @@ export const defaultCenters: Center[] = [
     address: 'شارع الحربي، دمياط',
     phone: '057-123-4567',
     workingHours: 'السبت - الخميس: 9 صباحاً - 9 مساءً',
-    image: '/images/new.jpg',
-    region: 'الدلتا'
+    image: FALLBACK_CENTER_IMAGES[1],
+    region: 'الدلتا',
+    status: 'active'
   },
   {
     id: '8',
-    name: 'مركز واصل - فرع الدقهلية',
-    location: 'المنصورة',
+    name: 'مركز واصل - فرع الدقهلية (المنصورة)',
+    location: 'الدقهلية',
     address: 'شارع الجمهورية، المنصورة، الدقهلية',
     phone: '050-123-4567',
     workingHours: 'السبت - الخميس: 9 صباحاً - 9 مساءً',
-    image: '/images/new.jpg',
-    region: 'الدلتا'
+    image: FALLBACK_CENTER_IMAGES[2],
+    region: 'الدلتا',
+    status: 'active'
   },
   {
     id: '9',
-    name: 'مركز واصل - فرع الشرقية',
-    location: 'الزقازيق',
+    name: 'مركز واصل - فرع الشرقية (الزقازيق)',
+    location: 'الشرقية',
     address: 'شارع المحافظة، الزقازيق، الشرقية',
     phone: '055-123-4567',
     workingHours: 'السبت - الخميس: 9 صباحاً - 9 مساءً',
-    image: '/images/ortho.png',
-    region: 'الدلتا'
+    image: FALLBACK_CENTER_IMAGES[3],
+    region: 'الدلتا',
+    status: 'active'
   },
   {
     id: '10',
-    name: 'مركز واصل - فرع الغربية',
-    location: 'طنطا',
+    name: 'مركز واصل - فرع الغربية (طنطا)',
+    location: 'الغربية',
     address: 'شارع البحر، طنطا، الغربية',
     phone: '040-123-4567',
     workingHours: 'السبت - الخميس: 9 صباحاً - 9 مساءً',
-    image: '/images/ortho.png',
-    region: 'الدلتا'
+    image: FALLBACK_CENTER_IMAGES[4],
+    region: 'الدلتا',
+    status: 'active'
   },
   {
     id: '11',
@@ -128,28 +184,31 @@ export const defaultCenters: Center[] = [
     address: 'شارع الخليفة المأمون، كفر الشيخ',
     phone: '047-123-4567',
     workingHours: 'السبت - الخميس: 9 صباحاً - 9 مساءً',
-    image: '/images/ortho.png',
-    region: 'الدلتا'
+    image: FALLBACK_CENTER_IMAGES[0],
+    region: 'الدلتا',
+    status: 'active'
   },
   {
     id: '12',
-    name: 'مركز واصل - فرع المنوفية',
-    location: 'شبين الكوم',
+    name: 'مركز واصل - فرع المنوفية (شبين الكوم)',
+    location: 'المنوفية',
     address: 'شارع الجلاء، شبين الكوم، المنوفية',
     phone: '048-123-4567',
     workingHours: 'السبت - الخميس: 9 صباحاً - 9 مساءً',
-    image: '/images/ortho.png',
-    region: 'الدلتا'
+    image: FALLBACK_CENTER_IMAGES[1],
+    region: 'الدلتا',
+    status: 'active'
   },
   {
     id: '13',
-    name: 'مركز واصل - فرع البحيرة',
-    location: 'دمنهور',
+    name: 'مركز واصل - فرع البحيرة (دمنهور)',
+    location: 'البحيرة',
     address: 'شارع الروضة، دمنهور، البحيرة',
     phone: '045-123-4567',
     workingHours: 'السبت - الخميس: 9 صباحاً - 9 مساءً',
-    image: '/images/ortho.png',
-    region: 'الدلتا'
+    image: FALLBACK_CENTER_IMAGES[2],
+    region: 'الدلتا',
+    status: 'active'
   },
   {
     id: '14',
@@ -158,8 +217,9 @@ export const defaultCenters: Center[] = [
     address: 'شارع السلطان حسين، الإسماعيلية',
     phone: '064-123-4567',
     workingHours: 'السبت - الخميس: 9 صباحاً - 9 مساءً',
-    image: '/images/ortho.png',
-    region: 'القناة'
+    image: FALLBACK_CENTER_IMAGES[3],
+    region: 'القناة',
+    status: 'active'
   },
   {
     id: '15',
@@ -168,8 +228,9 @@ export const defaultCenters: Center[] = [
     address: 'شارع الرياض، بني سويف',
     phone: '082-123-4567',
     workingHours: 'السبت - الخميس: 9 صباحاً - 9 مساءً',
-    image: '/images/team.png',
-    region: 'الصعيد'
+    image: FALLBACK_CENTER_IMAGES[4],
+    region: 'الصعيد',
+    status: 'active'
   },
   {
     id: '16',
@@ -178,8 +239,9 @@ export const defaultCenters: Center[] = [
     address: 'شارع الحرية، الفيوم',
     phone: '084-123-4567',
     workingHours: 'السبت - الخميس: 9 صباحاً - 9 مساءً',
-    image: '/images/team.png',
-    region: 'الصعيد'
+    image: FALLBACK_CENTER_IMAGES[0],
+    region: 'الصعيد',
+    status: 'active'
   },
   {
     id: '17',
@@ -188,8 +250,9 @@ export const defaultCenters: Center[] = [
     address: 'شارع كورنيش النيل، المنيا',
     phone: '086-123-4567',
     workingHours: 'السبت - الخميس: 9 صباحاً - 9 مساءً',
-    image: '/images/team.png',
-    region: 'الصعيد'
+    image: FALLBACK_CENTER_IMAGES[1],
+    region: 'الصعيد',
+    status: 'active'
   },
   {
     id: '18',
@@ -198,8 +261,9 @@ export const defaultCenters: Center[] = [
     address: 'شارع الجمهورية، برج النور، أسيوط',
     phone: '088-123-4567',
     workingHours: 'السبت - الخميس: 9 صباحاً - 8 مساءً',
-    image: '/images/team.png',
-    region: 'الصعيد'
+    image: FALLBACK_CENTER_IMAGES[2],
+    region: 'الصعيد',
+    status: 'active'
   },
   {
     id: '19',
@@ -208,8 +272,9 @@ export const defaultCenters: Center[] = [
     address: 'شارع المحطة، سوهاج',
     phone: '093-123-4567',
     workingHours: 'السبت - الخميس: 9 صباحاً - 9 مساءً',
-    image: '/images/team.png',
-    region: 'الصعيد'
+    image: FALLBACK_CENTER_IMAGES[3],
+    region: 'الصعيد',
+    status: 'active'
   },
   {
     id: '20',
@@ -218,8 +283,9 @@ export const defaultCenters: Center[] = [
     address: 'شارع كوبري دندرة، قنا',
     phone: '096-123-4567',
     workingHours: 'السبت - الخميس: 9 صباحاً - 9 مساءً',
-    image: '/images/team.png',
-    region: 'الصعيد'
+    image: FALLBACK_CENTER_IMAGES[4],
+    region: 'الصعيد',
+    status: 'active'
   },
   {
     id: '21',
@@ -228,8 +294,9 @@ export const defaultCenters: Center[] = [
     address: 'شارع خالد بن الوليد، الأقصر',
     phone: '095-123-4567',
     workingHours: 'السبت - الخميس: 9 صباحاً - 9 مساءً',
-    image: '/images/team.png',
-    region: 'الصعيد'
+    image: FALLBACK_CENTER_IMAGES[0],
+    region: 'الصعيد',
+    status: 'active'
   },
   {
     id: '22',
@@ -238,58 +305,64 @@ export const defaultCenters: Center[] = [
     address: 'شارع كورنيش النيل، أسوان',
     phone: '097-123-4567',
     workingHours: 'السبت - الخميس: 9 صباحاً - 9 مساءً',
-    image: '/images/team.png',
-    region: 'الصعيد'
+    image: FALLBACK_CENTER_IMAGES[1],
+    region: 'الصعيد',
+    status: 'active'
   },
   {
     id: '23',
-    name: 'مركز واصل - فرع البحر الأحمر',
-    location: 'الغردقة',
+    name: 'مركز واصل - فرع البحر الأحمر (الغردقة)',
+    location: 'البحر الأحمر',
     address: 'طريق الشيراتون، الغردقة، البحر الأحمر',
     phone: '065-123-4567',
     workingHours: 'السبت - الخميس: 9 صباحاً - 9 مساءً',
-    image: '/images/new.jpg',
-    region: 'الحدود'
+    image: FALLBACK_CENTER_IMAGES[2],
+    region: 'الحدود',
+    status: 'active'
   },
   {
     id: '24',
-    name: 'مركز واصل - فرع الوادي الجديد',
-    location: 'الخارجة',
+    name: 'مركز واصل - فرع الوادي الجديد (الخارجة)',
+    location: 'الوادي الجديد',
     address: 'شارع جمال عبد الناصر، الخارجة، الوادي الجديد',
     phone: '092-123-4567',
     workingHours: 'السبت - الخميس: 9 صباحاً - 9 مساءً',
-    image: '/images/new.jpg',
-    region: 'الحدود'
+    image: FALLBACK_CENTER_IMAGES[3],
+    region: 'الحدود',
+    status: 'active'
   },
   {
     id: '25',
-    name: 'مركز واصل - فرع مطروح',
-    location: 'مرسى مطروح',
+    name: 'مركز واصل - فرع مطروح (مرسى مطروح)',
+    location: 'مطروح',
     address: 'شارع الإسكندرية، مرسى مطروح',
     phone: '046-123-4567',
     workingHours: 'السبت - الخميس: 9 صباحاً - 9 مساءً',
-    image: '/images/new.jpg',
-    region: 'الحدود'
+    image: FALLBACK_CENTER_IMAGES[4],
+    region: 'الحدود',
+    status: 'active'
   },
   {
     id: '26',
-    name: 'مركز واصل - فرع شمال سيناء',
-    location: 'العريش',
+    name: 'مركز واصل - فرع شمال سيناء (العريش)',
+    location: 'شمال سيناء',
     address: 'شارع الفاتح، العريش، شمال سيناء',
     phone: '068-123-4567',
     workingHours: 'السبت - الخميس: 9 صباحاً - 9 مساءً',
-    image: '/images/new.jpg',
-    region: 'الحدود'
+    image: FALLBACK_CENTER_IMAGES[0],
+    region: 'الحدود',
+    status: 'active'
   },
   {
     id: '27',
-    name: 'مركز واصل - فرع جنوب سيناء',
-    location: 'طور سيناء',
+    name: 'مركز واصل - فرع جنوب سيناء (طور سيناء)',
+    location: 'جنوب سيناء',
     address: 'شارع البحر، طور سيناء، جنوب سيناء',
     phone: '069-123-4567',
     workingHours: 'السبت - الخميس: 9 صباحاً - 9 مساءً',
-    image: '/images/new.jpg',
-    region: 'الحدود'
+    image: FALLBACK_CENTER_IMAGES[1],
+    region: 'الحدود',
+    status: 'active'
   }
 ];
 
@@ -395,11 +468,13 @@ export const defaultSpecialists: Specialist[] = [
     username: 'mahmoud',
     password: 'daizer',
     role: 'المؤسس وأخصائي أطراف صناعية وأجهزة تقويمية',
-    image: '/public/images/mahmoud.jpg',
-    bio: 'خريج جامعة القاهرة الجديدة التكنولوجية، ومتخصص في تصميم وتصنيع الأطراف الصناعية والأجهزة التقويمية. يمتلك خبرة واسعة في المجال ويسعى دائمًا لتقديم أحدث التقنيات والحلول المبتكرة للمرضى.',
+    image: FALLBACK_SPECIALIST_IMAGES[0],
+    bio: 'متخصص في تصميم وتصنيع الأطراف الصناعية والأجهزة التقويمية المبتكرة، يمتلك خبرة واسعة في التقنيات الطبية الذكية المعتمدة عالمياً.',
     expertise: ['تصميم الأطراف الصناعية', 'الجبائر التقويمية', 'تقييم الحالات المتقدمة'],
     status: 'active',
     phone: '01012345678',
+    centerId: '1',
+    centerName: 'مركز واصل الرئيسي - القاهرة',
     facebook: 'https://www.facebook.com/profile.php?id=100009899685976',
     instagram: 'https://www.instagram.com/mahmoud.ibrahim.7/',
     linkedin: 'https://www.linkedin.com/in/mahmoud-arafa-b490b4265/'
@@ -410,11 +485,13 @@ export const defaultSpecialists: Specialist[] = [
     username: 'nader',
     password: 'specialist123',
     role: 'أخصائي تركيب وضبط الأطراف الصناعية',
-    image: '/public/images/nader.jpg',
-    bio: 'متخصص في ضبط وتركيب الأطراف الصناعية بدقة عالية، مع خبرة أكثر من 7 سنوات في المجال. يتميز بمهاراته الفنية العالية ودقته في العمل، مما يضمن حصول المرضى على أفضل النتائج وأعلى مستويات الراحة.',
+    image: FALLBACK_SPECIALIST_IMAGES[1],
+    bio: 'متخصص في ضبط وتركيب الأطراف الصناعية بدقة عالية، مع خبرةأكثر من 7 سنوات في تحسين المشي والحركة واستعادة التوازن الحركي.',
     expertise: ['ضبط الأطراف الصناعية', 'تقييم الحركة والمشي', 'الصيانة والإصلاح'],
     status: 'active',
     phone: '01098765432',
+    centerId: '2',
+    centerName: 'مركز واصل - فرع الإسكندرية',
     facebook: 'https://www.facebook.com/nader.ibrahem.35',
     instagram: 'https://www.instagram.com/nader_op1/',
     linkedin: 'https://www.linkedin.com/in/nader-ibrahim-3a2554278/'
@@ -424,27 +501,31 @@ export const defaultSpecialists: Specialist[] = [
     name: 'باسل هاني',
     username: 'bassel',
     password: 'specialist123',
-    role: 'أخصائي الجبائر الطبية وتقنيات السيليكون الحديثه',
-    image: '/public/images/bassel.jpg',
-    bio: 'متخصص في تصميم وتصنيع الجبائر الطبية المخصصة. يمتلك معرفة عميقة بعلم التشريح وميكانيكا الجسم، مما يمكنه من تصميم جبائر تلبي الاحتياجات الدقيقة لكل مريض.',
+    role: 'أخصائي الجبائر الطبية وتقنيات السيليكون الحديثة',
+    image: FALLBACK_SPECIALIST_IMAGES[2],
+    bio: 'متخصص في تصميم وتصنيع الجبائر الطبية المخصصة بتقنيات عالية لتلبية الاحتياجات الدقيقة للتعافي والتأهيل الحركي.',
     expertise: ['جبائر العمود الفقري', 'جبائر الركبة والكاحل', 'جبائر الأطفال المتخصصة'],
     status: 'active',
     phone: '01167834290',
+    centerId: '8',
+    centerName: 'مركز واصل - فرع الدقهلية (المنصورة)',
     facebook: 'https://www.facebook.com/bassel.hany.mohammed',
     instagram: 'https://www.instagram.com/bassel_hanymohammad/',
     linkedin: 'https://www.linkedin.com/in/bassel-hany-mohammed-526276328/'
   },
   {
     id: '4',
-    name: 'أخصائي واصل',
-    username: 'specialist',
+    name: 'د. أحمد سامي',
+    username: 'ahmed',
     password: 'specialist123',
-    role: 'أخصائي أطراف صناعية وجبائر طبية',
-    image: '/images/new.jpg',
-    bio: 'أخصائي متمرس في الأطراف الصناعية والأجهزة التقويمية الحديثة.',
-    expertise: ['الأطراف الصناعية', 'الجبائر الطبية'],
+    role: 'أخصائي تقويم العظام وتأهيل الأطراف',
+    image: FALLBACK_SPECIALIST_IMAGES[3],
+    bio: 'أخصائي متمرس في الأطراف الصناعية والأجهزة التقويمية الحديثة مع متابعة دورية مستمرة.',
+    expertise: ['الأطراف الصناعية الذكية', 'الجبائر الطبية'],
     status: 'active',
-    phone: '01234567890'
+    phone: '01234567890',
+    centerId: '3',
+    centerName: 'مركز واصل - فرع الجيزة'
   }
 ];
 

@@ -1,12 +1,11 @@
-
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowRight, Users, Award, MapPin, Calendar, ChevronRight, Sparkles, Heart, Shield } from 'lucide-react';
+import { ArrowRight, Users, Award, MapPin, Calendar, ChevronRight, Sparkles, Shield, Heart, CheckCircle2 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import { FALLBACK_CENTER_IMAGES } from '@/lib/db';
 
 const Index = () => {
   useEffect(() => {
@@ -15,241 +14,199 @@ const Index = () => {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-slate-50/40">
       <Navbar />
       
-      {/* Hero Section - Lightweight with static decorations */}
-      <section className="relative h-[80vh] bg-gradient-to-b from-medical-50 via-medical-50/30 to-white overflow-hidden">
-        {/* Static background decorations - NO infinite animations */}
-        <div className="absolute top-0 left-0 right-0 bottom-0">
-          <div className="absolute w-72 h-72 rounded-full bg-medical-200/20 top-16 right-16 blur-3xl" />
-          <div className="absolute w-96 h-96 rounded-full bg-medical-300/10 bottom-20 left-16 blur-3xl" />
-          <div className="absolute w-48 h-48 rounded-full bg-blue-200/15 top-40 left-40 blur-2xl" />
+      {/* Blatchford Mobility Inspired Hero Section */}
+      <section className="relative py-20 lg:py-28 bg-gradient-to-b from-medical-950 via-medical-900 to-medical-850 text-white overflow-hidden">
+        {/* Soft glowing ambient circles */}
+        <div className="absolute inset-0 opacity-25 pointer-events-none">
+          <div className="absolute -top-20 right-0 w-[600px] h-[600px] bg-medical-500 rounded-full blur-[150px]" />
+          <div className="absolute bottom-0 left-10 w-[500px] h-[500px] bg-sky-400 rounded-full blur-[130px]" />
         </div>
         
-        <div className="container mx-auto h-full flex flex-col md:flex-row items-center justify-between px-4 relative z-10">
-          <motion.div 
-            className="text-center md:text-right md:w-1/2 pt-20 md:pt-0"
-            initial={{ opacity: 0, x: -30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.7, ease: "easeOut" }}
-          >
-            <h1 className="text-4xl md:text-5xl lg:text-7xl font-extrabold text-medical-950 leading-tight tracking-tight">
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-medical-600 to-medical-400 block mb-2 drop-shadow-md pb-2"> واصل </span>
-              لحلول الجبائر والأطراف الصناعية المتطورة
-            </h1>
-            <p className="mt-6 text-xl text-gray-600 max-w-xl mx-auto md:mx-0 leading-relaxed font-medium">
-              أفضل الحلول التقويمية والأطراف الصناعية المصممة خصيصًا لتلبية احتياجاتك بأحدث التقنيات والمعايير العالمية، بأسعار واقعية وجودة لا تُضاهى.
-            </p>
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="flex flex-col lg:flex-row items-center justify-between gap-12 max-w-7xl mx-auto">
+            
+            {/* Text Content */}
             <motion.div 
-              className="mt-10 flex flex-col sm:flex-row justify-center md:justify-start space-y-4 sm:space-y-0 sm:space-x-4 rtl:space-x-reverse"
-              initial={{ opacity: 0, y: 15 }}
+              className="text-center lg:text-right lg:w-1/2"
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
+              transition={{ duration: 0.6 }}
             >
-              <Link to="/orthoses">
-                <Button size="lg" variant="default" className="px-8 py-7 text-lg bg-medical-600 hover:bg-medical-700 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 shimmer-btn">
-                  استكشاف الجبائر الطبية
-                  <ChevronRight className="mr-2 h-6 w-6 rtl:rotate-180" />
-                </Button>
-              </Link>
-              <Link to="/prosthetics">
-                <Button size="lg" variant="outline" className="px-8 py-7 text-lg border-2 hover:bg-medical-50 transition-all duration-300 hover:-translate-y-1">
-                  استكشاف الأطراف الصناعية
-                  <ChevronRight className="mr-2 h-6 w-6 rtl:rotate-180" />
-                </Button>
-              </Link>
+              <div className="inline-flex items-center gap-2 py-1.5 px-4 bg-white/10 text-medical-200 rounded-full text-xs font-bold mb-6 border border-white/15 backdrop-blur-md">
+                <Sparkles className="h-4 w-4 text-sky-300" />
+                <span>الجيل الجديد من تقنيات التأهيل والأطراف الذكية</span>
+              </div>
+
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black leading-tight tracking-tight font-cairo mb-6">
+                استعد حريتك الحركية
+                <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-300 via-medical-200 to-white">بأحدث التقنيات العالمية</span>
+              </h1>
+
+              <p className="text-base sm:text-lg text-gray-300 max-w-xl mx-auto lg:mx-0 leading-relaxed font-medium mb-8">
+                نجمع لك نخبة المراكز والأخصائيين المعتمدين في كافة محافظات مصر لتوفير أحدث الجبائر الطبية والأطراف الصناعية المصممة خصيصاً لراحة حركتك.
+              </p>
+
+              <div className="flex flex-col sm:flex-row justify-center lg:justify-start gap-4">
+                <Link to="/centers">
+                  <Button size="lg" className="w-full sm:w-auto px-8 py-6 text-base font-bold bg-medical-500 hover:bg-medical-400 text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300">
+                    استكشاف مراكز مصر المعتمده
+                    <ChevronRight className="mr-2 h-5 w-5 rtl:rotate-180" />
+                  </Button>
+                </Link>
+                <Link to="/booking">
+                  <Button size="lg" variant="outline" className="w-full sm:w-auto px-8 py-6 text-base font-bold border-white/30 text-white hover:bg-white/10 rounded-xl transition-all duration-300">
+                    حجز موعد استشارة
+                  </Button>
+                </Link>
+              </div>
             </motion.div>
-          </motion.div>
-          
-          <motion.div 
-            className="md:w-1/2 mt-8 md:mt-0"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-          >
-            <div className="relative group">
-              <img 
-                src="/images/prosthetic_leg.png" 
-                alt="Advanced Prosthetic Limb" 
-                className="rounded-2xl shadow-2xl max-w-full mx-auto object-cover h-[55vh] transform transition-all duration-500 group-hover:scale-[1.02] group-hover:shadow-3xl"
-              />
-              <div className="absolute inset-0 rounded-2xl bg-gradient-to-tr from-medical-600/10 to-transparent pointer-events-none"></div>
-              
-              <motion.div 
-                className="absolute -bottom-6 -left-6 bg-white p-4 rounded-xl shadow-xl border-l-4 border-medical-500"
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.8, duration: 0.5 }}
-              >
-                <div className="flex items-center gap-3">
-                  <div className="bg-medical-100 p-2 rounded-full">
-                    <Award className="h-6 w-6 text-medical-600" />
+            
+            {/* Hero Image Showcase */}
+            <motion.div 
+              className="lg:w-1/2 w-full max-w-lg mx-auto"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.7, delay: 0.2 }}
+            >
+              <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-white/10 group">
+                <img 
+                  src="https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=1000&q=80" 
+                  alt="Wasel Advanced Prosthetics and Mobility" 
+                  className="w-full h-[450px] object-cover transition-transform duration-700 group-hover:scale-105"
+                  onError={(e) => { e.currentTarget.src = FALLBACK_CENTER_IMAGES[0]; }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-medical-950/80 via-transparent to-transparent" />
+                
+                {/* Floating Quality Badge */}
+                <div className="absolute bottom-6 right-6 left-6 bg-white/95 backdrop-blur-md p-4 rounded-2xl border border-white shadow-xl text-gray-900 flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-medical-50 text-medical-700 flex items-center justify-center flex-shrink-0">
+                    <Award className="h-6 w-6" />
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500 font-bold">جودة ألمانية</p>
-                    <p className="text-medical-800 font-extrabold text-lg">تقنيات 2024</p>
+                    <h3 className="font-bold text-sm">معايير ألمانية وتكنولوجيا ذكية</h3>
+                    <p className="text-xs text-gray-500 mt-0.5">ضمان جودة واستدامة لكافة أجهزتنا والجبائر الطبية</p>
                   </div>
                 </div>
-              </motion.div>
-            </div>
-          </motion.div>
-        </div>
-        
-        <div className="absolute bottom-0 left-0 right-0">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320">
-            <path fill="#ffffff" fillOpacity="1" d="M0,224L60,213.3C120,203,240,181,360,181.3C480,181,600,203,720,213.3C840,224,960,224,1080,208C1200,192,1320,160,1380,144L1440,128L1440,320L1380,320C1320,320,1200,320,1080,320C960,320,840,320,720,320C600,320,480,320,360,320C240,320,120,320,60,320L0,320Z"></path>
-          </svg>
+              </div>
+            </motion.div>
+
+          </div>
         </div>
       </section>
 
-      {/* Features Section */}
+      {/* Modern Features Section */}
       <section className="py-20 bg-white">
-        <div className="container mx-auto px-4">
-          <motion.h2 
-            className="section-title"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            viewport={{ once: true }}
-          >
-            خدماتنا المميزة
-          </motion.h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
+        <div className="container mx-auto px-4 max-w-7xl">
+          <div className="text-center mb-16">
+            <span className="text-xs font-bold text-medical-700 bg-medical-50 px-4 py-1.5 rounded-full border border-medical-100 inline-block mb-3">
+              خدمات واصل المتكاملة
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 font-cairo">
+              كل ما تحتاجه لرحلة التعافي والحركة
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
               {
-                icon: "https://img.icons8.com/color/48/000000/leg.png",
-                alt: "Prosthetic Leg",
-                title: "الأطراف الصناعية المتطورة",
-                desc: "نوفر أحدث تقنيات الأطراف الصناعية المصممة خصيصًا لتلبية احتياجاتك اليومية بأعلى معايير الجودة والراحة.",
+                title: "الأطراف الصناعية الذكية",
+                desc: "أطراف صناعية علوية وسفلية متطورة مصممة وفق أحدث المعايير لتمنحك حركة طبيعية وثبات تام.",
+                image: "https://images.unsplash.com/photo-1586773860418-d37222d8fce3?auto=format&fit=crop&w=600&q=80",
                 link: "/prosthetics",
-                linkText: "المزيد",
-                lucideIcon: Sparkles,
-                delay: 0
+                linkText: "استكشف الأطراف"
               },
               {
-                icon: "https://img.icons8.com/color/48/000000/knee-joint.png",
-                alt: "Orthotic Brace",
-                title: "الجبائر الطبية المتخصصة",
-                desc: "مجموعة متنوعة من الجبائر الطبية عالية الجودة لمختلف الحالات، مصممة لتوفير الدعم الأمثل والراحة.",
+                title: "الجبائر والأجهزة التقويمية",
+                desc: "تشكيلة مخصصة من جبائر الركبة، الكاحل، والعمود الفقري لتوفير الدعم الأمثل ومساعدة الأطفال والكبار.",
+                image: "https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=600&q=80",
                 link: "/orthoses",
-                linkText: "المزيد",
-                lucideIcon: Shield,
-                delay: 0.1
+                linkText: "استكشف الجبائر"
               },
               {
-                icon: "https://img.icons8.com/color/48/000000/treatment-plan.png",
-                alt: "Customized Solutions",
-                title: "حلول مخصصة",
-                desc: "نقدم حلولًا مخصصة تمامًا وفقًا لاحتياجاتك الفردية، مع مراعاة نمط حياتك ومستوى نشاطك.",
-                link: "/contact",
-                linkText: "تواصل معنا",
-                lucideIcon: Heart,
-                delay: 0.2
+                title: "شبكة مراكزنا بالمحافظات",
+                desc: "فروع معتمدة في كافة أنحاء مصر لتسهيل الوصول للأخصائيين ومتابعة التأهيل والصيانة الدورية.",
+                image: "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=600&q=80",
+                link: "/centers",
+                linkText: "تصفح الفروع"
               }
             ].map((item, idx) => (
-              <motion.div 
-                key={idx}
-                className="medical-card p-6 glow-card"
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: item.delay }}
-                viewport={{ once: true }}
-              >
-                <div className="h-14 w-14 rounded-2xl bg-medical-50 flex items-center justify-center mb-4 border border-medical-100">
-                  <img 
-                    src={item.icon} 
-                    alt={item.alt} 
-                    className="h-9 w-9"
-                  />
+              <div key={idx} className="bg-slate-50/60 rounded-3xl overflow-hidden border border-gray-200/70 hover:shadow-lg transition-all duration-300 flex flex-col justify-between group">
+                <div>
+                  <div className="h-52 overflow-hidden bg-gray-100">
+                    <img 
+                      src={item.image} 
+                      alt={item.title} 
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      onError={(e) => { e.currentTarget.src = FALLBACK_CENTER_IMAGES[idx]; }}
+                    />
+                  </div>
+                  <div className="p-6">
+                    <h3 className="text-xl font-bold text-gray-900 mb-2 font-cairo">{item.title}</h3>
+                    <p className="text-sm text-gray-600 leading-relaxed font-medium">{item.desc}</p>
+                  </div>
                 </div>
-                <h3 className="text-xl font-bold mb-2">{item.title}</h3>
-                <p className="text-gray-600 leading-relaxed">
-                  {item.desc}
-                </p>
-                <Link to={item.link} className="block mt-4 text-medical-600 hover:text-medical-700 font-semibold inline-flex items-center group transition-colors duration-200">
-                  {item.linkText}
-                  <ArrowRight className="h-4 w-4 mr-1 rtl:rotate-180 group-hover:translate-x-1 transition-transform duration-200" />
-                </Link>
-              </motion.div>
+
+                <div className="px-6 pb-6 pt-2">
+                  <Link to={item.link} className="inline-flex items-center text-sm font-bold text-medical-700 hover:text-medical-800 group-hover:translate-x-1 transition-transform">
+                    {item.linkText}
+                    <ArrowRight className="h-4 w-4 mr-1 rtl:rotate-180" />
+                  </Link>
+                </div>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Why Choose Us */}
-      <section className="py-20 bg-medical-50/50">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row items-center">
-            <div className="md:w-1/2 mb-10 md:mb-0">
-              <motion.div 
-                className="relative"
-                initial={{ opacity: 0, x: -30 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.6 }}
-                viewport={{ once: true }}
-              >
+      {/* Why Choose Wasel */}
+      <section className="py-20 bg-slate-50/70">
+        <div className="container mx-auto px-4 max-w-7xl">
+          <div className="flex flex-col lg:flex-row items-center gap-12">
+            <div className="lg:w-1/2">
+              <div className="rounded-3xl overflow-hidden shadow-xl border border-gray-200/80">
                 <img 
-                  src="https://cdn.prod.website-files.com/620223123d75ce5495043bfa/66db04615b2315f1de64875b_644b902cb10b9a0ca0f5e18a_how%20much%20is%20a%20prosthetic%20leg.webp" 
-                  alt="Medical Professional" 
-                  className="rounded-2xl shadow-xl max-w-full transition-shadow duration-300 hover:shadow-2xl"
+                  src="https://images.unsplash.com/photo-1538108149393-fbbd81895907?auto=format&fit=crop&w=1000&q=80" 
+                  alt="Quality Care" 
+                  className="w-full h-[400px] object-cover"
+                  onError={(e) => { e.currentTarget.src = FALLBACK_CENTER_IMAGES[1]; }}
                 />
-                <motion.div 
-                  className="absolute -bottom-6 -right-6 bg-white rounded-xl shadow-lg p-4 z-10"
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.3, duration: 0.5 }}
-                  viewport={{ once: true }}
-                >
-                  <div className="text-3xl font-bold text-medical-600">10+</div>
-                  <div className="text-gray-600 font-medium">سنوات من الخبرة</div>
-                </motion.div>
-              </motion.div>
+              </div>
             </div>
-            
-            <div className="md:w-1/2 md:pr-10">
-              <motion.h2 
-                className="section-title text-right"
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-                viewport={{ once: true }}
-              >
-                لماذا تختارنا؟
-              </motion.h2>
-              
-              <div className="space-y-6 mt-8">
+
+            <div className="lg:w-1/2 space-y-6">
+              <span className="text-xs font-bold text-medical-700 bg-medical-50 px-3.5 py-1 rounded-full border border-medical-100 inline-block">
+                لماذا منصة واصل؟
+              </span>
+              <h2 className="text-3xl font-extrabold text-gray-900 font-cairo">
+                رعاية متكاملة ومتابعة حركية مستمرة
+              </h2>
+
+              <div className="space-y-4 pt-2">
                 {[
-                  { icon: Users, title: "فريق متخصص", desc: "يضم فريقنا خبراء متخصصين في مجال الأطراف الصناعية والجبائر الطبية ذوي خبرة واسعة.", delay: 0.1 },
-                  { icon: Award, title: "معايير عالمية", desc: "نعتمد على أعلى المعايير العالمية في تصميم وتصنيع منتجاتنا لضمان الجودة والأمان.", delay: 0.15 },
-                  { icon: Calendar, title: "متابعة مستمرة", desc: "نقدم خدمة متابعة مستمرة بعد التركيب لضمان أفضل النتائج والتأقلم مع الجهاز.", delay: 0.2 },
-                  { icon: MapPin, title: "مراكز متعددة", desc: "لدينا مراكز متعددة في مختلف المناطق لتسهيل الوصول إلى خدماتنا.", delay: 0.25 }
-                ].map((item, idx) => (
-                  <motion.div 
-                    key={idx}
-                    className="flex group"
-                    initial={{ opacity: 0, y: 15 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4, delay: item.delay }}
-                    viewport={{ once: true }}
-                  >
-                    <div className="mr-4 h-12 w-12 bg-medical-100 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:bg-medical-200 transition-colors duration-300">
-                      <item.icon className="h-6 w-6 text-medical-600" />
+                  { title: "أخصائيون معتمدون وخبرات مثبتة", desc: "نخبة من كوادر التأهيل والحركة ذوي الخبرة العالية." },
+                  { title: "تغطية شاملة لكل المحافظات", desc: "فروع ومراكز متصلة لتقديم الخدمة أينما كنت." },
+                  { title: "صيانة ودعم دوري مستمر", desc: "متابعة الحالات وضبط الأجهزة لضمان أعلى مستويات الراحة." }
+                ].map((feature, i) => (
+                  <div key={i} className="flex items-start gap-3.5 bg-white p-4 rounded-2xl border border-gray-100 shadow-xs">
+                    <div className="w-8 h-8 rounded-xl bg-medical-50 text-medical-700 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <CheckCircle2 className="w-5 h-5" />
                     </div>
                     <div>
-                      <h3 className="text-xl font-semibold text-gray-900 mb-1">{item.title}</h3>
-                      <p className="text-gray-600 leading-relaxed">{item.desc}</p>
+                      <h4 className="font-bold text-sm text-gray-900">{feature.title}</h4>
+                      <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{feature.desc}</p>
                     </div>
-                  </motion.div>
+                  </div>
                 ))}
               </div>
-              
-              <div className="mt-8">
+
+              <div className="pt-2">
                 <Link to="/about">
-                  <Button variant="default" size="lg" className="medical-btn shimmer-btn">
-                    معرفة المزيد عنا
-                    <ChevronRight className="h-5 w-5 mr-1 rtl:rotate-180" />
+                  <Button className="bg-medical-700 hover:bg-medical-800 text-white font-bold rounded-xl px-7 py-5 text-sm">
+                    تعرف على رؤية واصل
                   </Button>
                 </Link>
               </div>
