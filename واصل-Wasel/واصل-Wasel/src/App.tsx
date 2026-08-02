@@ -15,6 +15,7 @@ import About from "./pages/About";
 import Team from "./pages/Team";
 import Locations from "./pages/Locations";
 import Centers from "./pages/Centers";
+import CenterDetails from "./pages/CenterDetails";
 import Contact from "./pages/Contact";
 import SpecialistDashboard from "./pages/SpecialistDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
@@ -40,6 +41,7 @@ const AnimatedRoutes = () => {
         <Route path="/team" element={<Team />} />
         <Route path="/locations" element={<Locations />} />
         <Route path="/centers" element={<Centers />} />
+        <Route path="/center/:id" element={<CenterDetails />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/specialist-dashboard" element={<SpecialistDashboard />} />
         <Route path="/admin-dashboard" element={<AdminDashboard />} />

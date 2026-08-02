@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Users, MapPin, PlusCircle, Edit, Trash, Save, Search, 
   UserCheck, ShieldAlert, Clock, Phone, Building, Check, X,
-  Upload, Sparkles, CheckCircle2, AlertCircle, RefreshCw
+  Upload, Sparkles, CheckCircle2, AlertCircle, RefreshCw, FileText, Image as ImageIcon, Briefcase
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -30,9 +30,9 @@ import { toast } from "sonner";
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { 
-  getLocalCenters, saveLocalCenters, type Center, EGYPT_GOVERNORATES,
+  getLocalCenters, saveLocalCenters, type Center, EGYPT_GOVERNORATES, type CaseStudy,
   getLocalSpecialists, saveLocalSpecialists, type Specialist,
-  FALLBACK_CENTER_IMAGES, FALLBACK_SPECIALIST_IMAGES
+  FALLBACK_CENTER_IMAGES, FALLBACK_SPECIALIST_IMAGES, DEFAULT_CASES
 } from '@/lib/db';
 import { syncDatabase, getPendingRequests, type RegistrationRequest } from '@/lib/registrations';
 
@@ -41,13 +41,14 @@ const AdminDashboard = () => {
   const [specialists, setSpecialists] = useState<Specialist[]>([]);
   const [pendingCloudRequests, setPendingCloudRequests] = useState<RegistrationRequest[]>([]);
 
-  // Dialog States
+  // Dialog States for Center
   const [isAddingCenter, setIsAddingCenter] = useState(false);
   const [isEditingCenter, setIsEditingCenter] = useState(false);
   const [currentCenter, setCurrentCenter] = useState<Center>({
     id: '', name: '', location: 'القاهرة', address: '', phone: '',
     workingHours: 'السبت - الخميس: 9 صباحاً - 9 مساءً',
-    image: FALLBACK_CENTER_IMAGES[0], region: 'القاهرة الكبرى', status: 'active'
+    image: FALLBACK_CENTER_IMAGES[0], region: 'القاهرة الكبرى', status: 'active',
+    description: '', services: [], casesWorkedOn: DEFAULT_CASES
   });
   const [centerSearchTerm, setCenterSearchTerm] = useState('');
   const [confirmDeleteCenter, setConfirmDeleteCenter] = useState<string | null>(null);
@@ -58,18 +59,19 @@ const AdminDashboard = () => {
   const [currentSpec, setCurrentSpec] = useState<Specialist>({
     id: '', name: '', username: '', password: '', role: 'أخصائي أطراف صناعية وجبائر طبية', bio: '',
     image: FALLBACK_SPECIALIST_IMAGES[0], expertise: [], status: 'active', phone: '',
-    centerId: '', centerName: ''
+    centerId: '', centerName: '', casesWorkedOn: DEFAULT_CASES
   });
   const [specSearchTerm, setSpecSearchTerm] = useState('');
   const [confirmDeleteSpec, setConfirmDeleteSpec] = useState<string | null>(null);
   const [specExpertiseInput, setSpecExpertiseInput] = useState('');
+  const [newCaseTitle, setNewCaseTitle] = useState('');
+  const [newCaseDesc, setNewCaseDesc] = useState('');
 
   const loadData = () => {
     const loadedCenters = getLocalCenters();
     const loadedSpecs = getLocalSpecialists();
     setCenters(loadedCenters);
     setSpecialists(loadedSpecs);
-    
     getPendingRequests().then(reqs => setPendingCloudRequests(reqs)).catch(() => {});
   };
 
@@ -77,7 +79,6 @@ const AdminDashboard = () => {
     document.documentElement.dir = 'rtl';
     document.body.classList.add('font-cairo');
     
-    // Auth Check
     const isAdmin = sessionStorage.getItem('isAdmin');
     if (isAdmin !== 'true') {
       toast.error('غير مصرح لك بدخول صفحة المسؤول');
@@ -88,13 +89,30 @@ const AdminDashboard = () => {
     loadData();
   }, []);
 
-  // Format Egypt Phone for WhatsApp
   const formatPhoneForWhatsapp = (phone: string) => {
     let cleaned = phone.replace(/\D/g, '');
     if (cleaned.startsWith('01')) {
       cleaned = '20' + cleaned.substring(1);
     }
     return cleaned;
+  };
+
+  // Image Upload helper
+  const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>, target: 'center' | 'spec') => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64 = reader.result as string;
+        if (target === 'center') {
+          setCurrentCenter(prev => ({ ...prev, image: base64 }));
+        } else {
+          setCurrentSpec(prev => ({ ...prev, image: base64 }));
+        }
+        toast.success('تم تحميل ومعاينة الصورة بنجاح!');
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   // --- Center Handlers ---
@@ -117,7 +135,7 @@ const AdminDashboard = () => {
       toast.success('تمت إضافة المركز وإتاحته فوراً للمرضى بنجاح!');
     } else {
       updatedList = centers.map(c => c.id === centerToSave.id ? centerToSave : c);
-      toast.success('تم تحديث بيانات المركز بنجاح!');
+      toast.success('تم تحديث بيانات وصورة المركز بنجاح!');
     }
 
     setCenters(updatedList);
@@ -173,7 +191,7 @@ const AdminDashboard = () => {
       toast.success('تمت إضافة الأخصائي وتفعيله بنجاح!');
     } else {
       updatedList = specialists.map(s => s.id === specToSave.id ? specToSave : s);
-      toast.success('تم تعديل بيانات الأخصائي بنجاح!');
+      toast.success('تم تعديل بيانات وصورة الأخصائي بنجاح!');
     }
 
     setSpecialists(updatedList);
@@ -210,6 +228,28 @@ const AdminDashboard = () => {
     toast.error('تم رفض طلب انضمام الأخصائي');
   };
 
+  // Add Case Study Helper
+  const handleAddCaseToSpec = () => {
+    if (!newCaseTitle.trim()) {
+      toast.error('أدخل عنوان الحالة السابقة');
+      return;
+    }
+    const newCase: CaseStudy = {
+      id: 'case_' + Date.now().toString(),
+      title: newCaseTitle,
+      deviceType: 'جهاز / طرف صناعي مخصص',
+      description: newCaseDesc || 'تم تنفيذ وتأهيل الحالة بنجاح.',
+      outcome: 'استعاد المريض قدرته الحركية بنجاح واستقلاليته التامة.'
+    };
+    setCurrentSpec(prev => ({
+      ...prev,
+      casesWorkedOn: [...(prev.casesWorkedOn || []), newCase]
+    }));
+    setNewCaseTitle('');
+    setNewCaseDesc('');
+    toast.success('تم إضافة الحالة لإنجازات الأخصائي بنجاح!');
+  };
+
   // Filter lists
   const pendingCenters = centers.filter(c => c.status === 'pending');
   const pendingSpecs = specialists.filter(s => s.status === 'pending');
@@ -235,14 +275,14 @@ const AdminDashboard = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
           {/* Header Banner */}
-          <div className="bg-gradient-to-r from-medical-900 via-medical-800 to-medical-950 text-white rounded-3xl p-6 sm:p-8 shadow-xl mb-8 flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="bg-gradient-to-r from-medical-950 via-medical-900 to-medical-800 text-white rounded-3xl p-6 sm:p-8 shadow-xl mb-8 flex flex-col md:flex-row items-center justify-between gap-6">
             <div>
               <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-3.5 py-1 rounded-full text-xs font-bold mb-3 border border-white/20">
                 <Sparkles className="w-3.5 h-3.5 text-medical-300" />
-                لوحة تحكم إدارة منصة واصل
+                لوحة تحكم أدمن منصة واصل
               </div>
-              <h1 className="text-2xl sm:text-3xl font-extrabold font-cairo">إدارة المراكز والأخصائيين والموافقات</h1>
-              <p className="text-gray-300 text-sm mt-1.5 font-medium">التحكم الفوري بكافة الفروع والمحافظات المعتمدة وطلبات انضمام الأخصائيين والمراكز الجدد.</p>
+              <h1 className="text-2xl sm:text-3xl font-extrabold font-cairo">إدارة الفروع، الصور، والأخصائيين والموافقات</h1>
+              <p className="text-gray-300 text-sm mt-1.5 font-medium">تغيير صور وتفاصيل المركز والأخصائيين وتخصيص إنجازات وحالات كل فرع.</p>
             </div>
 
             <div className="flex items-center gap-3">
@@ -301,12 +341,12 @@ const AdminDashboard = () => {
 
               <TabsTrigger value="centers" className="rounded-xl font-bold py-2.5 px-5 gap-2">
                 <Building className="w-4 h-4 text-medical-600" />
-                إدارة المراكز بالفروع ({centers.length})
+                إدارة المراكز والصور ({centers.length})
               </TabsTrigger>
 
               <TabsTrigger value="specialists" className="rounded-xl font-bold py-2.5 px-5 gap-2">
                 <Users className="w-4 h-4 text-emerald-600" />
-                إدارة أخصائيي المنصة ({specialists.length})
+                إدارة أخصائيي المنصة والحالات ({specialists.length})
               </TabsTrigger>
             </TabsList>
 
@@ -319,7 +359,7 @@ const AdminDashboard = () => {
                   </div>
                   <div>
                     <h2 className="text-xl font-bold text-gray-900 font-cairo">طلبات التسجيل والانضمام قيد الانتظار</h2>
-                    <p className="text-gray-500 text-xs mt-0.5">قم بمراجعة بيانات المركز أو الأخصائي واضغط قبول لتفعيل ظهوره فوراً على الصفحة الرسمية.</p>
+                    <p className="text-gray-500 text-xs mt-0.5">قم بمراجعة بيانات وتأكيد قبول الفرع أو الأخصائي ليظهروا مباشرة للمرضى.</p>
                   </div>
                 </div>
 
@@ -350,7 +390,6 @@ const AdminDashboard = () => {
                                   <p><span className="font-bold text-gray-700">المحافظة:</span> {center.location} ({center.region})</p>
                                   <p><span className="font-bold text-gray-700">العنوان:</span> {center.address}</p>
                                   <p><span className="font-bold text-gray-700">رقم التواصل:</span> <span dir="ltr">{center.phone}</span></p>
-                                  <p><span className="font-bold text-gray-700">ساعات العمل:</span> {center.workingHours}</p>
                                 </div>
                               </div>
 
@@ -398,7 +437,6 @@ const AdminDashboard = () => {
                                   <h4 className="font-bold text-gray-900 text-base">{spec.name}</h4>
                                   <p className="text-xs text-medical-600 font-semibold">{spec.role}</p>
                                   <p className="text-xs text-gray-500 mt-1"><span className="font-bold text-gray-700">رقم الواتساب:</span> <span dir="ltr">{spec.phone}</span></p>
-                                  <p className="text-xs text-gray-500 mt-0.5"><span className="font-bold text-gray-700">نبذة:</span> {spec.bio}</p>
                                 </div>
                               </div>
 
@@ -429,27 +467,28 @@ const AdminDashboard = () => {
               </div>
             </TabsContent>
 
-            {/* TAB 2: MANAGE CENTERS */}
+            {/* TAB 2: MANAGE CENTERS & IMAGES */}
             <TabsContent value="centers" className="space-y-6">
               <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-gray-100">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 pb-4 border-b border-gray-100">
                   <div>
-                    <h2 className="text-xl font-bold text-gray-900 font-cairo">فروع ومراكز واصل المعتمدة</h2>
-                    <p className="text-gray-500 text-xs mt-0.5">يمكنك إضافة مراكز جديدة لكافة المحافظات الـ 27 وتعديل البيانات فوراً.</p>
+                    <h2 className="text-xl font-bold text-gray-900 font-cairo">إدارة بيانات وصور مراكز واصل</h2>
+                    <p className="text-gray-500 text-xs mt-0.5">يمكنك رفع صورة جديدة لكل فرع، تعديل العنوان، الساعات، والخدمات.</p>
                   </div>
                   <Button 
                     onClick={() => {
                       setCurrentCenter({
                         id: '', name: '', location: 'القاهرة', address: '', phone: '',
                         workingHours: 'السبت - الخميس: 9 صباحاً - 9 مساءً',
-                        image: FALLBACK_CENTER_IMAGES[0], region: 'القاهرة الكبرى', status: 'active'
+                        image: FALLBACK_CENTER_IMAGES[0], region: 'القاهرة الكبرى', status: 'active',
+                        description: '', services: [], casesWorkedOn: DEFAULT_CASES
                       });
                       setIsAddingCenter(true);
                     }}
                     className="bg-medical-600 hover:bg-medical-700 text-white rounded-xl font-bold gap-2 text-xs py-5"
                   >
                     <PlusCircle className="w-4 h-4" />
-                    إضافة مركز جديد
+                    إضافة مركز وصورة جديدة
                   </Button>
                 </div>
 
@@ -468,11 +507,11 @@ const AdminDashboard = () => {
                   <Table>
                     <TableHeader className="bg-gray-50">
                       <TableRow>
-                        <TableHead className="font-bold text-right text-gray-900">المركز</TableHead>
+                        <TableHead className="font-bold text-right text-gray-900">صورة والاسم</TableHead>
                         <TableHead className="font-bold text-right text-gray-900">المحافظة والإقليم</TableHead>
-                        <TableHead className="font-bold text-right text-gray-900">العنوان ورقم التواصل</TableHead>
+                        <TableHead className="font-bold text-right text-gray-900">العنوان والواتساب</TableHead>
                         <TableHead className="font-bold text-center text-gray-900">الحالة</TableHead>
-                        <TableHead className="font-bold text-center text-gray-900">الإجراءات</TableHead>
+                        <TableHead className="font-bold text-center text-gray-900">الإجراءات والتعديل</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -483,7 +522,7 @@ const AdminDashboard = () => {
                               <img 
                                 src={center.image || FALLBACK_CENTER_IMAGES[0]} 
                                 alt={center.name}
-                                className="w-10 h-10 rounded-xl object-cover border"
+                                className="w-12 h-12 rounded-xl object-cover border shadow-xs"
                                 onError={(e) => { e.currentTarget.src = FALLBACK_CENTER_IMAGES[0]; }}
                               />
                               <span>{center.name}</span>
@@ -510,10 +549,10 @@ const AdminDashboard = () => {
                                 size="sm" 
                                 variant="outline"
                                 onClick={() => { setCurrentCenter(center); setIsEditingCenter(true); }}
-                                className="rounded-lg h-8 px-2.5 text-xs text-medical-700 border-medical-200 hover:bg-medical-50"
+                                className="rounded-lg h-8 px-3 text-xs text-medical-700 border-medical-200 hover:bg-medical-50 font-bold"
                               >
                                 <Edit className="w-3.5 h-3.5 me-1" />
-                                تعديل
+                                تعديل وصورة
                               </Button>
                               <Button 
                                 size="sm" 
@@ -533,20 +572,20 @@ const AdminDashboard = () => {
               </div>
             </TabsContent>
 
-            {/* TAB 3: MANAGE SPECIALISTS */}
+            {/* TAB 3: MANAGE SPECIALISTS & CASES */}
             <TabsContent value="specialists" className="space-y-6">
               <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-gray-100">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 pb-4 border-b border-gray-100">
                   <div>
-                    <h2 className="text-xl font-bold text-gray-900 font-cairo">أخصائيو واصل المعتمدون</h2>
-                    <p className="text-gray-500 text-xs mt-0.5">إضافة وتعديل بيانات وخبرات الأخصائيين وتسكينهم بالفروع المختلفة.</p>
+                    <h2 className="text-xl font-bold text-gray-900 font-cairo">إدارة بيانات وصور وحالات الأخصائيين</h2>
+                    <p className="text-gray-500 text-xs mt-0.5">رفع وتحديث الصور الشخصية والخبرات والحالات التي تم إنجازها.</p>
                   </div>
                   <Button 
                     onClick={() => {
                       setCurrentSpec({
                         id: '', name: '', username: '', password: '', role: 'أخصائي أطراف صناعية وجبائر طبية', bio: '',
                         image: FALLBACK_SPECIALIST_IMAGES[0], expertise: [], status: 'active', phone: '',
-                        centerId: '', centerName: ''
+                        centerId: '', centerName: '', casesWorkedOn: DEFAULT_CASES
                       });
                       setSpecExpertiseInput('');
                       setIsAddingSpec(true);
@@ -554,7 +593,7 @@ const AdminDashboard = () => {
                     className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold gap-2 text-xs py-5"
                   >
                     <PlusCircle className="w-4 h-4" />
-                    إضافة أخصائي جديد
+                    إضافة أخصائي وصورة جديدة
                   </Button>
                 </div>
 
@@ -589,7 +628,8 @@ const AdminDashboard = () => {
 
                         <div className="space-y-1.5 text-xs text-gray-600 mb-4">
                           <p><span className="font-bold text-gray-700">يعمل لدى:</span> {spec.centerName || 'فرع عام'}</p>
-                          {spec.phone && <p><span className="font-bold text-gray-700">رقم الهاتف:</span> <span dir="ltr" className="font-mono">{spec.phone}</span></p>}
+                          {spec.phone && <p><span className="font-bold text-gray-700">الهاتف:</span> <span dir="ltr" className="font-mono">{spec.phone}</span></p>}
+                          <p><span className="font-bold text-gray-700">الحالات المنجزة:</span> {spec.casesWorkedOn ? spec.casesWorkedOn.length : 2} حالات</p>
                         </div>
                       </div>
 
@@ -605,7 +645,7 @@ const AdminDashboard = () => {
                           className="flex-grow rounded-xl text-xs font-bold py-2 border-gray-300"
                         >
                           <Edit className="w-3.5 h-3.5 me-1" />
-                          تعديل البيانات
+                          تعديل الصورة والملف
                         </Button>
                         <Button 
                           size="sm"
@@ -626,15 +666,49 @@ const AdminDashboard = () => {
         </div>
       </main>
 
-      {/* --- ADD / EDIT CENTER DIALOG --- */}
+      {/* --- ADD / EDIT CENTER DIALOG (WITH IMAGE FILE & URL EDITING) --- */}
       <Dialog open={isAddingCenter || isEditingCenter} onOpenChange={(o) => { if (!o) { setIsAddingCenter(false); setIsEditingCenter(false); } }}>
         <DialogContent className="max-w-lg font-cairo">
           <DialogHeader>
-            <DialogTitle className="font-bold text-xl">{isAddingCenter ? 'إضافة فرع/مركز جديد' : 'تعديل بيانات المركز'}</DialogTitle>
-            <DialogDescription className="text-xs">سيتم حفظ البيانات وإتاحة الفرع مباشرة للمرضى في تصفح مراكز مصر.</DialogDescription>
+            <DialogTitle className="font-bold text-xl">{isAddingCenter ? 'إضافة فرع/مركز جديد' : 'تعديل بيانات وصورة المركز'}</DialogTitle>
+            <DialogDescription className="text-xs">تعديل الصورة الرسمية وتفاصيل الفرع لتظهر فوراً على المنصة.</DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-2">
+            
+            {/* Image Preview & Upload */}
+            <div className="p-4 bg-gray-50 rounded-2xl border border-gray-200 text-center">
+              <Label className="text-xs font-bold text-gray-800 mb-2 block flex items-center justify-center gap-1.5">
+                <ImageIcon className="w-4 h-4 text-medical-600" />
+                صورة المركز الرئيسية
+              </Label>
+              
+              <div className="w-full h-36 rounded-xl overflow-hidden bg-gray-200 mb-3 relative border">
+                <img 
+                  src={currentCenter.image || FALLBACK_CENTER_IMAGES[0]} 
+                  alt="معاينة صورة المركز"
+                  className="w-full h-full object-cover"
+                  onError={(e) => { e.currentTarget.src = FALLBACK_CENTER_IMAGES[0]; }}
+                />
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Input 
+                  type="file" 
+                  accept="image/*"
+                  onChange={(e) => handleImageFileChange(e, 'center')}
+                  className="text-xs bg-white rounded-xl"
+                />
+                <Input 
+                  type="text" 
+                  value={currentCenter.image}
+                  onChange={(e) => setCurrentCenter({ ...currentCenter, image: e.target.value })}
+                  placeholder="أو ضع رابط الصورة المباشر..."
+                  className="text-xs rounded-xl"
+                />
+              </div>
+            </div>
+
             <div>
               <Label className="text-xs font-bold text-gray-700 mb-1 block">اسم المركز / الفرع *</Label>
               <Input 
@@ -715,14 +789,48 @@ const AdminDashboard = () => {
         </DialogContent>
       </Dialog>
 
-      {/* --- ADD / EDIT SPECIALIST DIALOG --- */}
+      {/* --- ADD / EDIT SPECIALIST DIALOG (WITH IMAGE & CASE STUDIES EDITING) --- */}
       <Dialog open={isAddingSpec || isEditingSpec} onOpenChange={(o) => { if (!o) { setIsAddingSpec(false); setIsEditingSpec(false); } }}>
-        <DialogContent className="max-w-lg font-cairo">
+        <DialogContent className="max-w-lg font-cairo max-h-[85vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="font-bold text-xl">{isAddingSpec ? 'إضافة أخصائي جديد' : 'تعديل بيانات الأخصائي'}</DialogTitle>
+            <DialogTitle className="font-bold text-xl">{isAddingSpec ? 'إضافة أخصائي جديد' : 'تعديل بيانات وصورة الأخصائي'}</DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4 py-2">
+            
+            {/* Image Preview & Upload */}
+            <div className="p-4 bg-gray-50 rounded-2xl border border-gray-200 text-center">
+              <Label className="text-xs font-bold text-gray-800 mb-2 block flex items-center justify-center gap-1.5">
+                <ImageIcon className="w-4 h-4 text-emerald-600" />
+                الصورة الشخصية للأخصائي
+              </Label>
+              
+              <div className="w-24 h-24 rounded-full overflow-hidden bg-gray-200 mb-3 mx-auto border-2 border-white shadow-sm">
+                <img 
+                  src={currentSpec.image || FALLBACK_SPECIALIST_IMAGES[0]} 
+                  alt="معاينة صورة الأخصائي"
+                  className="w-full h-full object-cover"
+                  onError={(e) => { e.currentTarget.src = FALLBACK_SPECIALIST_IMAGES[0]; }}
+                />
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Input 
+                  type="file" 
+                  accept="image/*"
+                  onChange={(e) => handleImageFileChange(e, 'spec')}
+                  className="text-xs bg-white rounded-xl"
+                />
+                <Input 
+                  type="text" 
+                  value={currentSpec.image}
+                  onChange={(e) => setCurrentSpec({ ...currentSpec, image: e.target.value })}
+                  placeholder="أو رابط الصورة..."
+                  className="text-xs rounded-xl"
+                />
+              </div>
+            </div>
+
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label className="text-xs font-bold text-gray-700 mb-1 block">اسم الأخصائي بالكامل *</Label>
@@ -788,7 +896,7 @@ const AdminDashboard = () => {
                 }}
                 className="w-full h-10 rounded-xl border border-gray-200 px-3 text-xs font-bold bg-white"
               >
-                <option value="">-- اختاري الفرع المعتمد --</option>
+                <option value="">-- اختر الفرع المعتمد --</option>
                 {centers.map(c => (
                   <option key={c.id} value={c.id}>{c.name} ({c.location})</option>
                 ))}
@@ -806,7 +914,7 @@ const AdminDashboard = () => {
             </div>
 
             <div>
-              <Label className="text-xs font-bold text-gray-700 mb-1 block">نبذة سريعة عن الأخصائي</Label>
+              <Label className="text-xs font-bold text-gray-700 mb-1 block">نبذة سريعة عن الأخصائي وخبراته</Label>
               <Textarea 
                 value={currentSpec.bio} 
                 onChange={(e) => setCurrentSpec({ ...currentSpec, bio: e.target.value })}
@@ -814,6 +922,42 @@ const AdminDashboard = () => {
                 rows={2}
                 className="rounded-xl"
               />
+            </div>
+
+            {/* Case Studies Section */}
+            <div className="p-4 bg-emerald-50/50 rounded-2xl border border-emerald-100 space-y-3">
+              <Label className="text-xs font-bold text-emerald-900 block flex items-center gap-1.5">
+                <Briefcase className="w-4 h-4 text-emerald-600" />
+                إضافة سابقة عمل أو حالة تم إنجازها
+              </Label>
+              <Input 
+                value={newCaseTitle}
+                onChange={(e) => setNewCaseTitle(e.target.value)}
+                placeholder="عنوان الحالة (مثال: تركيب طرف صناعي سفلي لمريض)"
+                className="text-xs rounded-xl bg-white"
+              />
+              <Textarea 
+                value={newCaseDesc}
+                onChange={(e) => setNewCaseDesc(e.target.value)}
+                placeholder="تفاصيل الحالة وتطور الحركة..."
+                rows={2}
+                className="text-xs rounded-xl bg-white"
+              />
+              <Button type="button" onClick={handleAddCaseToSpec} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold py-2">
+                إضافة الحالة للبروفايل
+              </Button>
+
+              {currentSpec.casesWorkedOn && currentSpec.casesWorkedOn.length > 0 && (
+                <div className="space-y-1.5 pt-2">
+                  <p className="text-[11px] font-bold text-gray-700">الحالات المضافة بالملف ({currentSpec.casesWorkedOn.length}):</p>
+                  {currentSpec.casesWorkedOn.map((cs, idx) => (
+                    <div key={idx} className="bg-white p-2 rounded-lg border text-xs flex justify-between items-center">
+                      <span className="font-semibold text-gray-800 line-clamp-1">{cs.title}</span>
+                      <span className="text-[10px] text-emerald-600 font-bold">مكتملة</span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 

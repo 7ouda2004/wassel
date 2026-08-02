@@ -1,9 +1,8 @@
-
 import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Users, FileText, PlusCircle, X, Edit, Trash, Save, 
-  Search, Download, Upload, ChevronDown, FileUp, UserCheck
+  Search, Download, Upload, ChevronDown, FileUp, UserCheck, Briefcase, Camera, Building, Sparkles
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,14 +12,12 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   DialogFooter,
   DialogDescription,
 } from "@/components/ui/dialog";
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
@@ -31,8 +28,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { toast } from "sonner";
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import { 
+  getLocalSpecialists, saveLocalSpecialists, type Specialist,
+  getLocalCenters, saveLocalCenters, type Center, type CaseStudy,
+  FALLBACK_SPECIALIST_IMAGES, DEFAULT_CASES
+} from '@/lib/db';
 
-// Types
 type Patient = {
   id: number;
   name: string;
@@ -49,48 +50,6 @@ type Patient = {
   files: string[];
 };
 
-type MeasurementField = {
-  id: string;
-  label: string;
-  unit: string;
-};
-
-const measurementFields: Record<string, MeasurementField[]> = {
-  'جبيرة AFO': [
-    { id: 'footLength', label: 'طول القدم', unit: 'سم' },
-    { id: 'footWidth', label: 'عرض القدم', unit: 'سم' },
-    { id: 'ankleCircumference', label: 'محيط الكاحل', unit: 'سم' },
-    { id: 'calfCircumference', label: 'محيط بطة الساق', unit: 'سم' },
-    { id: 'ankleToKnee', label: 'المسافة من الكاحل إلى الركبة', unit: 'سم' }
-  ],
-  'جبيرة KAFO': [
-    { id: 'footLength', label: 'طول القدم', unit: 'سم' },
-    { id: 'footWidth', label: 'عرض القدم', unit: 'سم' },
-    { id: 'ankleCircumference', label: 'محيط الكاحل', unit: 'سم' },
-    { id: 'calfCircumference', label: 'محيط بطة الساق', unit: 'سم' },
-    { id: 'kneeCircumference', label: 'محيط الركبة', unit: 'سم' },
-    { id: 'thighCircumference', label: 'محيط الفخذ', unit: 'سم' },
-    { id: 'ankleToKnee', label: 'المسافة من الكاحل إلى الركبة', unit: 'سم' },
-    { id: 'kneeToHip', label: 'المسافة من الركبة إلى الورك', unit: 'سم' }
-  ],
-  'طرف صناعي تحت الركبة': [
-    { id: 'residualLength', label: 'طول الطرف المتبقي', unit: 'سم' },
-    { id: 'residualCircumference', label: 'محيط الطرف المتبقي', unit: 'سم' },
-    { id: 'kneeCircumference', label: 'محيط الركبة', unit: 'سم' },
-    { id: 'calfShape', label: 'شكل بطة الساق', unit: '' },
-    { id: 'footSize', label: 'مقاس القدم', unit: '' }
-  ],
-  'طرف صناعي فوق الركبة': [
-    { id: 'residualLength', label: 'طول الطرف المتبقي', unit: 'سم' },
-    { id: 'residualCircumference', label: 'محيط الطرف المتبقي', unit: 'سم' },
-    { id: 'hipCircumference', label: 'محيط الورك', unit: 'سم' },
-    { id: 'residualShape', label: 'شكل الطرف المتبقي', unit: '' },
-    { id: 'kneeType', label: 'نوع الركبة', unit: '' },
-    { id: 'footSize', label: 'مقاس القدم', unit: '' }
-  ]
-};
-
-// Sample data
 const samplePatients: Patient[] = [
   {
     id: 1,
@@ -108,10 +67,10 @@ const samplePatients: Patient[] = [
       footSize: '42'
     },
     status: 'نشط',
-    lastVisit: '2025-02-10',
-    nextVisit: '2025-04-10',
-    notes: 'المريض يتقدم بشكل جيد في التأقلم مع الطرف الصناعي. يحتاج إلى متابعة لتعديل السوكيت بعد انخفاض الوزن.',
-    files: ['تقرير_طبي_أحمد_محمد.pdf', 'صور_أشعة_الطرف.jpg']
+    lastVisit: '2026-02-10',
+    nextVisit: '2026-04-10',
+    notes: 'المريض يتقدم بشكل ممتاز في التأقلم مع الطرف الصناعي. تم الضبط بدقة عالية.',
+    files: ['تقرير_طبي_أحمد_محمد.pdf']
   },
   {
     id: 2,
@@ -129,898 +88,522 @@ const samplePatients: Patient[] = [
       ankleToKnee: '38'
     },
     status: 'نشط',
-    lastVisit: '2025-01-15',
-    nextVisit: '2025-03-15',
-    notes: 'تحسن ملحوظ في المشي بعد استخدام الجبيرة. تحتاج إلى تمارين لتقوية العضلات.',
-    files: ['تقرير_العلاج_الطبيعي_فاطمة.pdf']
-  },
-  {
-    id: 3,
-    name: 'محمود عبد الله',
-    age: 45,
-    gender: 'ذكر',
-    phone: '01167834290',
-    condition: 'بتر فوق الركبة - الساق اليسرى',
-    deviceType: 'طرف صناعي فوق الركبة',
-    measurements: {
-      residualLength: '28',
-      residualCircumference: '48',
-      hipCircumference: '98',
-      residualShape: 'أسطواني',
-      kneeType: 'هيدروليكية',
-      footSize: '44'
-    },
-    status: 'تحت المراقبة',
-    lastVisit: '2025-02-20',
-    nextVisit: '2025-03-05',
-    notes: 'يواجه صعوبة في التحكم بالركبة الصناعية. يحتاج إلى جلسات تدريب إضافية.',
-    files: ['صور_الطرف_الصناعي.jpg', 'برنامج_التأهيل.pdf']
+    lastVisit: '2026-01-15',
+    nextVisit: '2026-03-15',
+    notes: 'تحسن ملحوظ في المشي بعد استخدام الجبيرة وتثبيت الكاحل.',
+    files: ['تقرير_الجبيرة_فاطمة.pdf']
   }
 ];
 
 const SpecialistDashboard = () => {
-  const [patients, setPatients] = useState<Patient[]>(() => {
-    const savedPatients = localStorage.getItem('patients');
-    return savedPatients ? JSON.parse(savedPatients) : samplePatients;
-  });
-  
-  const [isAddingPatient, setIsAddingPatient] = useState(false);
-  const [isEditingPatient, setIsEditingPatient] = useState(false);
-  const [viewingPatient, setViewingPatient] = useState<Patient | null>(null);
-  const [currentPatient, setCurrentPatient] = useState<Patient>({
-    id: 0,
-    name: '',
-    age: 0,
-    gender: '',
-    phone: '',
-    condition: '',
-    deviceType: '',
-    measurements: {},
-    status: 'جديد',
-    lastVisit: new Date().toISOString().split('T')[0],
-    nextVisit: '',
-    notes: '',
-    files: []
-  });
-  
+  const [patients, setPatients] = useState<Patient[]>(samplePatients);
   const [searchTerm, setSearchTerm] = useState('');
-  const [confirmDelete, setConfirmDelete] = useState<number | null>(null);
-  const [uploadingFile, setUploadingFile] = useState(false);
+  const [currentSpecialist, setCurrentSpecialist] = useState<Specialist | null>(null);
+  const [centerSpecialists, setCenterSpecialists] = useState<Specialist[]>([]);
+
+  // Profile Edit Form State
+  const [profileName, setProfileName] = useState('');
+  const [profileRole, setProfileRole] = useState('');
+  const [profileBio, setProfileBio] = useState('');
+  const [profilePhone, setProfilePhone] = useState('');
+  const [profileImage, setProfileImage] = useState('');
+  const [profileExpertise, setProfileExpertise] = useState('');
+  const [profileCases, setProfileCases] = useState<CaseStudy[]>([]);
+
+  // New Case Input
+  const [caseTitle, setCaseTitle] = useState('');
+  const [caseDesc, setCaseDesc] = useState('');
+
+  // Add Center Specialist Modal State
+  const [isAddingCenterSpec, setIsAddingCenterSpec] = useState(false);
+  const [newSpecName, setNewSpecName] = useState('');
+  const [newSpecUsername, setNewSpecUsername] = useState('');
+  const [newSpecRole, setNewSpecRole] = useState('أخصائي أطراف صناعية وجبائر طبية');
+  const [newSpecPhone, setNewSpecPhone] = useState('');
 
   useEffect(() => {
     document.documentElement.dir = 'rtl';
     document.body.classList.add('font-cairo');
     
-    // Check if user is logged in
-    const isSpecialist = sessionStorage.getItem('isSpecialist');
-    if (isSpecialist !== 'true') {
-      window.location.href = '/';
+    // Auth Check
+    const username = sessionStorage.getItem('username');
+    const isSpec = sessionStorage.getItem('isSpecialist') === 'true';
+
+    if (!isSpec || !username) {
+      toast.error('يرجى تسجيل الدخول أولاً للوصول للوحة التحكم');
+      window.location.href = '/login';
       return;
     }
 
-    // Load patients from localStorage
-    const savedPatients = localStorage.getItem('patients');
-    if (savedPatients) {
-      try {
-        const parsedPatients = JSON.parse(savedPatients);
-        setPatients(parsedPatients);
-      } catch (error) {
-        console.error('Error loading patients:', error);
-        toast.error('حدث خطأ في تحميل بيانات المرضى');
+    const allSpecs = getLocalSpecialists();
+    const found = allSpecs.find(s => s.username.toLowerCase() === username.toLowerCase()) || allSpecs[0];
+
+    if (found) {
+      setCurrentSpecialist(found);
+      setProfileName(found.name);
+      setProfileRole(found.role);
+      setProfileBio(found.bio || '');
+      setProfilePhone(found.phone || '');
+      setProfileImage(found.image || FALLBACK_SPECIALIST_IMAGES[0]);
+      setProfileExpertise(found.expertise ? found.expertise.join('، ') : '');
+      setProfileCases(found.casesWorkedOn || DEFAULT_CASES);
+
+      // Filter specialists in same center
+      if (found.centerId || found.centerName) {
+        const sameCenterSpecs = allSpecs.filter(s => s.centerId === found.centerId || s.centerName === found.centerName);
+        setCenterSpecialists(sameCenterSpecs);
       }
     }
   }, []);
 
-  // Save patients to localStorage when they change
-  useEffect(() => {
-    try {
-      localStorage.setItem('patients', JSON.stringify(patients));
-    } catch (error) {
-      console.error('Error saving patients:', error);
-      toast.error('حدث خطأ في حفظ بيانات المرضى');
-    }
-  }, [patients]);
+  // Save Specialist/Center Profile Changes
+  const handleSaveProfile = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentSpecialist) return;
 
-  const filteredPatients = patients.filter(patient => 
-    patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    patient.condition.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    patient.deviceType.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    patient.phone.includes(searchTerm)
+    const expArray = profileExpertise
+      ? profileExpertise.split(/[،,]/).map(s => s.trim()).filter(Boolean)
+      : ['الأطراف الصناعية', 'الجبائر الطبية'];
+
+    const updatedSpec: Specialist = {
+      ...currentSpecialist,
+      name: profileName,
+      role: profileRole,
+      bio: profileBio,
+      phone: profilePhone,
+      image: profileImage || FALLBACK_SPECIALIST_IMAGES[0],
+      expertise: expArray,
+      casesWorkedOn: profileCases
+    };
+
+    const allSpecs = getLocalSpecialists();
+    const updatedAll = allSpecs.map(s => s.id === updatedSpec.id ? updatedSpec : s);
+    saveLocalSpecialists(updatedAll);
+    setCurrentSpecialist(updatedSpec);
+
+    toast.success('تم تحديث البروفايل والمعلومات الشخصية وسابقة الأعمال بنجاح!');
+  };
+
+  // Add Case Study to Profile
+  const handleAddCase = () => {
+    if (!caseTitle.trim()) {
+      toast.error('أدخل عنوان الحالة');
+      return;
+    }
+    const newCase: CaseStudy = {
+      id: 'case_' + Date.now().toString(),
+      title: caseTitle,
+      deviceType: 'جهاز حركي مخصص',
+      description: caseDesc || 'تم تركيب وضبط وتأهيل الحالة بنجاح.',
+      outcome: 'تحسن الحركي واستعادة الاستقلالية بنسبة عالية.'
+    };
+    setProfileCases(prev => [...prev, newCase]);
+    setCaseTitle('');
+    setCaseDesc('');
+    toast.success('تم إضافة الحالة لسجل أعمالك!');
+  };
+
+  // Add Specialist to Center
+  const handleAddCenterSpecialist = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newSpecName.trim() || !newSpecUsername.trim()) {
+      toast.error('أدخل اسم واسم مستخدم الأخصائي');
+      return;
+    }
+
+    const newSpec: Specialist = {
+      id: 'spec_' + Date.now().toString(),
+      name: newSpecName,
+      username: newSpecUsername,
+      password: 'specialist123',
+      role: newSpecRole,
+      bio: 'أخصائي معتمد بالفرع.',
+      image: FALLBACK_SPECIALIST_IMAGES[Math.floor(Math.random() * FALLBACK_SPECIALIST_IMAGES.length)],
+      expertise: ['الأطراف الصناعية', 'الجبائر الطبية'],
+      status: 'active',
+      phone: newSpecPhone,
+      centerId: currentSpecialist?.centerId,
+      centerName: currentSpecialist?.centerName
+    };
+
+    const allSpecs = getLocalSpecialists();
+    const updated = [newSpec, ...allSpecs];
+    saveLocalSpecialists(updated);
+    setCenterSpecialists(prev => [newSpec, ...prev]);
+
+    setIsAddingCenterSpec(false);
+    setNewSpecName('');
+    setNewSpecUsername('');
+    setNewSpecPhone('');
+    toast.success(`تمت إضافة الأخصائي ${newSpecName} بنجاح للفرع!`);
+  };
+
+  // Image Upload helper
+  const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfileImage(reader.result as string);
+        toast.success('تم تحميل ومعاينة صورتك الجديدة بنجاح!');
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const filteredPatients = patients.filter(p => 
+    p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    p.condition.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    p.deviceType.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleAddPatient = () => {
-    setCurrentPatient({
-      id: Math.max(0, ...patients.map(p => p.id)) + 1,
-      name: '',
-      age: 0,
-      gender: '',
-      phone: '',
-      condition: '',
-      deviceType: '',
-      measurements: {},
-      status: 'جديد',
-      lastVisit: new Date().toISOString().split('T')[0],
-      nextVisit: '',
-      notes: '',
-      files: []
-    });
-    setIsAddingPatient(true);
-  };
-
-  const handleEditPatient = (patient: Patient) => {
-    setCurrentPatient({ ...patient });
-    setViewingPatient(null);
-    setIsEditingPatient(true);
-  };
-
-  const handleViewPatient = (patient: Patient) => {
-    setViewingPatient(patient);
-  };
-
-  const handleDeletePatient = (id: number) => {
-    setConfirmDelete(id);
-  };
-
-  const confirmDeletePatient = () => {
-    if (confirmDelete) {
-      setPatients(patients.filter(patient => patient.id !== confirmDelete));
-      setConfirmDelete(null);
-      toast.success('تم حذف المريض بنجاح');
-    }
-  };
-
-  const handleSavePatient = () => {
-    if (!currentPatient.name || !currentPatient.deviceType || !currentPatient.phone) {
-      toast.error('يرجى ملء جميع الحقول المطلوبة');
-      return;
-    }
-
-    // Validate phone number format
-    const phoneRegex = /^01[0125][0-9]{8}$/;
-    if (!phoneRegex.test(currentPatient.phone)) {
-      toast.error('رقم الهاتف غير صحيح');
-      return;
-    }
-    
-    try {
-      if (isAddingPatient) {
-        setPatients([...patients, currentPatient]);
-        toast.success('تمت إضافة المريض بنجاح');
-        setIsAddingPatient(false);
-      } else if (isEditingPatient) {
-        setPatients(patients.map(p => p.id === currentPatient.id ? currentPatient : p));
-        toast.success('تم تحديث بيانات المريض بنجاح');
-        setIsEditingPatient(false);
-      }
-      setCurrentPatient({
-        id: 0,
-        name: '',
-        age: 0,
-        gender: '',
-        phone: '',
-        condition: '',
-        deviceType: '',
-        measurements: {},
-        status: 'جديد',
-        lastVisit: new Date().toISOString().split('T')[0],
-        nextVisit: '',
-        notes: '',
-        files: []
-      });
-    } catch (error) {
-      console.error('Error saving patient:', error);
-      toast.error('حدث خطأ في حفظ بيانات المريض');
-    }
-  };
-
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-    setCurrentPatient({ ...currentPatient, [name]: value });
-    
-    // Reset measurements if device type changes
-    if (name === 'deviceType') {
-      setCurrentPatient({ 
-        ...currentPatient, 
-        deviceType: value,
-        measurements: {} 
-      });
-    }
-  };
-
-  const handleMeasurementChange = (id: string, value: string) => {
-    setCurrentPatient({
-      ...currentPatient,
-      measurements: {
-        ...currentPatient.measurements,
-        [id]: value
-      }
-    });
-  };
-
-  const simulateFileUpload = () => {
-    setUploadingFile(true);
-    setTimeout(() => {
-      const newFile = `ملف_${Math.floor(Math.random() * 1000)}.pdf`;
-      
-      if (viewingPatient) {
-        const updatedPatient = {
-          ...viewingPatient,
-          files: [...viewingPatient.files, newFile]
-        };
-        setViewingPatient(updatedPatient);
-        setPatients(patients.map(p => p.id === viewingPatient.id ? updatedPatient : p));
-      } else if (currentPatient) {
-        setCurrentPatient({
-          ...currentPatient,
-          files: [...currentPatient.files, newFile]
-        });
-      }
-      
-      setUploadingFile(false);
-      toast.success('تم رفع الملف بنجاح');
-    }, 1500);
-  };
-
-  const handleDownloadFile = (fileName: string) => {
-    toast.success(`جاري تحميل الملف: ${fileName}`);
-  };
-
-  const handleDeleteFile = (fileName: string) => {
-    if (viewingPatient) {
-      const updatedPatient = {
-        ...viewingPatient,
-        files: viewingPatient.files.filter(f => f !== fileName)
-      };
-      setViewingPatient(updatedPatient);
-      setPatients(patients.map(p => p.id === viewingPatient.id ? updatedPatient : p));
-    } else if (currentPatient) {
-      setCurrentPatient({
-        ...currentPatient,
-        files: currentPatient.files.filter(f => f !== fileName)
-      });
-    }
-    toast.success('تم حذف الملف بنجاح');
-  };
-
-  // Helper to render patient table rows
-  const renderPatientRows = (patientList: Patient[]) => {
-    if (patientList.length === 0) {
-      return (
-        <TableRow>
-          <TableCell colSpan={7} className="text-center h-32">
-            <div className="flex flex-col items-center justify-center text-gray-500">
-              <Users className="h-8 w-8 mb-2" />
-              <span>لا يوجد مرضى مطابقين لبحثك</span>
-            </div>
-          </TableCell>
-        </TableRow>
-      );
-    }
-    return patientList.map((patient) => (
-      <TableRow key={patient.id}>
-        <TableCell className="font-medium">{patient.name}</TableCell>
-        <TableCell>{patient.age}</TableCell>
-        <TableCell>{patient.condition}</TableCell>
-        <TableCell>{patient.deviceType}</TableCell>
-        <TableCell>
-          <span 
-            className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${
-              patient.status === 'نشط' ? 'bg-green-100 text-green-800' :
-              patient.status === 'تحت المراقبة' ? 'bg-yellow-100 text-yellow-800' :
-              'bg-blue-100 text-blue-800'
-            }`}
-          >
-            {patient.status}
-          </span>
-        </TableCell>
-        <TableCell>{patient.lastVisit}</TableCell>
-        <TableCell>
-          <div className="flex space-x-2 rtl:space-x-reverse">
-            <Button variant="ghost" size="sm" onClick={() => handleViewPatient(patient)}>
-              عرض
-            </Button>
-            <Button variant="ghost" size="sm" onClick={() => handleEditPatient(patient)}>
-              <Edit className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="sm" onClick={() => handleDeletePatient(patient.id)}>
-              <Trash className="h-4 w-4" />
-            </Button>
-          </div>
-        </TableCell>
-      </TableRow>
-    ));
-  };
-
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-slate-50/50">
       <Navbar />
 
-      <div className="flex-1 bg-gray-50">
-        <div className="container mx-auto px-4 py-10">
-          <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">لوحة تحكم الأخصائي</h1>
-                <p className="text-gray-600">مرحبًا {sessionStorage.getItem('username') || 'أخصائي'}، إليك نظرة عامة على المرضى والتقارير</p>
-              </div>
-              <div className="mt-4 md:mt-0">
-                <Button onClick={handleAddPatient} className="medical-btn">
-                  <PlusCircle className="h-5 w-5 mr-2" />
-                  إضافة مريض جديد
-                </Button>
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-              <div className="bg-medical-50 rounded-lg p-4 border border-medical-100">
-                <div className="flex items-center">
-                  <div className="h-12 w-12 rounded-full bg-medical-100 flex items-center justify-center mr-4">
-                    <Users className="h-6 w-6 text-medical-600" />
-                  </div>
-                  <div>
-                    <div className="text-sm text-gray-500">إجمالي المرضى</div>
-                    <div className="text-2xl font-bold">{patients.length}</div>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="bg-medical-50 rounded-lg p-4 border border-medical-100">
-                <div className="flex items-center">
-                  <div className="h-12 w-12 rounded-full bg-medical-100 flex items-center justify-center mr-4">
-                    <UserCheck className="h-6 w-6 text-medical-600" />
-                  </div>
-                  <div>
-                    <div className="text-sm text-gray-500">مرضى نشطون</div>
-                    <div className="text-2xl font-bold">{patients.filter(p => p.status === 'نشط').length}</div>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="bg-medical-50 rounded-lg p-4 border border-medical-100">
-                <div className="flex items-center">
-                  <div className="h-12 w-12 rounded-full bg-medical-100 flex items-center justify-center mr-4">
-                    <FileText className="h-6 w-6 text-medical-600" />
-                  </div>
-                  <div>
-                    <div className="text-sm text-gray-500">الأطراف الصناعية</div>
-                    <div className="text-2xl font-bold">{patients.filter(p => p.deviceType.includes('طرف')).length}</div>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="bg-medical-50 rounded-lg p-4 border border-medical-100">
-                <div className="flex items-center">
-                  <div className="h-12 w-12 rounded-full bg-medical-100 flex items-center justify-center mr-4">
-                    <FileText className="h-6 w-6 text-medical-600" />
-                  </div>
-                  <div>
-                    <div className="text-sm text-gray-500">الجبائر الطبية</div>
-                    <div className="text-2xl font-bold">{patients.filter(p => p.deviceType.includes('جبيرة')).length}</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <div className="mb-6 relative">
-              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                <Search className="h-5 w-5 text-gray-400" />
-              </div>
-              <Input
-                type="text"
-                placeholder="البحث عن مريض..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-3 pr-10"
-              />
-            </div>
-            
-            <Tabs defaultValue="all">
-              <TabsList className="grid grid-cols-4 mb-4">
-                <TabsTrigger value="all">جميع المرضى</TabsTrigger>
-                <TabsTrigger value="prosthetics">الأطراف الصناعية</TabsTrigger>
-                <TabsTrigger value="orthoses">الجبائر الطبية</TabsTrigger>
-                <TabsTrigger value="active">المرضى النشطون</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="all">
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableCaption>قائمة بجميع المرضى المسجلين</TableCaption>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="text-right">اسم المريض</TableHead>
-                        <TableHead className="text-right">العمر</TableHead>
-                        <TableHead className="text-right">الحالة</TableHead>
-                        <TableHead className="text-right">نوع الجهاز</TableHead>
-                        <TableHead className="text-right">الحالة</TableHead>
-                        <TableHead className="text-right">آخر زيارة</TableHead>
-                        <TableHead className="text-right">الإجراءات</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {renderPatientRows(filteredPatients)}
-                    </TableBody>
-                  </Table>
-                </div>
-              </TabsContent>
-              
-              <TabsContent value="prosthetics">
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableCaption>قائمة بمرضى الأطراف الصناعية</TableCaption>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="text-right">اسم المريض</TableHead>
-                        <TableHead className="text-right">العمر</TableHead>
-                        <TableHead className="text-right">الحالة</TableHead>
-                        <TableHead className="text-right">نوع الطرف</TableHead>
-                        <TableHead className="text-right">الحالة</TableHead>
-                        <TableHead className="text-right">آخر زيارة</TableHead>
-                        <TableHead className="text-right">الإجراءات</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {renderPatientRows(filteredPatients.filter(p => p.deviceType.includes('طرف')))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </TabsContent>
-              
-              <TabsContent value="orthoses">
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableCaption>قائمة بمرضى الجبائر الطبية</TableCaption>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="text-right">اسم المريض</TableHead>
-                        <TableHead className="text-right">العمر</TableHead>
-                        <TableHead className="text-right">الحالة</TableHead>
-                        <TableHead className="text-right">نوع الجبيرة</TableHead>
-                        <TableHead className="text-right">الحالة</TableHead>
-                        <TableHead className="text-right">آخر زيارة</TableHead>
-                        <TableHead className="text-right">الإجراءات</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {renderPatientRows(filteredPatients.filter(p => p.deviceType.includes('جبيرة')))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </TabsContent>
-              
-              <TabsContent value="active">
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableCaption>قائمة بالمرضى النشطين</TableCaption>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="text-right">اسم المريض</TableHead>
-                        <TableHead className="text-right">العمر</TableHead>
-                        <TableHead className="text-right">الحالة</TableHead>
-                        <TableHead className="text-right">نوع الجهاز</TableHead>
-                        <TableHead className="text-right">الحالة</TableHead>
-                        <TableHead className="text-right">آخر زيارة</TableHead>
-                        <TableHead className="text-right">الإجراءات</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {renderPatientRows(filteredPatients.filter(p => p.status === 'نشط'))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </TabsContent>
-            </Tabs>
-          </div>
-        </div>
-      </div>
-
-      {/* Add/Edit Patient Dialog */}
-      <Dialog
-        open={isAddingPatient || isEditingPatient}
-        onOpenChange={(open) => {
-          if (!open) {
-            setIsAddingPatient(false);
-            setIsEditingPatient(false);
-            setCurrentPatient({
-              id: 0,
-              name: '',
-              age: 0,
-              gender: '',
-              phone: '',
-              condition: '',
-              deviceType: '',
-              measurements: {},
-              status: 'جديد',
-              lastVisit: new Date().toISOString().split('T')[0],
-              nextVisit: '',
-              notes: '',
-              files: []
-            });
-          }
-        }}
-      >
-        <DialogContent className="max-w-4xl">
-          <DialogHeader>
-            <DialogTitle>
-              {isAddingPatient ? 'إضافة مريض جديد' : 'تعديل بيانات المريض'}
-            </DialogTitle>
-          </DialogHeader>
+      <main className="flex-grow py-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="name">اسم المريض</Label>
-                <Input
-                  id="name"
-                  name="name"
-                  value={currentPatient.name}
-                  onChange={handleInputChange}
-                  placeholder="الاسم الكامل"
-                  required
+          {/* Header Profile Badge */}
+          {currentSpecialist && (
+            <div className="bg-gradient-to-r from-medical-950 via-medical-900 to-medical-800 text-white rounded-3xl p-6 sm:p-8 shadow-xl mb-8 flex flex-col md:flex-row items-center justify-between gap-6">
+              <div className="flex items-center gap-5">
+                <img 
+                  src={profileImage || FALLBACK_SPECIALIST_IMAGES[0]} 
+                  alt={profileName}
+                  className="w-20 h-20 rounded-full object-cover border-4 border-white/20 shadow-lg"
+                  onError={(e) => { e.currentTarget.src = FALLBACK_SPECIALIST_IMAGES[0]; }}
                 />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="age">العمر</Label>
-                  <Input
-                    id="age"
-                    name="age"
-                    type="number"
-                    value={currentPatient.age}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="gender">الجنس</Label>
-                  <select
-                    id="gender"
-                    name="gender"
-                    value={currentPatient.gender}
-                    onChange={handleInputChange}
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                    required
-                  >
-                    <option value="">اختر الجنس</option>
-                    <option value="ذكر">ذكر</option>
-                    <option value="أنثى">أنثى</option>
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <Label htmlFor="phone">رقم الهاتف</Label>
-                <Input
-                  id="phone"
-                  name="phone"
-                  value={currentPatient.phone}
-                  onChange={handleInputChange}
-                  placeholder="رقم الهاتف"
-                  required
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="condition">الحالة المرضية</Label>
-                <Textarea
-                  id="condition"
-                  name="condition"
-                  value={currentPatient.condition}
-                  onChange={handleInputChange}
-                  placeholder="وصف الحالة"
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="deviceType">نوع الجهاز</Label>
-                <select
-                  id="deviceType"
-                  name="deviceType"
-                  value={currentPatient.deviceType}
-                  onChange={handleInputChange}
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                  required
-                >
-                  <option value="">اختر نوع الجهاز</option>
-                  <option value="جبيرة AFO">جبيرة AFO</option>
-                  <option value="جبيرة KAFO">جبيرة KAFO</option>
-                  <option value="طرف صناعي تحت الركبة">طرف صناعي تحت الركبة</option>
-                  <option value="طرف صناعي فوق الركبة">طرف صناعي فوق الركبة</option>
-                </select>
-              </div>
-
-              {currentPatient.deviceType && (
-                <div>
-                  <Label>القياسات</Label>
-                  <div className="space-y-2 mt-2">
-                    {measurementFields[currentPatient.deviceType]?.map((field) => (
-                      <div key={field.id} className="grid grid-cols-2 gap-2 items-center">
-                        <Label htmlFor={field.id}>{field.label}</Label>
-                        <div className="flex">
-                          <Input
-                            id={field.id}
-                            value={currentPatient.measurements[field.id] || ''}
-                            onChange={(e) => handleMeasurementChange(field.id, e.target.value)}
-                            placeholder={field.unit}
-                          />
-                          {field.unit && (
-                            <span className="ml-2 flex items-center text-gray-500">{field.unit}</span>
-                          )}
-                        </div>
-                      </div>
-                    ))}
+                  <div className="inline-flex items-center gap-1.5 bg-white/10 px-3 py-0.5 rounded-full text-xs font-bold mb-1 border border-white/15">
+                    <UserCheck className="w-3.5 h-3.5 text-emerald-400" />
+                    لوحة تحكم الأخصائي والفرع
                   </div>
-                </div>
-              )}
-
-              <div>
-                <Label htmlFor="status">حالة المريض</Label>
-                <select
-                  id="status"
-                  name="status"
-                  value={currentPatient.status}
-                  onChange={handleInputChange}
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                  required
-                >
-                  <option value="جديد">جديد</option>
-                  <option value="نشط">نشط</option>
-                  <option value="تحت المراقبة">تحت المراقبة</option>
-                </select>
-              </div>
-
-              <div>
-                <Label htmlFor="nextVisit">موعد الزيارة القادمة</Label>
-                <Input
-                  id="nextVisit"
-                  name="nextVisit"
-                  type="date"
-                  value={currentPatient.nextVisit}
-                  onChange={handleInputChange}
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="notes">ملاحظات</Label>
-                <Textarea
-                  id="notes"
-                  name="notes"
-                  value={currentPatient.notes}
-                  onChange={handleInputChange}
-                  placeholder="ملاحظات إضافية"
-                />
-              </div>
-            </div>
-          </div>
-
-          <DialogFooter className="mt-6">
-            <Button
-              variant="outline"
-              onClick={() => {
-                setIsAddingPatient(false);
-                setIsEditingPatient(false);
-              }}
-            >
-              إلغاء
-            </Button>
-            <Button onClick={handleSavePatient} className="medical-btn">
-              <Save className="h-4 w-4 mr-2" />
-              {isAddingPatient ? 'إضافة المريض' : 'حفظ التغييرات'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* View Patient Dialog */}
-      <Dialog 
-        open={!!viewingPatient} 
-        onOpenChange={(open) => {
-          if (!open) setViewingPatient(null);
-        }}
-      >
-        <DialogContent className="max-w-4xl">
-          <DialogHeader>
-            <DialogTitle>تفاصيل المريض</DialogTitle>
-          </DialogHeader>
-          
-          {viewingPatient && (
-            <div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                <div className="bg-medical-50 rounded-lg p-4">
-                  <h3 className="text-sm font-medium text-gray-500 mb-1">اسم المريض</h3>
-                  <p className="text-lg font-semibold">{viewingPatient.name}</p>
-                </div>
-                
-                <div className="bg-medical-50 rounded-lg p-4">
-                  <h3 className="text-sm font-medium text-gray-500 mb-1">العمر / الجنس</h3>
-                  <p className="text-lg font-semibold">{viewingPatient.age} سنة / {viewingPatient.gender}</p>
-                </div>
-                
-                <div className="bg-medical-50 rounded-lg p-4">
-                  <h3 className="text-sm font-medium text-gray-500 mb-1">رقم الهاتف</h3>
-                  <p className="text-lg font-semibold">{viewingPatient.phone}</p>
+                  <h1 className="text-2xl sm:text-3xl font-extrabold font-cairo">{profileName}</h1>
+                  <p className="text-medical-200 text-xs mt-1 font-semibold">{profileRole} - {currentSpecialist.centerName || 'مركز واصل'}</p>
                 </div>
               </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <div className="bg-white rounded-lg border border-gray-200 p-4 mb-4">
-                    <h3 className="text-lg font-semibold mb-2">معلومات الحالة</h3>
-                    <div className="space-y-3">
-                      <div>
-                        <span className="text-gray-500">الحالة:</span>
-                        <p>{viewingPatient.condition}</p>
-                      </div>
-                      <div>
-                        <span className="text-gray-500">نوع الجهاز:</span>
-                        <p>{viewingPatient.deviceType}</p>
-                      </div>
-                      <div>
-                        <span className="text-gray-500">حالة المريض:</span>
-                        <p>
-                          <span 
-                            className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${
-                              viewingPatient.status === 'نشط' ? 'bg-green-100 text-green-800' :
-                              viewingPatient.status === 'تحت المراقبة' ? 'bg-yellow-100 text-yellow-800' :
-                              'bg-blue-100 text-blue-800'
-                            }`}
-                          >
-                            {viewingPatient.status}
-                          </span>
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="bg-white rounded-lg border border-gray-200 p-4 mb-4">
-                    <h3 className="text-lg font-semibold mb-2">الزيارات</h3>
-                    <div className="space-y-3">
-                      <div>
-                        <span className="text-gray-500">آخر زيارة:</span>
-                        <p>{viewingPatient.lastVisit}</p>
-                      </div>
-                      <div>
-                        <span className="text-gray-500">الزيارة القادمة:</span>
-                        <p>{viewingPatient.nextVisit || 'غير محدد'}</p>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="bg-white rounded-lg border border-gray-200 p-4">
-                    <h3 className="text-lg font-semibold mb-2">ملاحظات</h3>
-                    <p className="text-gray-700">{viewingPatient.notes || 'لا توجد ملاحظات'}</p>
-                  </div>
-                </div>
-                
-                <div>
-                  <div className="bg-white rounded-lg border border-gray-200 p-4 mb-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <h3 className="text-lg font-semibold">القياسات</h3>
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={() => handleEditPatient(viewingPatient)}
-                        className="text-xs"
-                      >
-                        <Edit className="h-3 w-3 mr-1" />
-                        تعديل
-                      </Button>
-                    </div>
-                    {Object.keys(viewingPatient.measurements).length > 0 ? (
-                      <div className="space-y-2">
-                        {measurementFields[viewingPatient.deviceType]?.map((field) => (
-                          viewingPatient.measurements[field.id] && (
-                            <div key={field.id} className="flex justify-between border-b border-gray-100 py-1">
-                              <span className="text-gray-500">{field.label}:</span>
-                              <span>
-                                {viewingPatient.measurements[field.id]} {field.unit}
-                              </span>
-                            </div>
-                          )
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-gray-500">لا توجد قياسات مسجلة</p>
-                    )}
-                  </div>
-                  
-                  <div className="bg-white rounded-lg border border-gray-200 p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <h3 className="text-lg font-semibold">الملفات المرفقة</h3>
-                      <Button variant="outline" size="sm" onClick={simulateFileUpload} disabled={uploadingFile}>
-                        {uploadingFile ? (
-                          <span className="flex items-center text-xs">
-                            <svg className="animate-spin -ml-1 mr-2 h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                            جاري الرفع...
-                          </span>
-                        ) : (
-                          <span className="flex items-center text-xs">
-                            <FileUp className="h-3 w-3 mr-1" />
-                            رفع ملف
-                          </span>
-                        )}
-                      </Button>
-                    </div>
-                    
-                    {viewingPatient.files.length > 0 ? (
-                      <div className="space-y-2">
-                        {viewingPatient.files.map((file, index) => (
-                          <div key={index} className="flex items-center justify-between border-b border-gray-100 py-2">
-                            <span className="flex items-center">
-                              <FileText className="h-4 w-4 mr-2 text-gray-500" />
-                              {file}
-                            </span>
-                            <div className="flex space-x-2 rtl:space-x-reverse">
-                              <Button 
-                                variant="ghost" 
-                                size="sm"
-                                onClick={() => handleDownloadFile(file)}
-                              >
-                                <Download className="h-4 w-4" />
-                              </Button>
-                              <Button 
-                                variant="ghost" 
-                                size="sm"
-                                onClick={() => handleDeleteFile(file)}
-                              >
-                                <X className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-gray-500">لا توجد ملفات مرفقة</p>
-                    )}
-                  </div>
-                </div>
+
+              <div className="flex items-center gap-2">
+                <span className="bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 text-xs font-bold px-4 py-2 rounded-xl">
+                  حساب معتمد ونشط
+                </span>
               </div>
             </div>
           )}
-        </DialogContent>
-      </Dialog>
 
-      {/* Confirm Delete Dialog */}
-      <Dialog 
-        open={confirmDelete !== null} 
-        onOpenChange={(open) => {
-          if (!open) setConfirmDelete(null);
-        }}
-      >
-        <DialogContent>
+          {/* Main Dashboard Tabs */}
+          <Tabs defaultValue="profile" className="w-full">
+            <TabsList className="bg-white p-1.5 rounded-2xl border border-gray-200/80 mb-8 flex justify-start overflow-x-auto">
+              <TabsTrigger value="profile" className="rounded-xl font-bold py-2.5 px-5 gap-2">
+                <Edit className="w-4 h-4 text-medical-600" />
+                تعديل البروفايل وسابقة الأعمال
+              </TabsTrigger>
+
+              <TabsTrigger value="center_specs" className="rounded-xl font-bold py-2.5 px-5 gap-2">
+                <Building className="w-4 h-4 text-emerald-600" />
+                إضافة وإدارة أخصائيي المركز ({centerSpecialists.length})
+              </TabsTrigger>
+
+              <TabsTrigger value="patients" className="rounded-xl font-bold py-2.5 px-5 gap-2">
+                <Users className="w-4 h-4 text-amber-600" />
+                متابعة مقاسات وحالات المرضى ({patients.length})
+              </TabsTrigger>
+            </TabsList>
+
+            {/* TAB 1: EDIT PROFILE & CASES */}
+            <TabsContent value="profile" className="space-y-6">
+              <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-gray-100">
+                <div className="flex items-center justify-between pb-4 mb-6 border-b border-gray-100">
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-900 font-cairo">تحديث البروفايل، الصورة، والتخصصات</h2>
+                    <p className="text-xs text-gray-500 mt-0.5">تظهر هذه المعلومات في ملفك الشخصي الرسمي الذي يتصفحه المرضى.</p>
+                  </div>
+                </div>
+
+                <form onSubmit={handleSaveProfile} className="space-y-6">
+                  
+                  {/* Photo Edit */}
+                  <div className="p-5 bg-slate-50/70 rounded-2xl border border-gray-200/80 flex flex-col sm:flex-row items-center gap-6">
+                    <div className="relative">
+                      <img 
+                        src={profileImage || FALLBACK_SPECIALIST_IMAGES[0]} 
+                        alt="معاينة الصورة"
+                        className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-md"
+                        onError={(e) => { e.currentTarget.src = FALLBACK_SPECIALIST_IMAGES[0]; }}
+                      />
+                    </div>
+                    <div className="space-y-2 flex-grow">
+                      <Label className="text-xs font-bold text-gray-800 block flex items-center gap-1.5">
+                        <Camera className="w-4 h-4 text-medical-600" />
+                        تغيير صورتك الشخصية الرسمية
+                      </Label>
+                      <div className="flex flex-col sm:flex-row gap-2">
+                        <Input 
+                          type="file" 
+                          accept="image/*"
+                          onChange={handleImageFileChange}
+                          className="text-xs bg-white rounded-xl"
+                        />
+                        <Input 
+                          type="text" 
+                          value={profileImage}
+                          onChange={(e) => setProfileImage(e.target.value)}
+                          placeholder="أو ضع رابط الصورة هنا..."
+                          className="text-xs rounded-xl"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-xs font-bold text-gray-700 mb-1.5 block">الاسم بالكامل *</Label>
+                      <Input 
+                        value={profileName} 
+                        onChange={(e) => setProfileName(e.target.value)}
+                        className="rounded-xl h-11"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs font-bold text-gray-700 mb-1.5 block">الوظيفة / التخصص *</Label>
+                      <Input 
+                        value={profileRole} 
+                        onChange={(e) => setProfileRole(e.target.value)}
+                        className="rounded-xl h-11"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-xs font-bold text-gray-700 mb-1.5 block">رقم الواتساب للتواصل</Label>
+                      <Input 
+                        value={profilePhone} 
+                        onChange={(e) => setProfilePhone(e.target.value)}
+                        className="rounded-xl h-11 font-mono"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs font-bold text-gray-700 mb-1.5 block">مجالات الخبرة (مفصولة بفواصل)</Label>
+                      <Input 
+                        value={profileExpertise} 
+                        onChange={(e) => setProfileExpertise(e.target.value)}
+                        placeholder="الأطراف الصناعية الذكية، الجبائر التقويمية، تقويم المشي"
+                        className="rounded-xl h-11"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label className="text-xs font-bold text-gray-700 mb-1.5 block">نبذة عن خبراتك ومؤهلاتك الطبية</Label>
+                    <Textarea 
+                      value={profileBio} 
+                      onChange={(e) => setProfileBio(e.target.value)}
+                      rows={3}
+                      className="rounded-xl"
+                    />
+                  </div>
+
+                  {/* Add Case Studies worked on */}
+                  <div className="p-5 bg-emerald-50/40 rounded-2xl border border-emerald-200/80 space-y-4">
+                    <div className="flex items-center gap-2">
+                      <Briefcase className="w-5 h-5 text-emerald-600" />
+                      <h3 className="font-bold text-sm text-gray-900">سجل الحالات التي قمت بتأهيلها (الحالات المنجزة)</h3>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <Input 
+                        value={caseTitle}
+                        onChange={(e) => setCaseTitle(e.target.value)}
+                        placeholder="عنوان الحالة (مثال: تركيب طرف صناعي سفلي ذكي)"
+                        className="text-xs bg-white rounded-xl h-10"
+                      />
+                      <Input 
+                        value={caseDesc}
+                        onChange={(e) => setCaseDesc(e.target.value)}
+                        placeholder="وصف النتيجة والتأهيل..."
+                        className="text-xs bg-white rounded-xl h-10"
+                      />
+                    </div>
+
+                    <Button type="button" onClick={handleAddCase} className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold px-5 py-2">
+                      إضافة الحالة لملفك
+                    </Button>
+
+                    {profileCases.length > 0 && (
+                      <div className="space-y-2 pt-2">
+                        <p className="text-xs font-bold text-gray-700">الحالات المعروضة في بروفايلك ({profileCases.length}):</p>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                          {profileCases.map((c, i) => (
+                            <div key={i} className="bg-white p-3 rounded-xl border text-xs flex justify-between items-center shadow-2xs">
+                              <div>
+                                <span className="font-bold text-gray-900 block">{c.title}</span>
+                                <span className="text-[10px] text-gray-500">{c.description}</span>
+                              </div>
+                              <span className="text-[10px] bg-emerald-50 text-emerald-700 font-bold px-2 py-0.5 rounded-full">ناجحة</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="pt-2">
+                    <Button type="submit" className="bg-medical-700 hover:bg-medical-800 text-white font-bold rounded-xl px-8 py-5 text-sm shadow-md">
+                      حفظ وتحديث البروفايل فوراً
+                    </Button>
+                  </div>
+                </form>
+              </div>
+            </TabsContent>
+
+            {/* TAB 2: MANAGE CENTER SPECIALISTS */}
+            <TabsContent value="center_specs" className="space-y-6">
+              <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-gray-100">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 pb-4 border-b border-gray-100">
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-900 font-cairo">أخصائيو فرع المركز</h2>
+                    <p className="text-xs text-gray-500 mt-0.5">إضافة وتسكين أخصائيين جدد داخل هذا الفرع.</p>
+                  </div>
+                  <Button 
+                    onClick={() => setIsAddingCenterSpec(true)}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold gap-2 text-xs py-5"
+                  >
+                    <PlusCircle className="w-4 h-4" />
+                    إضافة أخصائي جديد بالمركز
+                  </Button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {centerSpecialists.map((spec) => (
+                    <div key={spec.id} className="bg-slate-50/70 rounded-2xl p-5 border border-gray-200/80 flex items-center gap-4">
+                      <img 
+                        src={spec.image || FALLBACK_SPECIALIST_IMAGES[0]} 
+                        alt={spec.name}
+                        className="w-14 h-14 rounded-full object-cover border-2 border-white shadow-xs"
+                        onError={(e) => { e.currentTarget.src = FALLBACK_SPECIALIST_IMAGES[0]; }}
+                      />
+                      <div>
+                        <h3 className="font-bold text-gray-900 text-sm">{spec.name}</h3>
+                        <p className="text-xs text-medical-600 font-semibold">{spec.role}</p>
+                        <span className="text-[10px] text-gray-400 font-mono block mt-0.5">{spec.phone}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </TabsContent>
+
+            {/* TAB 3: PATIENTS LIST */}
+            <TabsContent value="patients" className="space-y-6">
+              <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-gray-100">
+                <div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-100">
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-900 font-cairo">سجل قياسات ومتابعة الحالات</h2>
+                    <p className="text-xs text-gray-500 mt-0.5">عرض مقاسات الجبائر والأطراف ومواعيد المتابعات الفنية.</p>
+                  </div>
+                </div>
+
+                <div className="mb-6 relative">
+                  <Input 
+                    type="text" 
+                    placeholder="ابحث باسم المريض أو نوع الجهاز..." 
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="rounded-xl h-11 pr-10 border-gray-200"
+                  />
+                  <Search className="w-4 h-4 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2" />
+                </div>
+
+                <div className="overflow-x-auto rounded-2xl border border-gray-100">
+                  <Table>
+                    <TableHeader className="bg-gray-50">
+                      <TableRow>
+                        <TableHead className="font-bold text-right text-gray-900">المريض</TableHead>
+                        <TableHead className="font-bold text-right text-gray-900">الجهاز / الجبيرة</TableHead>
+                        <TableHead className="font-bold text-right text-gray-900">التشخيص</TableHead>
+                        <TableHead className="font-bold text-center text-gray-900">أحدث زيارة</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredPatients.map((p) => (
+                        <TableRow key={p.id}>
+                          <TableCell className="font-bold text-gray-900">
+                            <span>{p.name}</span>
+                            <span className="text-[11px] text-gray-400 font-mono block" dir="ltr">{p.phone}</span>
+                          </TableCell>
+                          <TableCell className="text-xs text-medical-700 font-bold">{p.deviceType}</TableCell>
+                          <TableCell className="text-xs text-gray-600">{p.condition}</TableCell>
+                          <TableCell className="text-center text-xs font-mono text-gray-600">{p.lastVisit}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
+
+        </div>
+      </main>
+
+      {/* --- ADD SPECIALIST TO CENTER MODAL --- */}
+      <Dialog open={isAddingCenterSpec} onOpenChange={setIsAddingCenterSpec}>
+        <DialogContent className="max-w-md font-cairo">
           <DialogHeader>
-            <DialogTitle>تأكيد الحذف</DialogTitle>
+            <DialogTitle className="font-bold text-lg">إضافة أخصائي جديد لفرع المركز</DialogTitle>
+            <DialogDescription className="text-xs">سيتم تسجيل الأخصائي وتسكينه بالفرع الحالي.</DialogDescription>
           </DialogHeader>
-          
-          <div className="py-4">
-            <p>هل أنت متأكد من رغبتك في حذف هذا المريض؟ لا يمكن التراجع عن هذا الإجراء.</p>
-          </div>
-          
-          <DialogFooter>
-            <Button 
-              variant="outline"
-              onClick={() => setConfirmDelete(null)}
-              className="ml-2"
-            >
-              إلغاء
-            </Button>
-            <Button 
-              variant="destructive"
-              onClick={confirmDeletePatient}
-            >
-              نعم، حذف
-            </Button>
-          </DialogFooter>
+
+          <form onSubmit={handleAddCenterSpecialist} className="space-y-4 py-2">
+            <div>
+              <Label className="text-xs font-bold text-gray-700 mb-1 block">اسم الأخصائي بالكامل *</Label>
+              <Input 
+                value={newSpecName}
+                onChange={(e) => setNewSpecName(e.target.value)}
+                placeholder="د. محمد مصطفى"
+                className="rounded-xl text-xs"
+                required
+              />
+            </div>
+            <div>
+              <Label className="text-xs font-bold text-gray-700 mb-1 block">اسم المستخدم للدخول *</Label>
+              <Input 
+                value={newSpecUsername}
+                onChange={(e) => setNewSpecUsername(e.target.value)}
+                placeholder="m_mustafa"
+                className="rounded-xl text-xs font-mono"
+                required
+              />
+            </div>
+            <div>
+              <Label className="text-xs font-bold text-gray-700 mb-1 block">الوظيفة / التخصص العلمي</Label>
+              <Input 
+                value={newSpecRole}
+                onChange={(e) => setNewSpecRole(e.target.value)}
+                className="rounded-xl text-xs"
+              />
+            </div>
+            <div>
+              <Label className="text-xs font-bold text-gray-700 mb-1 block">رقم الهاتف للواتساب</Label>
+              <Input 
+                value={newSpecPhone}
+                onChange={(e) => setNewSpecPhone(e.target.value)}
+                placeholder="01xxxxxxxxx"
+                className="rounded-xl text-xs font-mono"
+              />
+            </div>
+
+            <DialogFooter className="gap-2 pt-2">
+              <Button type="button" variant="outline" onClick={() => setIsAddingCenterSpec(false)} className="rounded-xl text-xs">إلغاء</Button>
+              <Button type="submit" className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold">
+                إضافة الأخصائي للفرع
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
 

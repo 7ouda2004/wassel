@@ -317,27 +317,35 @@ const Centers = () => {
                                     )}
                                   </div>
                                   
-                                  <div className="flex gap-2 pt-2">
-                                    <Link 
-                                      to={`/booking?center=${center.id}`}
-                                      className="flex-grow"
-                                    >
-                                      <Button className="w-full text-xs py-2.5 bg-medical-700 hover:bg-medical-800 text-white font-bold rounded-xl transition-colors shadow-xs">
-                                        <Calendar className="h-3.5 w-3.5 ml-1.5" />
-                                        حجز موعد
+                                  <div className="flex flex-col gap-2 pt-2">
+                                    <div className="flex gap-2">
+                                      <Link 
+                                        to={`/booking?center=${center.id}`}
+                                        className="flex-grow"
+                                      >
+                                        <Button className="w-full text-xs py-2.5 bg-medical-700 hover:bg-medical-800 text-white font-bold rounded-xl transition-colors shadow-xs">
+                                          <Calendar className="h-3.5 w-3.5 ml-1.5" />
+                                          حجز موعد
+                                        </Button>
+                                      </Link>
+                                      <a 
+                                        href={`https://wa.me/${center.phone.replace(/\D/g, '')}`} 
+                                        target="_blank" 
+                                        rel="noopener noreferrer" 
+                                        className="flex-1"
+                                      >
+                                        <Button className="w-full text-xs py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white border-none font-bold rounded-xl">
+                                          <Phone className="h-3.5 w-3.5 ml-1.5" />
+                                          واتساب
+                                        </Button>
+                                      </a>
+                                    </div>
+                                    <Link to={`/center/${center.id}`} className="block w-full">
+                                      <Button variant="outline" className="w-full text-xs py-2 border-gray-200 hover:bg-medical-50 text-gray-700 font-bold rounded-xl">
+                                        <ExternalLink className="h-3.5 w-3.5 ml-1 text-medical-600" />
+                                        عرض بروفايل المركز وسجل الإنجازات
                                       </Button>
                                     </Link>
-                                    <a 
-                                      href={`https://wa.me/${center.phone.replace(/\D/g, '')}`} 
-                                      target="_blank" 
-                                      rel="noopener noreferrer" 
-                                      className="flex-1"
-                                    >
-                                      <Button className="w-full text-xs py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white border-none font-bold rounded-xl">
-                                        <Phone className="h-3.5 w-3.5 ml-1.5" />
-                                        واتساب
-                                      </Button>
-                                    </a>
                                   </div>
                                 </div>
                               </motion.div>

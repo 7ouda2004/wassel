@@ -1,3 +1,14 @@
+export interface CaseStudy {
+  id: string;
+  title: string;
+  deviceType: string;
+  patientAge?: string;
+  description: string;
+  outcome: string;
+  image?: string;
+  date?: string;
+}
+
 export interface Center {
   id: string;
   name: string;
@@ -17,7 +28,27 @@ export interface Center {
     comment: string;
     date: string;
   }[];
+  casesWorkedOn?: CaseStudy[];
   status?: 'pending' | 'active' | 'rejected';
+}
+
+export interface Specialist {
+  id: string;
+  name: string;
+  username: string;
+  password?: string;
+  role: string;
+  bio: string;
+  image: string;
+  expertise: string[];
+  status: 'pending' | 'active' | 'rejected';
+  phone?: string;
+  facebook?: string;
+  instagram?: string;
+  linkedin?: string;
+  centerId?: string;
+  centerName?: string;
+  casesWorkedOn?: CaseStudy[];
 }
 
 export const EGYPT_GOVERNORATES = [
@@ -52,11 +83,11 @@ export const EGYPT_GOVERNORATES = [
 
 // High quality reliable mobility & medical image URLs from Unsplash
 export const FALLBACK_CENTER_IMAGES = [
-  'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=800&q=80',
-  'https://images.unsplash.com/photo-1586773860418-d37222d8fce3?auto=format&fit=crop&w=800&q=80',
-  'https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=800&q=80',
-  'https://images.unsplash.com/photo-1538108149393-fbbd81895907?auto=format&fit=crop&w=800&q=80',
-  'https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=800&q=80'
+  'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=1000&q=80',
+  'https://images.unsplash.com/photo-1586773860418-d37222d8fce3?auto=format&fit=crop&w=1000&q=80',
+  'https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=1000&q=80',
+  'https://images.unsplash.com/photo-1538108149393-fbbd81895907?auto=format&fit=crop&w=1000&q=80',
+  'https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=1000&q=80'
 ];
 
 export const FALLBACK_SPECIALIST_IMAGES = [
@@ -64,6 +95,29 @@ export const FALLBACK_SPECIALIST_IMAGES = [
   'https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&w=600&q=80',
   'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=600&q=80',
   'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&w=600&q=80'
+];
+
+export const DEFAULT_CASES: CaseStudy[] = [
+  {
+    id: 'case_1',
+    title: 'تركيب طرف صناعي تحت الركبة ذكي لمريض تعرض لحادث',
+    deviceType: 'طرف صناعي سفي ذكي (Below Knee)',
+    patientAge: '34 سنة',
+    description: 'تم أخذ المقاسات الدقيقة بتقنية المسح الضوئي وتصنيع سوكيت مخصص وساق كربونية مرنة لتقليل الصدمات أثناء المشي والجري.',
+    outcome: 'استعاد المريض القدرة على المشي الطبيعي وركوب الدراجة خلال 3 أسابيع من التدريب الحركي المكثف.',
+    image: 'https://images.unsplash.com/photo-1586773860418-d37222d8fce3?auto=format&fit=crop&w=600&q=80',
+    date: '2026-05-15'
+  },
+  {
+    id: 'case_2',
+    title: 'تصنيع جبيرة تقويم كاحل وقدم (AFO) لطفل يعاني من شلل دماغي',
+    deviceType: 'جبيرة ديناميكية كربونية (Dynamic AFO)',
+    patientAge: '7 سنوات',
+    description: 'تم تصميم جبيرة خفيفة الوزن تمنع سقوط القدم وتساعد على تثبيت الركبة أثناء مراحل المشي المختلفة مع حشوة سيليكون مريحة.',
+    outcome: 'تحسن اتزان الطفل بنسبة 80% وأصبح قادرًا على الذهاب للمدرسة والمشاركة في الأنشطة دون تعثر.',
+    image: 'https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=600&q=80',
+    date: '2026-06-10'
+  }
 ];
 
 export const defaultCenters: Center[] = [
@@ -75,7 +129,9 @@ export const defaultCenters: Center[] = [
     phone: '02-123-4567',
     workingHours: 'السبت - الخميس: 9 صباحاً - 9 مساءً',
     image: FALLBACK_CENTER_IMAGES[0],
+    images: [FALLBACK_CENTER_IMAGES[0], FALLBACK_CENTER_IMAGES[1], FALLBACK_CENTER_IMAGES[2]],
     region: 'القاهرة الكبرى',
+    casesWorkedOn: DEFAULT_CASES,
     status: 'active'
   },
   {
@@ -86,7 +142,9 @@ export const defaultCenters: Center[] = [
     phone: '03-456-7890',
     workingHours: 'السبت - الخميس: 10 صباحاً - 8 مساءً',
     image: FALLBACK_CENTER_IMAGES[1],
+    images: [FALLBACK_CENTER_IMAGES[1], FALLBACK_CENTER_IMAGES[3]],
     region: 'الإسكندرية',
+    casesWorkedOn: DEFAULT_CASES,
     status: 'active'
   },
   {
@@ -98,6 +156,7 @@ export const defaultCenters: Center[] = [
     workingHours: 'السبت - الخميس: 9 صباحاً - 9 مساءً',
     image: FALLBACK_CENTER_IMAGES[2],
     region: 'القاهرة الكبرى',
+    casesWorkedOn: DEFAULT_CASES,
     status: 'active'
   },
   {
@@ -153,6 +212,7 @@ export const defaultCenters: Center[] = [
     workingHours: 'السبت - الخميس: 9 صباحاً - 9 مساءً',
     image: FALLBACK_CENTER_IMAGES[2],
     region: 'الدلتا',
+    casesWorkedOn: DEFAULT_CASES,
     status: 'active'
   },
   {
@@ -380,7 +440,7 @@ export function getLocalCenters(): Center[] {
     centers = defaultCenters;
   }
 
-  // Auto-enrich any centers missing description, services, or reviews
+  // Auto-enrich any centers missing description, services, reviews or casesWorkedOn
   let modified = false;
   const enriched = centers.map(center => {
     let updated = { ...center };
@@ -421,6 +481,11 @@ export function getLocalCenters(): Center[] {
       ];
       cMod = true;
     }
+
+    if (!updated.casesWorkedOn || updated.casesWorkedOn.length === 0) {
+      updated.casesWorkedOn = DEFAULT_CASES;
+      cMod = true;
+    }
     
     if (!updated.status) {
       updated.status = 'active';
@@ -443,24 +508,6 @@ export function saveLocalCenters(centers: Center[]): void {
   localStorage.setItem('centers', JSON.stringify(centers));
 }
 
-export interface Specialist {
-  id: string;
-  name: string;
-  username: string;
-  password?: string;
-  role: string;
-  bio: string;
-  image: string;
-  expertise: string[];
-  status: 'pending' | 'active' | 'rejected';
-  phone?: string;
-  facebook?: string;
-  instagram?: string;
-  linkedin?: string;
-  centerId?: string;
-  centerName?: string;
-}
-
 export const defaultSpecialists: Specialist[] = [
   {
     id: '1',
@@ -475,6 +522,7 @@ export const defaultSpecialists: Specialist[] = [
     phone: '01012345678',
     centerId: '1',
     centerName: 'مركز واصل الرئيسي - القاهرة',
+    casesWorkedOn: DEFAULT_CASES,
     facebook: 'https://www.facebook.com/profile.php?id=100009899685976',
     instagram: 'https://www.instagram.com/mahmoud.ibrahim.7/',
     linkedin: 'https://www.linkedin.com/in/mahmoud-arafa-b490b4265/'
@@ -486,12 +534,13 @@ export const defaultSpecialists: Specialist[] = [
     password: 'specialist123',
     role: 'أخصائي تركيب وضبط الأطراف الصناعية',
     image: FALLBACK_SPECIALIST_IMAGES[1],
-    bio: 'متخصص في ضبط وتركيب الأطراف الصناعية بدقة عالية، مع خبرةأكثر من 7 سنوات في تحسين المشي والحركة واستعادة التوازن الحركي.',
+    bio: 'متخصص في ضبط وتركيب الأطراف الصناعية بدقة عالية، مع خبرة أكثر من 7 سنوات في تحسين المشي والحركة واستعادة التوازن الحركي.',
     expertise: ['ضبط الأطراف الصناعية', 'تقييم الحركة والمشي', 'الصيانة والإصلاح'],
     status: 'active',
     phone: '01098765432',
     centerId: '2',
     centerName: 'مركز واصل - فرع الإسكندرية',
+    casesWorkedOn: DEFAULT_CASES,
     facebook: 'https://www.facebook.com/nader.ibrahem.35',
     instagram: 'https://www.instagram.com/nader_op1/',
     linkedin: 'https://www.linkedin.com/in/nader-ibrahim-3a2554278/'
@@ -509,6 +558,7 @@ export const defaultSpecialists: Specialist[] = [
     phone: '01167834290',
     centerId: '8',
     centerName: 'مركز واصل - فرع الدقهلية (المنصورة)',
+    casesWorkedOn: DEFAULT_CASES,
     facebook: 'https://www.facebook.com/bassel.hany.mohammed',
     instagram: 'https://www.instagram.com/bassel_hanymohammad/',
     linkedin: 'https://www.linkedin.com/in/bassel-hany-mohammed-526276328/'
@@ -525,7 +575,8 @@ export const defaultSpecialists: Specialist[] = [
     status: 'active',
     phone: '01234567890',
     centerId: '3',
-    centerName: 'مركز واصل - فرع الجيزة'
+    centerName: 'مركز واصل - فرع الجيزة',
+    casesWorkedOn: DEFAULT_CASES
   }
 ];
 
@@ -533,7 +584,10 @@ export function getLocalSpecialists(): Specialist[] {
   const saved = localStorage.getItem('specialists');
   if (saved) {
     try {
-      return JSON.parse(saved);
+      const parsed: Specialist[] = JSON.parse(saved);
+      // Enrich missing casesWorkedOn
+      const enriched = parsed.map(s => s.casesWorkedOn ? s : { ...s, casesWorkedOn: DEFAULT_CASES });
+      return enriched;
     } catch (e) {
       console.error('Error parsing specialists:', e);
     }
