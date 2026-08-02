@@ -65,7 +65,7 @@ const Index = () => {
               </div>
             </motion.div>
             
-            {/* Hero Image Showcase */}
+            {/* Hero Image Showcase - User Selected Hero Image */}
             <motion.div 
               className="lg:w-1/2 w-full max-w-lg mx-auto"
               initial={{ opacity: 0, scale: 0.95 }}
@@ -74,10 +74,10 @@ const Index = () => {
             >
               <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-white/10 group">
                 <img 
-                  src="https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=1000&q=80" 
+                  src="/images/wasel_hero.jpg" 
                   alt="Wasel Advanced Prosthetics and Mobility" 
-                  className="w-full h-[450px] object-cover transition-transform duration-700 group-hover:scale-105"
-                  onError={(e) => { e.currentTarget.src = FALLBACK_CENTER_IMAGES[0]; }}
+                  className="w-full h-[520px] object-cover object-top transition-transform duration-700 group-hover:scale-105"
+                  onError={(e) => { e.currentTarget.src = '/images/prosthetic_leg.png'; }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-medical-950/80 via-transparent to-transparent" />
                 
@@ -115,33 +115,36 @@ const Index = () => {
               {
                 title: "الأطراف الصناعية الذكية",
                 desc: "أطراف صناعية علوية وسفلية متطورة مصممة وفق أحدث المعايير لتمنحك حركة طبيعية وثبات تام.",
-                image: "https://images.unsplash.com/photo-1586773860418-d37222d8fce3?auto=format&fit=crop&w=600&q=80",
+                image: "/images/prosthetic_leg.png",
+                fallback: "https://images.unsplash.com/photo-1586773860418-d37222d8fce3?auto=format&fit=crop&w=600&q=80",
                 link: "/prosthetics",
                 linkText: "استكشف الأطراف"
               },
               {
                 title: "الجبائر والأجهزة التقويمية",
                 desc: "تشكيلة مخصصة من جبائر الركبة، الكاحل، والعمود الفقري لتوفير الدعم الأمثل ومساعدة الأطفال والكبار.",
-                image: "https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=600&q=80",
+                image: "/images/afo.jpg",
+                fallback: "https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=600&q=80",
                 link: "/orthoses",
                 linkText: "استكشف الجبائر"
               },
               {
                 title: "شبكة مراكزنا بالمحافظات",
                 desc: "فروع معتمدة في كافة أنحاء مصر لتسهيل الوصول للأخصائيين ومتابعة التأهيل والصيانة الدورية.",
-                image: "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=600&q=80",
+                image: "/images/ortho.png",
+                fallback: "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=600&q=80",
                 link: "/centers",
                 linkText: "تصفح الفروع"
               }
             ].map((item, idx) => (
               <div key={idx} className="bg-slate-50/60 rounded-3xl overflow-hidden border border-gray-200/70 hover:shadow-lg transition-all duration-300 flex flex-col justify-between group">
                 <div>
-                  <div className="h-52 overflow-hidden bg-gray-100">
+                  <div className="h-56 overflow-hidden bg-gray-100 relative">
                     <img 
                       src={item.image} 
                       alt={item.title} 
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      onError={(e) => { e.currentTarget.src = FALLBACK_CENTER_IMAGES[idx]; }}
+                      onError={(e) => { e.currentTarget.src = item.fallback; }}
                     />
                   </div>
                   <div className="p-6">
@@ -169,8 +172,8 @@ const Index = () => {
             <div className="lg:w-1/2">
               <div className="rounded-3xl overflow-hidden shadow-xl border border-gray-200/80">
                 <img 
-                  src="https://images.unsplash.com/photo-1538108149393-fbbd81895907?auto=format&fit=crop&w=1000&q=80" 
-                  alt="Quality Care" 
+                  src="/images/team.png" 
+                  alt="Quality Care Team" 
                   className="w-full h-[400px] object-cover"
                   onError={(e) => { e.currentTarget.src = FALLBACK_CENTER_IMAGES[1]; }}
                 />
