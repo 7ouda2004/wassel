@@ -30,6 +30,8 @@ export interface Center {
   }[];
   casesWorkedOn?: CaseStudy[];
   status?: 'pending' | 'active' | 'rejected';
+  username?: string;
+  password?: string;
 }
 
 export interface Specialist {
@@ -438,11 +440,21 @@ export function getLocalCenters(): Center[] {
     let updated = { ...center };
     let cMod = false;
 
-    if (updated.phone !== '01119056895') {
+    if (!updated.phone) {
       updated.phone = '01119056895';
       cMod = true;
     }
     
+    if (!updated.username) {
+      updated.username = `center_${updated.id}`;
+      cMod = true;
+    }
+
+    if (!updated.password) {
+      updated.password = 'center123';
+      cMod = true;
+    }
+
     if (!updated.description) {
       updated.description = `مركز واصل المعتمد في محافظة ${center.location}، يقدّم حلولاً متكاملة وخبرات متطورة في تصميم وتركيب الأطراف الصناعية والجبائر الطبية المبتكرة لمساعدة عملائنا على استعادة الحركة الكاملة والاستقلالية التامة.`;
       cMod = true;
@@ -582,13 +594,11 @@ export function getLocalSpecialists(): Specialist[] {
   if (saved) {
     try {
       const parsed: Specialist[] = JSON.parse(saved);
-      // Enrich missing casesWorkedOn & force phone update to 01119056895
       const enriched = parsed.map(s => ({
         ...s,
-        phone: '01119056895',
+        phone: s.phone || '01119056895',
         casesWorkedOn: s.casesWorkedOn || DEFAULT_CASES
       }));
-      localStorage.setItem('specialists', JSON.stringify(enriched));
       return enriched;
     } catch (e) {
       console.error('Error parsing specialists:', e);

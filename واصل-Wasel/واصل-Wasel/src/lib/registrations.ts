@@ -156,6 +156,18 @@ export async function isUsernameTaken(username: string): Promise<boolean> {
 
 export async function syncDatabase() {
   try {
+    const hasLocalSpecs = localStorage.getItem('specialists') !== null;
+    const hasLocalCenters = localStorage.getItem('centers') !== null;
+
+    // If local data already exists, sync local changes to cloud instead of overwriting local storage
+    if (hasLocalSpecs && hasLocalCenters) {
+      const specs = getLocalSpecialists();
+      const centers = getLocalCenters();
+      uploadLocalData(specs, centers);
+      return;
+    }
+
+    // Otherwise (fresh visitor/browser), load from cloud database
     const res = await fetch(`${API_BASE}?action=db`);
     if (!res.ok) return;
     const db = await res.json();
@@ -171,8 +183,24 @@ export async function syncDatabase() {
   }
 }
 
-export async function uploadLocalData(specialists: Specialist[], centers: Center[]): Promise<boolean> {
-  saveLocalSpecialists(specialists);
-  saveLocalCenters(centers);
-  return true;
+export async function uploadLocalData(specialists?: Specialist[], centers?: Center[]): Promise<boolean> {
+  const currentSpecs = specialists || getLocalSpecialists();
+  const currentCenters = centers || getLocalCenters();
+  
+  // 1. Save to LocalStorage
+  saveLocalSpecialists(currentSpecs);
+  saveLocalCenters(currentCenters);
+
+  // 2. Push to Cloud API bin
+  try {
+    const res = await fetch(`${API_BASE}?action=update_db`, {
+      method: 'POST',
+      body: JSON.stringify({ db: { specialists: currentSpecs, centers: currentCenters } }),
+      headers: { 'Content-Type': 'application/json' }
+    });
+    return res.ok;
+  } catch (err) {
+    console.error('uploadLocalData cloud error:', err);
+    return false;
+  }
 }

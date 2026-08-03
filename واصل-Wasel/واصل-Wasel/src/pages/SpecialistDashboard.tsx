@@ -33,6 +33,7 @@ import {
   getLocalCenters, saveLocalCenters, type Center, type CaseStudy,
   FALLBACK_SPECIALIST_IMAGES, DEFAULT_CASES
 } from '@/lib/db';
+import { uploadLocalData } from '@/lib/registrations';
 
 type Patient = {
   id: number;
@@ -103,6 +104,8 @@ const SpecialistDashboard = () => {
 
   // Profile Edit Form State
   const [profileName, setProfileName] = useState('');
+  const [profileUsername, setProfileUsername] = useState('');
+  const [profilePassword, setProfilePassword] = useState('');
   const [profileRole, setProfileRole] = useState('');
   const [profileBio, setProfileBio] = useState('');
   const [profilePhone, setProfilePhone] = useState('');
@@ -144,6 +147,8 @@ const SpecialistDashboard = () => {
     if (found) {
       setCurrentSpecialist(found);
       setProfileName(found.name);
+      setProfileUsername(found.username || '');
+      setProfilePassword(found.password || 'specialist123');
       setProfileRole(found.role);
       setProfileBio(found.bio || '');
       setProfilePhone(found.phone || '');
@@ -174,6 +179,8 @@ const SpecialistDashboard = () => {
     const updatedSpec: Specialist = {
       ...currentSpecialist,
       name: profileName,
+      username: profileUsername || currentSpecialist.username,
+      password: profilePassword || currentSpecialist.password || 'specialist123',
       role: profileRole,
       bio: profileBio,
       phone: profilePhone,
@@ -188,7 +195,9 @@ const SpecialistDashboard = () => {
     const allSpecs = getLocalSpecialists();
     const updatedAll = allSpecs.map(s => s.id === updatedSpec.id ? updatedSpec : s);
     saveLocalSpecialists(updatedAll);
+    uploadLocalData(updatedAll, getLocalCenters());
     setCurrentSpecialist(updatedSpec);
+    sessionStorage.setItem('username', updatedSpec.username);
 
     toast.success('تم تحديث البروفايل والمعلومات الشخصية وسابقة الأعمال بنجاح!');
   };
@@ -238,6 +247,7 @@ const SpecialistDashboard = () => {
     const allSpecs = getLocalSpecialists();
     const updated = [newSpec, ...allSpecs];
     saveLocalSpecialists(updated);
+    uploadLocalData(updated, getLocalCenters());
     setCenterSpecialists(prev => [newSpec, ...prev]);
 
     setIsAddingCenterSpec(false);
@@ -381,6 +391,28 @@ const SpecialistDashboard = () => {
                         value={profileRole} 
                         onChange={(e) => setProfileRole(e.target.value)}
                         className="rounded-xl h-11"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-xs font-bold text-gray-700 mb-1.5 block">اسم المستخدم (للدخول) *</Label>
+                      <Input 
+                        value={profileUsername} 
+                        onChange={(e) => setProfileUsername(e.target.value)}
+                        className="rounded-xl h-11 font-mono"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-xs font-bold text-gray-700 mb-1.5 block">كلمة المرور *</Label>
+                      <Input 
+                        type="text"
+                        value={profilePassword} 
+                        onChange={(e) => setProfilePassword(e.target.value)}
+                        className="rounded-xl h-11 font-mono"
                         required
                       />
                     </div>

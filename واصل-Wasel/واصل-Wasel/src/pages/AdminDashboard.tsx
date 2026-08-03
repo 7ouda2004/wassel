@@ -34,7 +34,7 @@ import {
   getLocalSpecialists, saveLocalSpecialists, type Specialist,
   FALLBACK_CENTER_IMAGES, FALLBACK_SPECIALIST_IMAGES, DEFAULT_CASES
 } from '@/lib/db';
-import { syncDatabase, getPendingRequests, type RegistrationRequest } from '@/lib/registrations';
+import { syncDatabase, getPendingRequests, uploadLocalData, type RegistrationRequest } from '@/lib/registrations';
 
 const AdminDashboard = () => {
   const [centers, setCenters] = useState<Center[]>([]);
@@ -126,7 +126,9 @@ const AdminDashboard = () => {
       ...currentCenter,
       id: currentCenter.id || 'center_' + Date.now().toString(),
       image: currentCenter.image || FALLBACK_CENTER_IMAGES[Math.floor(Math.random() * FALLBACK_CENTER_IMAGES.length)],
-      status: 'active'
+      status: 'active',
+      username: currentCenter.username || `center_${currentCenter.id || Date.now()}`,
+      password: currentCenter.password || 'center123'
     };
 
     let updatedList: Center[];
@@ -140,6 +142,7 @@ const AdminDashboard = () => {
 
     setCenters(updatedList);
     saveLocalCenters(updatedList);
+    uploadLocalData(specialists, updatedList);
     setIsAddingCenter(false);
     setIsEditingCenter(false);
   };
@@ -148,6 +151,7 @@ const AdminDashboard = () => {
     const updated = centers.filter(c => c.id !== id);
     setCenters(updated);
     saveLocalCenters(updated);
+    uploadLocalData(specialists, updated);
     setConfirmDeleteCenter(null);
     toast.success('تم حذف المركز بنجاح');
   };
@@ -156,6 +160,7 @@ const AdminDashboard = () => {
     const updated = centers.map(c => c.id === id ? { ...c, status: 'active' as const } : c);
     setCenters(updated);
     saveLocalCenters(updated);
+    uploadLocalData(specialists, updated);
     toast.success('تم قبول وتفعيل المركز بنجاح! يظهر الآن للمرضى في صفحة المراكز.');
   };
 
@@ -163,13 +168,14 @@ const AdminDashboard = () => {
     const updated = centers.filter(c => c.id !== id);
     setCenters(updated);
     saveLocalCenters(updated);
+    uploadLocalData(specialists, updated);
     toast.error('تم رفض طلب تسجيل المركز');
   };
 
   // --- Specialist Handlers ---
   const handleSaveSpec = () => {
-    if (!currentSpec.name.trim() || !currentSpec.username.trim() || (isAddingSpec && !currentSpec.password)) {
-      toast.error('يرجى كتابة الاسم واسم المستخدم وكلمة المرور');
+    if (!currentSpec.name.trim() || !currentSpec.username.trim()) {
+      toast.error('يرجى كتابة الاسم واسم المستخدم');
       return;
     }
 
@@ -180,6 +186,7 @@ const AdminDashboard = () => {
     const specToSave: Specialist = {
       ...currentSpec,
       id: currentSpec.id || 'spec_' + Date.now().toString(),
+      password: currentSpec.password || 'specialist123',
       image: currentSpec.image || FALLBACK_SPECIALIST_IMAGES[Math.floor(Math.random() * FALLBACK_SPECIALIST_IMAGES.length)],
       expertise: expArray,
       status: 'active'
@@ -196,6 +203,7 @@ const AdminDashboard = () => {
 
     setSpecialists(updatedList);
     saveLocalSpecialists(updatedList);
+    uploadLocalData(updatedList, centers);
     setIsAddingSpec(false);
     setIsEditingSpec(false);
   };
@@ -204,6 +212,7 @@ const AdminDashboard = () => {
     const updated = specialists.filter(s => s.id !== id);
     setSpecialists(updated);
     saveLocalSpecialists(updated);
+    uploadLocalData(updated, centers);
     setConfirmDeleteSpec(null);
     toast.success('تم حذف الأخصائي بنجاح');
   };
@@ -212,6 +221,7 @@ const AdminDashboard = () => {
     const updated = specialists.map(s => s.id === spec.id ? { ...s, status: 'active' as const } : s);
     setSpecialists(updated);
     saveLocalSpecialists(updated);
+    uploadLocalData(updated, centers);
     toast.success(`تم قبول وتفعيل الأخصائي: ${spec.name}!`);
 
     if (spec.phone) {
@@ -225,6 +235,7 @@ const AdminDashboard = () => {
     const updated = specialists.filter(s => s.id !== id);
     setSpecialists(updated);
     saveLocalSpecialists(updated);
+    uploadLocalData(updated, centers);
     toast.error('تم رفض طلب انضمام الأخصائي');
   };
 
@@ -535,6 +546,9 @@ const AdminDashboard = () => {
                           <TableCell className="text-xs text-gray-600">
                             <span className="block">{center.address}</span>
                             <span className="font-mono text-medical-600 font-bold block" dir="ltr">{center.phone}</span>
+                            <div className="mt-1 text-[10px] font-mono text-gray-600 bg-slate-100 px-2 py-0.5 rounded-md inline-block border border-slate-200">
+                              يوزر: <span className="font-bold text-medical-800">{center.username || `center_${center.id}`}</span> | باسورد: <span className="font-bold text-gray-900">{center.password || 'center123'}</span>
+                            </div>
                           </TableCell>
                           <TableCell className="text-center">
                             <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full ${
@@ -630,6 +644,11 @@ const AdminDashboard = () => {
                           <p><span className="font-bold text-gray-700">يعمل لدى:</span> {spec.centerName || 'فرع عام'}</p>
                           {spec.phone && <p><span className="font-bold text-gray-700">الهاتف:</span> <span dir="ltr" className="font-mono">{spec.phone}</span></p>}
                           <p><span className="font-bold text-gray-700">الحالات المنجزة:</span> {spec.casesWorkedOn ? spec.casesWorkedOn.length : 2} حالات</p>
+                          
+                          <div className="mt-2 p-2 bg-slate-100 rounded-xl border border-slate-200 text-[11px] font-mono space-y-0.5 text-gray-700">
+                            <div className="flex justify-between"><span>اسم المستخدم:</span> <span className="font-bold text-medical-700">@{spec.username}</span></div>
+                            <div className="flex justify-between"><span>كلمة المرور:</span> <span className="font-bold text-gray-900">{spec.password || 'specialist123'}</span></div>
+                          </div>
                         </div>
                       </div>
 
@@ -709,13 +728,34 @@ const AdminDashboard = () => {
               </div>
             </div>
 
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label className="text-xs font-bold text-gray-700 mb-1 block">اسم المركز / الفرع *</Label>
+                <Input 
+                  value={currentCenter.name} 
+                  onChange={(e) => setCurrentCenter({ ...currentCenter, name: e.target.value })}
+                  placeholder="مثال: مركز واصل - فرع سوهاج"
+                  className="rounded-xl"
+                />
+              </div>
+              <div>
+                <Label className="text-xs font-bold text-gray-700 mb-1 block">اسم المستخدم (للدخول) *</Label>
+                <Input 
+                  value={currentCenter.username || ''} 
+                  onChange={(e) => setCurrentCenter({ ...currentCenter, username: e.target.value })}
+                  placeholder="center_sohag"
+                  className="rounded-xl font-mono"
+                />
+              </div>
+            </div>
+
             <div>
-              <Label className="text-xs font-bold text-gray-700 mb-1 block">اسم المركز / الفرع *</Label>
+              <Label className="text-xs font-bold text-gray-700 mb-1 block">كلمة المرور للدخول *</Label>
               <Input 
-                value={currentCenter.name} 
-                onChange={(e) => setCurrentCenter({ ...currentCenter, name: e.target.value })}
-                placeholder="مثال: مركز واصل - فرع سوهاج"
-                className="rounded-xl"
+                value={currentCenter.password || ''} 
+                onChange={(e) => setCurrentCenter({ ...currentCenter, password: e.target.value })}
+                placeholder="center123"
+                className="rounded-xl font-mono"
               />
             </div>
 
@@ -852,18 +892,16 @@ const AdminDashboard = () => {
               </div>
             </div>
 
-            {isAddingSpec && (
-              <div>
-                <Label className="text-xs font-bold text-gray-700 mb-1 block">كلمة المرور *</Label>
-                <Input 
-                  type="password"
-                  value={currentSpec.password} 
-                  onChange={(e) => setCurrentSpec({ ...currentSpec, password: e.target.value })}
-                  placeholder="••••••••"
-                  className="rounded-xl font-mono"
-                />
-              </div>
-            )}
+            <div>
+              <Label className="text-xs font-bold text-gray-700 mb-1 block">كلمة المرور للدخول *</Label>
+              <Input 
+                type="text"
+                value={currentSpec.password || ''} 
+                onChange={(e) => setCurrentSpec({ ...currentSpec, password: e.target.value })}
+                placeholder="specialist123"
+                className="rounded-xl font-mono text-xs"
+              />
+            </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>

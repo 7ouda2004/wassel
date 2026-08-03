@@ -165,7 +165,10 @@ const Login = () => {
     }
 
     const allSpecs = getLocalSpecialists();
-    const foundSpec = allSpecs.find(s => s.username === specUsername && s.password === specPassword);
+    const foundSpec = allSpecs.find(s => s.username.toLowerCase() === specUsername.toLowerCase() && s.password === specPassword);
+
+    const allCenters = getLocalCenters();
+    const foundCenter = allCenters.find(c => (c.username?.toLowerCase() === specUsername.toLowerCase() || `center_${c.id}` === specUsername.toLowerCase()) && (c.password === specPassword || (specPassword === 'center123' && !c.password)));
 
     if (foundSpec) {
       if (foundSpec.status === 'pending') {
@@ -177,8 +180,14 @@ const Login = () => {
         return;
       }
       sessionStorage.setItem('isSpecialist', 'true');
-      sessionStorage.setItem('username', specUsername);
+      sessionStorage.setItem('username', foundSpec.username);
       toast.success(`مرحباً بك أخصائي ${foundSpec.name}! تم تسجيل الدخول بنجاح.`);
+      window.location.href = '/specialist-dashboard';
+    } else if (foundCenter) {
+      sessionStorage.setItem('isSpecialist', 'true');
+      sessionStorage.setItem('username', foundCenter.username || `center_${foundCenter.id}`);
+      sessionStorage.setItem('isCenter', 'true');
+      toast.success(`مرحباً بك في لوحة تحكم ${foundCenter.name}! تم تسجيل الدخول بنجاح.`);
       window.location.href = '/specialist-dashboard';
     } else {
       toast.error('اسم المستخدم أو كلمة المرور غير صحيحة');
