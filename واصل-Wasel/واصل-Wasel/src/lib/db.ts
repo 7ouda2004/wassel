@@ -6,6 +6,8 @@ export interface CaseStudy {
   description: string;
   outcome: string;
   image?: string;
+  beforeImage?: string;
+  afterImage?: string;
   date?: string;
 }
 

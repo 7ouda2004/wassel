@@ -226,6 +226,22 @@ const CenterDetails = () => {
                   <div key={idx} className="p-4 bg-slate-50 rounded-2xl border border-gray-100 space-y-1.5">
                     <h3 className="font-bold text-xs text-gray-900">{cs.title}</h3>
                     <p className="text-[11px] text-gray-600 leading-relaxed">{cs.description}</p>
+                    {(cs.beforeImage || cs.afterImage) && (
+                      <div className="grid grid-cols-2 gap-2 pt-1.5 pb-1">
+                        {cs.beforeImage && (
+                          <div className="space-y-1">
+                            <span className="text-[10px] font-bold text-rose-600 block">قبل التركيب/العلاج:</span>
+                            <img src={cs.beforeImage} alt="قبل" className="w-full h-28 object-cover rounded-xl border border-rose-200" />
+                          </div>
+                        )}
+                        {cs.afterImage && (
+                          <div className="space-y-1">
+                            <span className="text-[10px] font-bold text-emerald-600 block">بعد التعافي والتركيب:</span>
+                            <img src={cs.afterImage} alt="بعد" className="w-full h-28 object-cover rounded-xl border border-emerald-200" />
+                          </div>
+                        )}
+                      </div>
+                    )}
                     <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full inline-block">
                       النتيجة: {cs.outcome}
                     </span>
@@ -426,6 +442,22 @@ const CenterDetails = () => {
                             <div key={idx} className="p-3.5 bg-white rounded-2xl border border-gray-200/80 space-y-1">
                               <h5 className="font-bold text-xs text-gray-900">{cs.title}</h5>
                               <p className="text-[11px] text-gray-600 leading-relaxed">{cs.description}</p>
+                              {(cs.beforeImage || cs.afterImage) && (
+                                <div className="grid grid-cols-2 gap-2 pt-1 pb-1">
+                                  {cs.beforeImage && (
+                                    <div className="space-y-0.5">
+                                      <span className="text-[9px] font-bold text-rose-600 block">قبل:</span>
+                                      <img src={cs.beforeImage} alt="قبل" className="w-full h-24 object-cover rounded-lg border border-rose-200" />
+                                    </div>
+                                  )}
+                                  {cs.afterImage && (
+                                    <div className="space-y-0.5">
+                                      <span className="text-[9px] font-bold text-emerald-600 block">بعد:</span>
+                                      <img src={cs.afterImage} alt="بعد" className="w-full h-24 object-cover rounded-lg border border-emerald-200" />
+                                    </div>
+                                  )}
+                                </div>
+                              )}
                               <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md inline-block">
                                 النتيجة: {cs.outcome}
                               </span>
