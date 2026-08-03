@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 
-import { getLocalCenters, getLocalSpecialists, type Center, type Specialist, EGYPT_GOVERNORATES, FALLBACK_CENTER_IMAGES, FALLBACK_SPECIALIST_IMAGES, DEFAULT_AVATAR } from '@/lib/db';
+import { getLocalCenters, getLocalSpecialists, type Center, type Specialist, EGYPT_GOVERNORATES, DEFAULT_CENTER_IMAGE, FALLBACK_CENTER_IMAGES, FALLBACK_SPECIALIST_IMAGES, DEFAULT_AVATAR } from '@/lib/db';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 const REGIONS = ['الكل', 'القاهرة الكبرى', 'الإسكندرية', 'الدلتا', 'الصعيد', 'القناة', 'الحدود'] as const;
@@ -251,26 +251,24 @@ const Centers = () => {
                                 transition={{ duration: 0.3, delay: centerIdx * 0.04 }}
                                 className="bg-white rounded-2xl shadow-xs overflow-hidden border border-gray-200/80 flex flex-col justify-between hover:border-medical-300 transition-all duration-300"
                               >
-                                {/* Center Image - only show if has image */}
+                                {/* Center Image - fallback to metallic default center image */}
                                 <div className="relative h-44 bg-gray-100 overflow-hidden">
-                                  {center.image ? (
-                                    <>
-                                      <img
-                                        src={center.image}
-                                        alt={center.name}
-                                        className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-                                        onError={(e) => {
-                                          e.currentTarget.style.display = 'none';
-                                        }}
-                                      />
-                                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
-                                    </>
-                                  ) : (
-                                    <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-medical-50 to-slate-100">
-                                      <Building2 className="w-12 h-12 text-medical-300 mb-2" />
-                                      <span className="text-xs text-medical-400 font-bold">فرع واصل المعتمد</span>
+                                  <img
+                                    src={center.image || DEFAULT_CENTER_IMAGE}
+                                    alt={center.name}
+                                    className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                                    onError={(e) => {
+                                      e.currentTarget.src = DEFAULT_CENTER_IMAGE;
+                                    }}
+                                  />
+                                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+                                  
+                                  {center.images && center.images.length > 1 && (
+                                    <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-md text-white text-[11px] font-bold px-2.5 py-0.5 rounded-full border border-white/20 shadow-sm">
+                                      📸 +{center.images.length} صور
                                     </div>
                                   )}
+
                                   <div className="absolute bottom-3 right-3">
                                     <span className="bg-white/95 text-gray-900 text-xs font-bold px-3 py-1 rounded-lg shadow-sm">
                                       {center.location}

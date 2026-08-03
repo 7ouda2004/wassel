@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, Phone, Clock, Calendar, ChevronRight, Building2, Users, Star, Award, CheckCircle2, Shield, Heart, X, User, Briefcase, Sparkles, ExternalLink } from 'lucide-react';
+import { MapPin, Phone, Clock, Calendar, ChevronRight, ChevronLeft, Building2, Users, Star, Award, CheckCircle2, Shield, Heart, X, User, Briefcase, Sparkles, ExternalLink, Maximize2, Play, Pause, ImageIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 
-import { getLocalCenters, getLocalSpecialists, type Center, type Specialist, FALLBACK_CENTER_IMAGES, FALLBACK_SPECIALIST_IMAGES, DEFAULT_AVATAR, DEFAULT_CASES } from '@/lib/db';
+import { getLocalCenters, getLocalSpecialists, type Center, type Specialist, DEFAULT_CENTER_IMAGE, FALLBACK_CENTER_IMAGES, FALLBACK_SPECIALIST_IMAGES, DEFAULT_AVATAR, DEFAULT_CASES } from '@/lib/db';
 
 const CenterDetails = () => {
   const { id } = useParams<{ id: string }>();
@@ -38,9 +38,20 @@ const CenterDetails = () => {
     return null;
   }
 
+  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+
   const galleryImages = (center.images && center.images.length > 0) 
     ? center.images 
-    : (center.image ? [center.image] : []);
+    : [center.image || DEFAULT_CENTER_IMAGE];
+
+  useEffect(() => {
+    if (!isAutoPlaying || galleryImages.length <= 1) return;
+    const timer = setInterval(() => {
+      setActiveImageIndex(prev => (prev + 1) % galleryImages.length);
+    }, 3800);
+    return () => clearInterval(timer);
+  }, [isAutoPlaying, galleryImages.length]);
 
   const casesList = center.casesWorkedOn && center.casesWorkedOn.length > 0 ? center.casesWorkedOn : DEFAULT_CASES;
 
@@ -54,45 +65,98 @@ const CenterDetails = () => {
           
           <div className="flex flex-col lg:flex-row gap-8 items-center">
             
-            {/* Image Slider */}
+            {/* Ultra Animated Multi-Image Gallery Slider */}
             <div className="w-full lg:w-1/2">
-              <div className="relative h-80 rounded-3xl overflow-hidden shadow-2xl border border-white/10 group">
-                {galleryImages.length > 0 ? (
-                  <>
-                    <img
-                      src={galleryImages[activeImageIndex]}
-                      alt={center.name}
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                      onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                  </>
-                ) : (
-                  <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-medical-800 to-medical-950">
-                    <Building2 className="w-16 h-16 text-medical-400 mb-3" />
-                    <span className="text-sm text-medical-300 font-bold">فرع واصل المعتمد</span>
-                    <span className="text-xs text-medical-400/70 mt-1">{center.location}</span>
-                  </div>
-                )}
-                <div className="absolute bottom-4 right-4">
-                  <span className="bg-white/90 backdrop-blur-md text-gray-900 text-xs font-bold px-3 py-1 rounded-full shadow-sm">
+              <div className="relative h-80 sm:h-96 rounded-3xl overflow-hidden shadow-2xl border border-white/15 group bg-medical-950">
+                <AnimatePresence mode="wait">
+                  <motion.img
+                    key={activeImageIndex}
+                    src={galleryImages[activeImageIndex] || DEFAULT_CENTER_IMAGE}
+                    alt={center.name}
+                    initial={{ opacity: 0, scale: 1.05 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.96 }}
+                    transition={{ duration: 0.5, ease: 'easeOut' }}
+                    className="w-full h-full object-cover cursor-pointer"
+                    onClick={() => setIsLightboxOpen(true)}
+                    onError={(e) => { e.currentTarget.src = DEFAULT_CENTER_IMAGE; }}
+                  />
+                </AnimatePresence>
+
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent pointer-events-none" />
+
+                {/* Slider Top Badges */}
+                <div className="absolute top-4 right-4 flex items-center gap-2 z-10">
+                  <span className="bg-black/60 backdrop-blur-md text-white text-xs font-bold px-3 py-1 rounded-full border border-white/20">
                     {center.location} ({center.region})
                   </span>
+                  {galleryImages.length > 1 && (
+                    <span className="bg-medical-600/90 backdrop-blur-md text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-sm">
+                      {activeImageIndex + 1} / {galleryImages.length}
+                    </span>
+                  )}
+                </div>
+
+                {/* Slider Controls (Next/Prev & Lightbox) */}
+                {galleryImages.length > 1 && (
+                  <>
+                    <button
+                      onClick={() => setActiveImageIndex((prev) => (prev === 0 ? galleryImages.length - 1 : prev - 1))}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/80 text-white rounded-full p-2.5 backdrop-blur-sm transition-all opacity-80 group-hover:opacity-100"
+                      title="الصورة السابقة"
+                    >
+                      <ChevronRight className="w-5 h-5" />
+                    </button>
+                    <button
+                      onClick={() => setActiveImageIndex((prev) => (prev + 1) % galleryImages.length)}
+                      className="absolute left-3 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/80 text-white rounded-full p-2.5 backdrop-blur-sm transition-all opacity-80 group-hover:opacity-100"
+                      title="الصورة التالية"
+                    >
+                      <ChevronLeft className="w-5 h-5" />
+                    </button>
+                  </>
+                )}
+
+                {/* Play/Pause & Fullscreen Button */}
+                <div className="absolute bottom-4 left-4 flex items-center gap-2 z-10">
+                  {galleryImages.length > 1 && (
+                    <button
+                      onClick={() => setIsAutoPlaying(!isAutoPlaying)}
+                      className="bg-black/60 hover:bg-black/90 text-white p-2 rounded-full backdrop-blur-md border border-white/20 transition-all"
+                      title={isAutoPlaying ? 'إيقاف التكبير التلقائي' : 'تشغيل العرض التلقائي'}
+                    >
+                      {isAutoPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setIsLightboxOpen(true)}
+                    className="bg-black/60 hover:bg-black/90 text-white p-2 rounded-full backdrop-blur-md border border-white/20 transition-all"
+                    title="تكبير الصورة بحجم كامل"
+                  >
+                    <Maximize2 className="w-4 h-4" />
+                  </button>
                 </div>
               </div>
 
-              {/* Thumbnails */}
+              {/* Thumbnails Showcase */}
               {galleryImages.length > 1 && (
-                <div className="flex gap-2 justify-center mt-3">
+                <div className="flex gap-2.5 justify-center mt-4 overflow-x-auto py-1">
                   {galleryImages.map((img, idx) => (
                     <button
                       key={idx}
                       onClick={() => setActiveImageIndex(idx)}
-                      className={`w-16 h-12 rounded-xl overflow-hidden border-2 transition-all ${
-                        idx === activeImageIndex ? 'border-medical-400 scale-105' : 'border-white/20 opacity-60'
+                      className={`relative w-20 h-14 rounded-2xl overflow-hidden border-2 transition-all duration-300 ${
+                        idx === activeImageIndex 
+                          ? 'border-medical-400 scale-105 shadow-lg ring-2 ring-medical-400/40' 
+                          : 'border-white/20 opacity-60 hover:opacity-100'
                       }`}
                     >
-                      <img src={img} alt="Thumbnail" className="w-full h-full object-cover" />
+                      <img 
+                        src={img || DEFAULT_CENTER_IMAGE} 
+                        alt={`معاينة ${idx}`} 
+                        className="w-full h-full object-cover" 
+                        onError={(e) => { e.currentTarget.src = DEFAULT_CENTER_IMAGE; }}
+                      />
                     </button>
                   ))}
                 </div>
@@ -504,6 +568,44 @@ const CenterDetails = () => {
           </div>
         )}
       </AnimatePresence>
+
+      {/* FULLSCREEN LIGHTBOX MODAL */}
+      <Dialog open={isLightboxOpen} onOpenChange={setIsLightboxOpen}>
+        <DialogContent className="max-w-4xl bg-black/95 border-white/10 text-white p-2 font-cairo shadow-2xl">
+          <DialogHeader className="sr-only">
+            <DialogTitle>معاينة صورة المركز بحجم كامل</DialogTitle>
+          </DialogHeader>
+          <div className="relative w-full h-[75vh] flex items-center justify-center overflow-hidden rounded-2xl bg-black">
+            <img 
+              src={galleryImages[activeImageIndex] || DEFAULT_CENTER_IMAGE} 
+              alt={center.name}
+              className="max-w-full max-h-full object-contain shadow-2xl"
+              onError={(e) => { e.currentTarget.src = DEFAULT_CENTER_IMAGE; }}
+            />
+            {galleryImages.length > 1 && (
+              <>
+                <button
+                  onClick={() => setActiveImageIndex((prev) => (prev === 0 ? galleryImages.length - 1 : prev - 1))}
+                  className="absolute right-4 bg-white/10 hover:bg-white/20 text-white rounded-full p-3 backdrop-blur-md transition-all"
+                  title="السابقة"
+                >
+                  <ChevronRight className="w-6 h-6" />
+                </button>
+                <button
+                  onClick={() => setActiveImageIndex((prev) => (prev + 1) % galleryImages.length)}
+                  className="absolute left-4 bg-white/10 hover:bg-white/20 text-white rounded-full p-3 backdrop-blur-md transition-all"
+                  title="التالية"
+                >
+                  <ChevronLeft className="w-6 h-6" />
+                </button>
+              </>
+            )}
+            <div className="absolute bottom-4 bg-black/70 px-4 py-1.5 rounded-full text-xs font-bold text-gray-200 border border-white/10">
+              {activeImageIndex + 1} من {galleryImages.length}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <Footer />
     </div>

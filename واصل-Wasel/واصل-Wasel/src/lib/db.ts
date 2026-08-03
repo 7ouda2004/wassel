@@ -85,7 +85,9 @@ export const EGYPT_GOVERNORATES = [
   'الإسماعيلية'
 ] as const;
 
-export const FALLBACK_CENTER_IMAGES: string[] = [];
+export const DEFAULT_CENTER_IMAGE = '/images/default_center.png';
+
+export const FALLBACK_CENTER_IMAGES: string[] = ['/images/default_center.png'];
 
 export const DEFAULT_AVATAR = '/images/default_avatar.jpg';
 
@@ -444,6 +446,11 @@ export function getLocalCenters(): Center[] {
 
     if (!updated.phone) {
       updated.phone = '01119056895';
+      cMod = true;
+    }
+
+    if (!updated.image || updated.image.trim() === '') {
+      updated.image = DEFAULT_CENTER_IMAGE;
       cMod = true;
     }
     

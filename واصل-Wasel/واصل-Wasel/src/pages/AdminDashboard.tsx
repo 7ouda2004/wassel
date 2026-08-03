@@ -32,7 +32,7 @@ import Footer from '@/components/Footer';
 import { 
   getLocalCenters, saveLocalCenters, type Center, EGYPT_GOVERNORATES, type CaseStudy,
   getLocalSpecialists, saveLocalSpecialists, type Specialist,
-  FALLBACK_CENTER_IMAGES, FALLBACK_SPECIALIST_IMAGES, DEFAULT_CASES
+  DEFAULT_CENTER_IMAGE, FALLBACK_CENTER_IMAGES, FALLBACK_SPECIALIST_IMAGES, DEFAULT_CASES
 } from '@/lib/db';
 import { syncDatabase, getPendingRequests, uploadLocalData, type RegistrationRequest } from '@/lib/registrations';
 
@@ -97,6 +97,8 @@ const AdminDashboard = () => {
     return cleaned;
   };
 
+  const [galleryUrlInput, setGalleryUrlInput] = useState('');
+
   // Image Upload helper
   const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>, target: 'center' | 'spec') => {
     const file = e.target.files?.[0];
@@ -113,6 +115,40 @@ const AdminDashboard = () => {
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  const handleGalleryFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64 = reader.result as string;
+        setCurrentCenter(prev => ({
+          ...prev,
+          images: [...(prev.images || []), base64]
+        }));
+        toast.success('تمت إضافة صورة لمعرض الفرع بنجاح!');
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleAddGalleryUrl = () => {
+    if (!galleryUrlInput.trim()) return;
+    setCurrentCenter(prev => ({
+      ...prev,
+      images: [...(prev.images || []), galleryUrlInput.trim()]
+    }));
+    setGalleryUrlInput('');
+    toast.success('تمت إضافة رابط الصورة لمعرض الفرع!');
+  };
+
+  const handleRemoveGalleryImage = (index: number) => {
+    setCurrentCenter(prev => ({
+      ...prev,
+      images: (prev.images || []).filter((_, i) => i !== index)
+    }));
+    toast.success('تم حذف الصورة من معرض الفرع');
   };
 
   // --- Center Handlers ---
@@ -725,6 +761,54 @@ const AdminDashboard = () => {
                   placeholder="أو ضع رابط الصورة المباشر..."
                   className="text-xs rounded-xl"
                 />
+              </div>
+
+              {/* MULTI-IMAGE GALLERY UPLOADER */}
+              <div className="mt-4 pt-3 border-t border-gray-200 text-right">
+                <Label className="text-xs font-bold text-medical-800 mb-1.5 block flex items-center gap-1.5">
+                  <Camera className="w-4 h-4 text-emerald-600" />
+                  معرض صور الفرع (إضافة عدة صور للمركز)
+                </Label>
+                
+                <div className="flex gap-2 mb-2">
+                  <Input 
+                    type="file" 
+                    accept="image/*"
+                    onChange={handleGalleryFileChange}
+                    className="text-xs bg-white rounded-xl"
+                  />
+                  <div className="flex gap-1 flex-grow">
+                    <Input 
+                      type="text" 
+                      value={galleryUrlInput}
+                      onChange={(e) => setGalleryUrlInput(e.target.value)}
+                      placeholder="أو إضافة رابط صورة..."
+                      className="text-xs rounded-xl flex-grow"
+                    />
+                    <Button type="button" size="sm" onClick={handleAddGalleryUrl} className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs px-3">
+                      إضافة
+                    </Button>
+                  </div>
+                </div>
+
+                {/* THUMBNAILS OF GALLERY IMAGES */}
+                {currentCenter.images && currentCenter.images.length > 0 && (
+                  <div className="grid grid-cols-4 gap-2 pt-2">
+                    {currentCenter.images.map((imgUrl, idx) => (
+                      <div key={idx} className="relative h-16 rounded-xl overflow-hidden border border-gray-200 group">
+                        <img src={imgUrl} alt={`Gallery ${idx}`} className="w-full h-full object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveGalleryImage(idx)}
+                          className="absolute top-1 right-1 bg-rose-600 text-white rounded-full p-1 shadow-sm opacity-90 hover:opacity-100"
+                          title="حذف هذه الصورة"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 

@@ -5,7 +5,7 @@ import { ArrowRight, Users, Award, MapPin, Calendar, ChevronRight, Sparkles, Shi
 import { Button } from "@/components/ui/button";
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { FALLBACK_CENTER_IMAGES } from '@/lib/db';
+import { DEFAULT_CENTER_IMAGE, FALLBACK_CENTER_IMAGES } from '@/lib/db';
 
 const Index = () => {
   useEffect(() => {
@@ -175,7 +175,7 @@ const Index = () => {
                   src="/images/team.png" 
                   alt="Quality Care Team" 
                   className="w-full h-[400px] object-cover"
-                  onError={(e) => { e.currentTarget.src = FALLBACK_CENTER_IMAGES[1]; }}
+                  onError={(e) => { e.currentTarget.src = DEFAULT_CENTER_IMAGE; }}
                 />
               </div>
             </div>
