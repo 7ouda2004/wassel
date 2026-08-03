@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Users, MapPin, PlusCircle, Edit, Trash, Save, Search, 
   UserCheck, ShieldAlert, Clock, Phone, Building, Check, X,
-  Upload, Sparkles, CheckCircle2, AlertCircle, RefreshCw, FileText, Image as ImageIcon, Briefcase
+  Upload, Sparkles, CheckCircle2, AlertCircle, RefreshCw, FileText, Image as ImageIcon, Briefcase, Camera
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
