@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MapPin, Phone, Clock, Calendar, ChevronRight, ChevronLeft, Building2, Users, Star, Award, CheckCircle2, Shield, Heart, X, User, Briefcase, Sparkles, ExternalLink, Maximize2, Play, Pause, ImageIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 
@@ -14,6 +15,8 @@ const CenterDetails = () => {
   const [center, setCenter] = useState<Center | null>(null);
   const [centerSpecs, setCenterSpecs] = useState<Specialist[]>([]);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 
   // Floating modal state
   const [isSpecialistsModalOpen, setIsSpecialistsModalOpen] = useState(false);
@@ -34,16 +37,9 @@ const CenterDetails = () => {
     }
   }, [id]);
 
-  if (!center) {
-    return null;
-  }
-
-  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
-  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
-
-  const galleryImages = (center.images && center.images.length > 0) 
-    ? center.images 
-    : [center.image || DEFAULT_CENTER_IMAGE];
+  const galleryImages = center
+    ? ((center.images && center.images.length > 0) ? center.images : [center.image || DEFAULT_CENTER_IMAGE])
+    : [DEFAULT_CENTER_IMAGE];
 
   useEffect(() => {
     if (!isAutoPlaying || galleryImages.length <= 1) return;
@@ -52,6 +48,10 @@ const CenterDetails = () => {
     }, 3800);
     return () => clearInterval(timer);
   }, [isAutoPlaying, galleryImages.length]);
+
+  if (!center) {
+    return null;
+  }
 
   const casesList = center.casesWorkedOn && center.casesWorkedOn.length > 0 ? center.casesWorkedOn : DEFAULT_CASES;
 
