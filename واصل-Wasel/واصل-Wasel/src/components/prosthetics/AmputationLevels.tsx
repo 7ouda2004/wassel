@@ -92,7 +92,7 @@ const masterAmputationLevels: AmputationLevelItem[] = [
     controlType: 'تحكم عضلي طبيعي 100%',
     comfortRating: 5,
     mobilityRating: 5,
-    image: 'https://images.unsplash.com/photo-1516549655169-df83a0774514?q=80&w=1000&auto=format&fit=crop',
+    image: 'https://images.unsplash.com/photo-1579684385127-1ef15d508118?q=80&w=1000&auto=format&fit=crop',
     badge: 'استقلالية حركية كاملة',
     kLevelRecommendation: 'K1 - K4'
   },
@@ -200,7 +200,7 @@ const masterAmputationLevels: AmputationLevelItem[] = [
     controlType: 'تحكم بالركبة الطبيعية 100%',
     comfortRating: 5,
     mobilityRating: 5,
-    image: 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?q=80&w=1000&auto=format&fit=crop',
+    image: '/images/prosthetic_leg.png',
     badge: 'النموذج الأكثر انتشاراً ونجاحاً',
     kLevelRecommendation: 'K1 - K4'
   },
@@ -386,7 +386,7 @@ const masterAmputationLevels: AmputationLevelItem[] = [
     controlType: 'تحكم مفصلي أو كهرومغناطيسي ذكي',
     comfortRating: 5,
     mobilityRating: 5,
-    image: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?q=80&w=1000&auto=format&fit=crop',
+    image: '/images/prosthetic_arm.png',
     badge: 'دقة واستعادة مظهر طبيعي',
     kLevelRecommendation: 'نشاط علوي مكتمل'
   },
