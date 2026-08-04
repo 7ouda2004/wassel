@@ -16,7 +16,7 @@ const Index = () => {
   return (
     <div className="min-h-screen flex flex-col bg-slate-50/40">
       <Navbar />
-      
+
       {/* Blatchford Mobility Inspired Hero Section */}
       <section className="relative py-20 lg:py-28 bg-gradient-to-b from-medical-950 via-medical-900 to-medical-850 text-white overflow-hidden">
         {/* Soft glowing ambient circles */}
@@ -24,12 +24,12 @@ const Index = () => {
           <div className="absolute -top-20 right-0 w-[600px] h-[600px] bg-medical-500 rounded-full blur-[150px]" />
           <div className="absolute bottom-0 left-10 w-[500px] h-[500px] bg-sky-400 rounded-full blur-[130px]" />
         </div>
-        
+
         <div className="container mx-auto px-4 relative z-10">
           <div className="flex flex-col lg:flex-row items-center justify-between gap-12 max-w-7xl mx-auto">
-            
+
             {/* Text Content */}
-            <motion.div 
+            <motion.div
               className="text-center lg:text-right lg:w-1/2"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -64,23 +64,23 @@ const Index = () => {
                 </Link>
               </div>
             </motion.div>
-            
+
             {/* Hero Image Showcase - User Selected Hero Image */}
-            <motion.div 
+            <motion.div
               className="lg:w-1/2 w-full max-w-lg mx-auto"
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.7, delay: 0.2 }}
             >
               <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-white/10 group">
-                <img 
-                  src="/images/wasel_hero.jpg" 
-                  alt="Wasel Advanced Prosthetics and Mobility" 
+                <img
+                  src="/images/wasel_hero.jpg"
+                  alt="Wasel Advanced Prosthetics and Mobility"
                   className="w-full h-[520px] object-cover object-top transition-transform duration-700 group-hover:scale-105"
                   onError={(e) => { e.currentTarget.src = '/images/prosthetic_leg.png'; }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-medical-950/80 via-transparent to-transparent" />
-                
+
                 {/* Floating Quality Badge */}
                 <div className="absolute bottom-6 right-6 left-6 bg-white/95 backdrop-blur-md p-4 rounded-2xl border border-white shadow-xl text-gray-900 flex items-center gap-4">
                   <div className="w-12 h-12 rounded-xl bg-medical-50 text-medical-700 flex items-center justify-center flex-shrink-0">
@@ -140,9 +140,9 @@ const Index = () => {
               <div key={idx} className="bg-slate-50/60 rounded-3xl overflow-hidden border border-gray-200/70 hover:shadow-lg transition-all duration-300 flex flex-col justify-between group">
                 <div>
                   <div className="h-56 overflow-hidden bg-gray-50 relative flex items-center justify-center">
-                    <img 
-                      src={item.image} 
-                      alt={item.title} 
+                    <img
+                      src={item.image}
+                      alt={item.title}
                       className="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-500"
                       onError={(e) => { e.currentTarget.src = item.fallback; }}
                     />
@@ -171,9 +171,9 @@ const Index = () => {
           <div className="flex flex-col lg:flex-row items-center gap-12">
             <div className="lg:w-1/2">
               <div className="rounded-3xl overflow-hidden shadow-xl border border-gray-200/80 bg-gray-50">
-                <img 
-                  src="/images/team.png" 
-                  alt="Quality Care Team" 
+                <img
+                  src="/images/new.png"
+                  alt="Quality Care Team"
                   className="w-full h-auto max-h-[500px] object-contain"
                   onError={(e) => { e.currentTarget.src = DEFAULT_CENTER_IMAGE; }}
                 />
