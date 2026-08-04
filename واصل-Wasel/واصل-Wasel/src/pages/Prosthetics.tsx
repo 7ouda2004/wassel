@@ -9,9 +9,11 @@ import Footer from '@/components/Footer';
 // Import component sections
 import HeroSection from '@/components/prosthetics/HeroSection';
 import AmputationLevels from '@/components/prosthetics/AmputationLevels';
+import FootAmputationTypes from '@/components/prosthetics/FootAmputationTypes';
 import KneeTypes from '@/components/prosthetics/KneeTypes';
 import FootTypes from '@/components/prosthetics/FootTypes';
 import SocketInfo from '@/components/prosthetics/SocketInfo';
+import LimbCareSection from '@/components/prosthetics/LimbCareSection';
 import ManufacturingSteps from '@/components/prosthetics/ManufacturingSteps';
 import FAQSection from '@/components/prosthetics/FAQSection';
 
@@ -19,31 +21,38 @@ const Prosthetics = () => {
   useEffect(() => {
     document.documentElement.dir = 'rtl';
     document.body.classList.add('font-cairo');
+    window.scrollTo(0, 0);
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-slate-50/30">
       <Navbar />
 
       {/* Hero Section */}
       <HeroSection />
 
-      {/* Amputation Levels */}
+      {/* Amputation Levels Section */}
       <AmputationLevels />
 
-      {/* Knee Types */}
+      {/* Foot Amputation Specific Types Section */}
+      <FootAmputationTypes />
+
+      {/* Microprocessor & Hydraulic Knee Technologies */}
       <KneeTypes />
 
-      {/* Foot Types */}
+      {/* Prosthetic Foot & Ankle Systems */}
       <FootTypes />
 
-      {/* Socket Info */}
+      {/* Advanced Socket Systems & Liners */}
       <SocketInfo />
 
-      {/* Manufacturing Steps */}
+      {/* Residual Limb Care & Hygiene Guidelines */}
+      <LimbCareSection />
+
+      {/* Custom Fitting & Fabrication Workflow */}
       <ManufacturingSteps />
 
-      {/* FAQ Section */}
+      {/* Frequently Asked Questions */}
       <FAQSection />
 
       <Footer />

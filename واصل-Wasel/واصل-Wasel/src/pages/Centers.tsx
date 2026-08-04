@@ -29,12 +29,16 @@ const Centers = () => {
     document.body.classList.add('font-cairo');
     window.scrollTo(0, 0);
     
-    // Load active centers & specialists
-    const activeCenters = getLocalCenters().filter(c => c.status !== 'pending' && c.status !== 'rejected');
-    const activeSpecs = getLocalSpecialists().filter(s => s.status !== 'pending' && s.status !== 'rejected');
-    
-    setCentersList(activeCenters);
-    setSpecialists(activeSpecs);
+    const load = () => {
+      const activeCenters = getLocalCenters().filter(c => c.status !== 'pending' && c.status !== 'rejected');
+      const activeSpecs = getLocalSpecialists().filter(s => s.status !== 'pending' && s.status !== 'rejected');
+      setCentersList(activeCenters);
+      setSpecialists(activeSpecs);
+    };
+
+    load();
+    window.addEventListener('wasel-db-updated', load);
+    return () => window.removeEventListener('wasel-db-updated', load);
   }, []);
 
   useEffect(() => {

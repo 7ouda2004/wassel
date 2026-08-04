@@ -15,10 +15,14 @@ const Team = () => {
     document.documentElement.dir = 'rtl';
     document.body.classList.add('font-cairo');
     window.scrollTo(0, 0);
-    // Load only the first 3 active specialists (core founding team)
-    const all = getLocalSpecialists();
-    const active = all.filter(s => s.status === 'active');
-    setSpecialists(active.slice(0, 3));
+    const load = () => {
+      const all = getLocalSpecialists();
+      const active = all.filter(s => s.status === 'active');
+      setSpecialists(active.slice(0, 3));
+    };
+    load();
+    window.addEventListener('wasel-db-updated', load);
+    return () => window.removeEventListener('wasel-db-updated', load);
   }, []);
 
   return (
@@ -50,7 +54,7 @@ const Team = () => {
             <img 
               src="/public/images/team.png"
               alt="فريق عمل واصل" 
-              className="w-full rounded-2xl shadow-2xl"
+              className="w-full h-auto max-h-[500px] object-contain rounded-2xl shadow-2xl"
               onError={(e) => {
                 e.currentTarget.src = "https://images.unsplash.com/photo-1576091160550-2173dba999ef?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80";
               }}
@@ -76,11 +80,11 @@ const Team = () => {
                 viewport={{ once: true }}
               >
                 <div>
-                  <div className="relative h-72">
+                  <div className="relative h-80">
                     <img 
                       src={member.image || '/images/new.jpg'} 
                       alt={member.name} 
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover object-top"
                       onError={(e) => {
                         e.currentTarget.src = "https://images.unsplash.com/photo-1622253692010-333f2da6031d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80";
                       }}

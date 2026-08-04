@@ -1,15 +1,26 @@
-
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Info, ChevronRight, ArrowRight, Award, BarChart, Bandage, Ruler, Activity, Hand, User, PersonStanding } from 'lucide-react';
-import { 
-  Accordion, 
-  AccordionContent, 
-  AccordionItem, 
-  AccordionTrigger 
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  Info, ChevronRight, ArrowRight, Award, BarChart, Bandage, Ruler,
+  Activity, Hand, User, PersonStanding, Search, Sparkles, CheckCircle2,
+  ShieldCheck, Calendar, PhoneCall, Layers, Footprints, Flame, ExternalLink
+} from 'lucide-react';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger
 } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import {
   Table,
   TableBody,
@@ -19,213 +30,410 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 
-const orthosesData = [
+export interface OrthosisTypeItem {
+  name: string;
+  description: string;
+  features: string[];
+  price?: string;
+  image: string;
+  material?: string;
+  warranty?: string;
+  targetGroup?: string;
+  indications?: string[];
+}
+
+export interface OrthosisCategory {
+  id: string;
+  name: string;
+  image: string;
+  description: string;
+  types: OrthosisTypeItem[];
+  indications: string[];
+}
+
+const orthosesData: OrthosisCategory[] = [
   {
     id: 'afo',
     name: 'جبائر الكاحل والقدم (AFO)',
     image: 'https://images.pexels.com/photos/3913020/pexels-photo-3913020.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
-    description: 'تُستخدم لدعم وتثبيت الكاحل والقدم في حالات الشلل أو الضعف العضلي، وتساعد على تحسين المشية وتقليل التعب.',
+    description: 'تُستخدم لدعم وتثبيت الكاحل والقدم في حالات الشلل أو الضعف العضلي، وتساعد على تحسين المشية وتقليل التعب والإجهاد.',
     types: [
       {
         name: 'جبيرة صلبة (Solid AFO)',
-        description: 'توفر أقصى درجات التثبيت للكاحل والقدم، وتستخدم في حالات الشلل الكامل أو عدم الاستقرار الشديد.',
-        features: ['تحكم كامل في حركة القدم', 'مناسبة للأطفال المصابين بالشلل الدماغي', 'تصحيح تشوهات القدم'],
+        description: 'توفر أقصى درجات التثبيت للكاحل والقدم، وتستخدم في حالات الشلل الكامل أو عدم الاستقرار الشديد للقدم.',
+        features: ['تحكم كامل في حركة القدم والكاحل', 'مناسبة للأطفال المصابين بالشلل الدماغي', 'تصحيح تشوهات القدم والالتواء الحاد'],
         price: 'تبدأ من 1,500 ج.م',
-        image: 'https://www.crispinorthotics.com/wp-content/uploads/2023/04/JCZ00106.png'
+        image: 'https://www.crispinorthotics.com/wp-content/uploads/2023/04/JCZ00106.png',
+        material: 'بولي بروبيلين عالي الكثافة (Polypropylene)',
+        warranty: 'ضمان 12 شهر شامل المتابعة والتعديل',
+        targetGroup: 'الأطفال والبالغين ذوي الشلل أو انعدام توازن القدم',
+        indications: ['الشلل الدماغي شديد الدرجة (CP)', 'الشلل الكامل للقدم والكاحل', 'تصحيح الالتواء وانحراف القدم الحاد', 'منع التيبس العضلي المفصلي']
       },
       {
         name: 'جبيرة مفصلية (Hinged AFO)',
-        description: 'تسمح بحركة محدودة للكاحل مع توفير الدعم اللازم، مما يسمح بحركة أكثر طبيعية أثناء المشي.',
-        features: ['تسمح بثني القدم للأعلى والأسفل ضمن نطاق محدد', 'تحسين نمط المشي', 'مناسبة لمرحلة إعادة التأهيل'],
+        description: 'تسمح بحركة محدودة ومضبوطة للكاحل مع توفير الدعم اللازم، مما يسمح بنمط مشي أكثر طبيعية وتوازناً.',
+        features: ['تسمح بثني القدم للأعلى والأسفل ضمن نطاق محدد', 'تحسين نمط المشي واستعادة دفع المشط', 'مناسبة لمرحلة إعادة التأهيل الحركي'],
         price: 'تبدأ من 2,200 ج.م',
-        image: 'https://www.crispinorthotics.com/wp-content/uploads/2023/04/JCZ00111.png'
+        image: 'https://www.crispinorthotics.com/wp-content/uploads/2023/04/JCZ00111.png',
+        material: 'بلاستيك مقوى بمفاصل تيتانيوم/ستيل',
+        warranty: 'ضمان 18 شهر على المفاصل والبنية الصلبة',
+        targetGroup: 'المرضى في مراحل التعافي الحركي المتوسطة',
+        indications: ['السكتة الدماغية (Stroke)', 'ضعف عضلات القدم المتوسط', 'إعادة التأهيل الحركي والمشي المتوازن', 'تحسين دفع المشط أثناء المشي']
       },
       {
-        name: 'جبيرة ديناميكية (Dynamic AFO)',
-        description: 'مصممة خصيصًا لتعزيز حركة القدم الطبيعية أثناء المشي وتخزين الطاقة واستعادتها.',
-        features: ['تصنع من مواد مرنة تخزن الطاقة', 'تساعد على دفع القدم أثناء المشي', 'مناسبة للمستخدمين النشطين'],
+        name: 'جبيرة ديناميكية كربونية (Dynamic Carbon AFO)',
+        description: 'مصممة خصيصًا لتعزيز حركة القدم الطبيعية وتخزين الطاقة وإعادتها أثناء خطوة المشي لتوفير دفع رياضي.',
+        features: ['مصنوعة من كربون فايبر مرن وفائق الخفة', 'تساعد على دفع القدم أثناء المشي والجري', 'مناسبة للمستخدمين النشطين والرياضيين'],
         price: 'تبدأ من 3,500 ج.م',
-        image: 'https://www.crispinorthotics.com/wp-content/uploads/2023/04/JCZ00136.png'
+        image: 'https://www.crispinorthotics.com/wp-content/uploads/2023/04/JCZ00136.png',
+        material: 'ألياف الكربون (Carbon Fiber Prepreg)',
+        warranty: 'ضمان سنتين ضد الكسر والتآكل',
+        targetGroup: 'البالغون والشباب ذوو النشاط الحركي العالي',
+        indications: ['القدم المتدلية (Foot Drop)', 'النشاط الحركي العالي والجري', 'تعويض دفع القدم للمستويات النشطة']
       },
       {
-        name: 'جبيرة ليلية (Night Splint)',
-        description: 'تستخدم أثناء النوم للحفاظ على وضعية القدم الصحيحة ومنع التقلصات والتشوهات.',
-        features: ['تحافظ على استطالة العضلات والأوتار', 'تمنع تكون التقلصات', 'مريحة للاستخدام الليلي'],
+        name: 'جبيرة ليلية استطالية (Night Splint)',
+        description: 'تستخدم أثناء النوم للحفاظ على وضعية القدم الصحيحة ومنع انكماش الأوتار والتقلصات العضلية.',
+        features: ['تحافظ على استطالة العضلات والأوتار الخلفية', 'تمنع تكون التقلصات والتهاب اللفافة الأخمصية', 'مريحة ومبطنة للاستخدام الليلي الهادئ'],
         price: 'تبدأ من 1,000 ج.م',
-        image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQKC3_s7VI3ZbqwvQZmvikNK6gDPGgVZaAMQtdTayolkqTSEtwlF7ZxmiSXXYaeArSsGZ8&usqp=CAU'
+        image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQKC3_s7VI3ZbqwvQZmvikNK6gDPGgVZaAMQtdTayolkqTSEtwlF7ZxmiSXXYaeArSsGZ8&usqp=CAU',
+        material: 'فوم طبي مبطن مع هيكل بلاستيكي خفيف',
+        warranty: 'ضمان 6 أشهر',
+        targetGroup: 'مرضى شوكة العقب والتهاب القدم والتقلصات الليلية',
+        indications: ['التهاب اللفافة الأخمصية (Plantar Fasciitis)', 'انكماش وتقلص وتر أكيليس الليلي', 'شوكة العقب وتيبس الصباح']
       }
     ],
     indications: [
       'ضعف العضلات في القدم والكاحل',
-      'الشلل الدماغي',
-      'السكتة الدماغية',
+      'الشلل الدماغي للأطفال (CP)',
+      'السكتة الدماغية والجلطات (Stroke)',
       'إصابات الحبل الشوكي',
-      'تخفيف الألم وتحسين الوظيفة',
-      'التهاب اللفافة الأخمصية',
       'القدم المتدلية (Foot Drop)'
+    ]
+  },
+  {
+    id: 'air-walker',
+    name: 'أحذية الجبيرة الهوائية (Air Walker Boots)',
+    image: 'https://media.ossur.com/ossur-dam/image/upload/f_auto,q_auto,w_1400,h_1400,c_pad/spim/134_359b9120-77e9-4789-bb71-73974e7bd97f',
+    description: 'بديل حديث ومتطور للجبس التقليدي، توفر تثبيتاً شاملاً للكاحل والساق مع مضخة هواء مدمجة لتوزيع الضغط المخصص وحماية العظام والأوتار.',
+    types: [
+      {
+        name: 'الجبيرة الهوائية الطويلة (High-Top Pneumatic Walker)',
+        description: 'تمتد أسفل الركبة مباشرة، مزودة بخلايا هوائية قابلة للنفخ لملاءمة دقيقة وحماية كاملة لكسور الساق والكاحل.',
+        features: ['مضخة هواء مدمجة لتعديل ضغط الوسائد الهوائية', 'نعل مقوس امتصاصي يساعد على انسيابية المشي', 'بطانة داخلية مسامية قابلة للغسل والتهوية'],
+        price: 'تبدأ من 1,900 ج.م',
+        image: 'https://themoveshop.com/wp-content/uploads/2026/01/cm8puum4t1coc01nl1b959j6f_Move_Product_Photoshoot0436_copy__1_-2-1536x1024.jpg',
+        material: 'هيكل بولي بروبيلين مقوى، وسائد هواء نيوبين',
+        warranty: 'ضمان 12 شهر',
+        targetGroup: 'كسور الكاحل والساق، ما بعد جراحات تثبيت العظام',
+        indications: ['كسور عظام الساق والكاحل المركبة', 'ما بعد جراحات تثبيت العظام بالشرائح والمسامير', 'بديل الجبس الشديد للتعافي']
+      },
+      {
+        name: 'الجبيرة الهوائية القصيرة (Short-Top Air Walker)',
+        description: 'تغطي القدم ومفصل الكاحل فقط، مصممة لحرية حركة الساق العلوي مع تثبيت كامل للقدم والمشط.',
+        features: ['خفيفة الوزن ومريحة للحركة اليومية', 'خلايا هوائية جانبية لمنع التورم والاحتكاك', 'نعل سفلي مانع للانزلاق'],
+        price: 'تبدأ من 1,500 ج.م',
+        image: 'https://themoveshop.com/wp-content/uploads/2026/01/cm977qpzg1jdq01nl2ah76ij6_Move_Product_Photoshoot0456_copy__1_-2-1536x1024.jpg',
+        material: 'بلاستيك هندسي فائق الخفة، وسائد هوائية مدمجة',
+        warranty: 'ضمان 12 شهر',
+        targetGroup: 'التواء الكاحل الشديد، كسور المشط والأصابع',
+        indications: ['التواء الكاحل الحاد من الدرجة الثانية والثالثة', 'كسور عظام المشط والأصابع', 'التهاب أوتار القدم والتورم']
+      },
+      {
+        name: 'حذاء المشي ذو المفصل المدرّج (ROM Walker Boot)',
+        description: 'مزود بمفصل مدرج (ROM Hinge) يسمح للأخصائي بتحديد زوايا الثني والمد من 0 إلى 45 درجة للتعافي التدريجي.',
+        features: ['تحكم بالزوايا بدقة 7.5 درجات لثني ومد الكاحل', 'حماية تامة لوتر أكيليس بعد عمليات الترميم', 'خلايا هواء مدمجة لدعم الأنسجة الناعمة'],
+        price: 'تبدأ من 2,700 ج.م',
+        image: 'https://i.pinimg.com/1200x/2c/78/59/2c7859c591642a791cf6086221559764.jpg',
+        material: 'مفاصل ستيل معالجة وهيكل كربوني هيدروليكي',
+        warranty: 'ضمان 18 شهراً',
+        targetGroup: 'بعد عمليات إصلاح وتر أكيليس (Achilles Repair)',
+        indications: ['ترميم وإعادة توصيل وتر أكيليس (Achilles Repair)', 'تثبيت ومتابعة زوايا حركة الكاحل بعد الجراحة']
+      },
+      {
+        name: 'حذاء الجبيرة الهوائية للأطفال (Pediatric Air Walker)',
+        description: 'مصمم خصيصاً لأجسام وأوزان الأطفال، يوفر الثبات التام للكسور والالتواءات بطريقة مريحة وجذابة.',
+        features: ['حجم خفيف وتصميم مريح للطفل', 'أحزمة فيلكرو ملوّنة وسهلة الضبط', 'نعل ممتص للصدمات لحماية المفاصل'],
+        price: 'تبدأ من 1,400 ج.م',
+        image: 'https://partners.united-ortho.com/images/pediatric%20air%20walker.jpg?crc=3921535288',
+        material: 'خامات خفيفة جداً ومضادة للحساسية',
+        warranty: 'ضمان 12 شهر',
+        targetGroup: 'كسور والتواءات الكاحل لدى الأطفال',
+        indications: ['كسور الساق والكاحل لدى الأطفال', 'التواءات المفصل بعد الإصابات الرياضية للأطفال']
+      }
+    ],
+    indications: [
+      'كسور عظام الساق والكاحل (Ankle & Tibia Fractures)',
+      'تمزق وتر أكيليس (Achilles Tendon Rupture)',
+      'التواء الكاحل الشديد من الدرجة الثانية والثالثة',
+      'ما بعد عمليات تثبيت الشرائح والمسامير بالكاحل'
+    ]
+  },
+  {
+    id: 'medical-insoles',
+    name: 'الفرش الطبي والأحذية المخصصة (Medical Insoles)',
+    image: 'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&w=1200&q=80',
+    description: 'فرش وأحذية طبية مخصصة تصمم خصيصاً بناءً على قياسات المسح الضوئي 3D لتوزيع ضغط الجسم بالتساوي وتصحيح انحراف القدم.',
+    types: [
+      {
+        name: 'فرش الفلات فوت المخصص (Custom Flatfoot Arch Support)',
+        description: 'فرش طبي مخصص يدعم القوس الطولي للقدم (Arch) ويصلح انحراف الكاحل للداخل لمنع آلام الركبة والظهر.',
+        features: ['تصميم 3D حسب خريطة الضغط الشخصية للقدم', 'دعامة قوس كربونية/بولي يوريثان عالية الصلابة', 'يقلل إجهاد عضلات القدم والظهر بنسبة 60%'],
+        price: 'تبدأ من 750 ج.م',
+        image: 'https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?auto=format&fit=crop&w=600&q=80',
+        material: 'طبقات EVA متعددة الكثافة + دعم كربوني',
+        warranty: 'ضمان 12 شهر ضد التسطح والاهتراء',
+        targetGroup: 'أصحاب القدم المسطحة (Flatfoot) والانحراف',
+        indications: ['القدم المسطحة (Flatfoot)', 'انحراف الكاحل والقدم للداخل (Over-pronation)', 'إجهاد قوس القدم وآلام الركبة الناتجة عن التسطح']
+      },
+      {
+        name: 'فرش القدم السكرية الوقائي (Diabetic Pressure Relief Insole)',
+        description: 'مصمم خصيصاً لمرضى السكري من خامات امتصاصية مفرغة لمنع الاحتكاك وتخفيف مناطق الضغط العالي والوقاية من التقرحات.',
+        features: ['طبقة علوية من فوم Plastazote المضاد للبكتيريا', 'خالي تماماً من الخياطة أو البروزات الحادة', 'امتصاص فائق للصدمات أثناء المشي اليومي'],
+        price: 'تبدأ من 950 ج.م',
+        image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=600&q=80',
+        material: 'فوم بلاستازوت الطبي + طبقة سيليكون ممتصة',
+        warranty: 'ضمان 12 شهر شامل المتابعة والقياس',
+        targetGroup: 'مرضى السكري للوقاية من القدم السكرية والتقرحات',
+        indications: ['القدم السكرية (Diabetic Foot)', 'الوقاية من التقرحات والتكلسات الجلدية', 'تفريغ نقاط الضغط العالي لباطن القدم']
+      },
+      {
+        name: 'فرش الشوكة العظمية والتهاب القدم (Plantar Fasciitis Insole)',
+        description: 'مجهز بتجويف سيليكوني مفرغ عند منطقة الكعب لتقليل الضغط المباشر على الشوكة العظمية وتخفيف آلام الخطوات الأولى.',
+        features: ['وسادة سيليكونية فائقة المرونة عند منطقة العقب', 'دعامة ممتازة للفرش الأخمصي للقدم', 'تخفيف فوري لآلام الكعب صباحاً'],
+        price: 'تبدأ من 650 ج.م',
+        image: 'https://images.unsplash.com/photo-1560769629-975ec94e6a86?auto=format&fit=crop&w=600&q=80',
+        material: 'سيليكون طبي 100% عالي المرونة',
+        warranty: 'ضمان 6 أشهر',
+        targetGroup: 'مرضى الشوكة العظمية والتهاب اللفافة الأخمصية',
+        indications: ['الشوكة العظمية بكعب القدم (Heel Spur)', 'التهاب اللفافة الأخمصية (Plantar Fasciitis)', 'آلام العقب عند الخطوات الأولى']
+      },
+      {
+        name: 'كؤوس السيليكون للكعب (Silicone Heel Cups)',
+        description: 'وسائد سيليكونية تشريحية توضع داخل أي حذاء لامتصاص صدمات الكعب وتوزيع ضغط كعب القدم.',
+        features: ['خفيفة للغاية ويمكن نقلها بين الأحذية المختلفة', 'تمتص 80% من صدمات خطوة المشي على الأرضيات الصلبة', 'سهلة التنظيف والغسيل بالماء والصابون'],
+        price: 'تبدأ من 350 ج.م',
+        image: 'https://images.unsplash.com/photo-1560769629-975ec94e6a86?auto=format&fit=crop&w=600&q=80',
+        material: 'سيليكون طبي شفاف عالي الجودة',
+        warranty: 'ضمان 6 أشهر',
+        targetGroup: 'آلام كعب القدم اليومية والإجهاد الرياضي',
+        indications: ['امتصاص صدمات الكعب أثناء المشي والجري', 'آلام حافة كعب القدم والإجهاد الرياضي']
+      }
+    ],
+    indications: [
+      'القدم المسطحة (Flatfoot) وانحراف الكاحل',
+      'القدم السكرية والوقاية من التقرحات (Diabetic Foot)',
+      'الشوكة العظمية بكعب القدم (Heel Spur)',
+      'التهاب اللفافة الأخمصية (Plantar Fasciitis)'
     ]
   },
   {
     id: 'kafo',
     name: 'جبائر الركبة والكاحل والقدم (KAFO)',
     image: 'https://bldtecomukprod.dfs.core.windows.net/media/c45pxvve/swing_and_stance_grey.jpg',
-    description: 'تمتد من الفخذ إلى القدم، وتوفر دعمًا للركبة والكاحل والقدم، وتُستخدم في حالات عدم استقرار المفاصل أو الشلل.',
+    description: 'تمتد من الفخذ إلى القدم، وتوفر دعمًا كاملاً للركبة والكاحل والقدم، وتُستخدم في حالات عدم استقرار المفاصل أو الشلل السفلي.',
     types: [
       {
         name: 'جبيرة بقفل ركبة ثابت (Rigid KAFO)',
-        description: 'تثبت الركبة في وضعية معينة لتوفير الدعم الكامل، مما يساعد المرضى الذين يعانون من ضعف شديد في العضلات.',
-        features: ['استقرار كامل أثناء الوقوف والمشي', 'مناسبة لحالات الشلل الرباعي والسفلي', 'تمنع انهيار الركبة'],
+        description: 'تثبت الركبة في وضعية ممتدة لتوفير أقصى استقرار للوقوف والمشي للأشخاص المصابين بضعف فخذي شديد.',
+        features: ['استقرار كامل أثناء الوقوف والمشي', 'مناسبة لحالات الشلل السفلي والرباعي', 'تمنع انهيار الركبة أثناء ثقل الجسم'],
         price: 'تبدأ من 6,000 ج.م',
-        image: 'https://images.squarespace-cdn.com/content/v1/5eedea5ef591485ebfb17cf6/1593863726354-0SROHE647ZVLC6JFM5AR/KAFO.png?format=500w'
+        image: 'https://images.squarespace-cdn.com/content/v1/5eedea5ef591485ebfb17cf6/1593863726354-0SROHE647ZVLC6JFM5AR/KAFO.png?format=500w',
+        material: 'ألومنيوم طيران مدمج مع بولي كربونات صلبة',
+        warranty: 'ضمان عامين كاملين',
+        targetGroup: 'حالات الشلل السفلي وعدم ثبات الركبة الشديد',
+        indications: ['الشلل السفلي والرباعي الكامل', 'ضعف عضلات الفخذ الشديد وانعدام ثبات الركبة', 'منع انهيار الركبة أثناء الوقوف']
       },
       {
         name: 'جبيرة بقفل ركبة متحرك (Stance Control KAFO)',
-        description: 'تسمح بثني الركبة عند الجلوس وتثبيتها عند الوقوف، مما يوفر تحكمًا أفضل وحركة أكثر طبيعية.',
-        features: ['تسمح بثني الركبة أثناء مرحلة التأرجح من المشي', 'تمنع انثناء الركبة أثناء الوقوف', 'تقلل من استهلاك الطاقة أثناء المشي'],
-        image: 'https://5.imimg.com/data5/ANDROID/Default/2022/6/DW/NO/UP/82142452/product-jpeg-1000x1000.jpg'
+        description: 'تسمح بثني الركبة تلقائياً عند مرحلة التأرجح وتثبيتها عند الوقوف، مما يوفر حركة مشي طبيعية للغاية.',
+        features: ['تسمح بثني الركبة أثناء المشي الحر', 'تمنع انثناء الركبة المفاجئ أثناء الدوس', 'تقلل من استهلاك طاقة الجسم بنسبة 40%'],
+        price: 'تبدأ من 9,500 ج.م',
+        image: 'https://5.imimg.com/data5/ANDROID/Default/2022/6/DW/NO/UP/82142452/product-jpeg-1000x1000.jpg',
+        material: 'هيكل كربوني مع مفاصل ذكية ميكانيكية',
+        warranty: 'ضمان سنتين شامل الصيانة',
+        targetGroup: 'مرضى ما بعد شلل الأطفال والضعف الرباعي الجزئي',
+        indications: ['متلازمة ما بعد شلل الأطفال (Post-Polio)', 'ضعف عضلات الفخذ مع حفظ التحكم الجزئي بالمشية']
       },
       {
         name: 'جبيرة هيدروليكية (Hydraulic KAFO)',
-        description: 'تستخدم تقنية هيدروليكية للتحكم في حركة الركبة بشكل أكثر طبيعية، مما يوفر استجابة ديناميكية للحركة.',
-        features: ['تحكم دقيق في مقاومة الثني والمد', 'حركة سلسة أثناء المشي', 'تكيف مع سرعات المشي المختلفة'],
-        image: 'http://web.tradekorea.com/product/920/1183920/Knee%20Ankle%20Foot%20Orthosis%20KAFO%20Lower_limb%20Oorthotic%20Products_2.jpg'
+        description: 'تستخدم تقنية السائل الهيدروليكي لامتصاص الصدمات والتحكم بتدفق ثني ومد الركبة بمرونة عالية.',
+        features: ['تحكم دقيق في مقاومة الثني والمد', 'حركة سلسة للغاية بدون طقطقة', 'تكيف ذاتي مع سرعة خطى المشي'],
+        price: 'تبدأ من 14,000 ج.م',
+        image: 'http://web.tradekorea.com/product/920/1183920/Knee%20Ankle%20Foot%20Orthosis%20KAFO%20Lower_limb%20Oorthotic%20Products_2.jpg',
+        material: 'مكونات هيدروليكية ألمانية وهيكل كربوني',
+        warranty: 'ضمان 3 سنوات',
+        targetGroup: 'المستخدمون الراغبون في السير لمسافات طويلة',
+        indications: ['الراغبون في المشي السلس لمسافات طويلة دون طقطقة المفاصل', 'امتصاص الصدمات الثقيلة']
       },
       {
-        name: 'جبيرة إلكترونية (Electronic KAFO)',
-        description: 'مزودة بمستشعرات ومعالجات دقيقة تتحكم في حركة المفاصل بناءً على نمط المشي وحركة المستخدم.',
-        features: ['تستشعر نمط المشي وتتكيف معه', 'تعديل آلي للمقاومة حسب النشاط', 'مناسبة للمستخدمين ذوي مستوى النشاط العالي'],
-        image: 'https://www.ottobock.com/_next/image?url=https%3A%2F%2Fspa-prod-commerce.cep.ottobock.com%2Focc%2Fv2%2Fcep-medias%2F3416889_930Wx930H%2F930Wx930H%2FCEP_MEDIA_CATALOG%2FOnline&w=1600&q=75'
+        name: 'جبيرة إلكترونية ذكية (Electronic KAFO)',
+        description: 'مزودة بمستشعرات ومعالجات دقيقة تتحكم لحظياً في حركة المفاصل بناءً على توازن الجاذبية ونمط الخطوة.',
+        features: ['تستشعر نمط المشي وتتكيف مع المنحدرات', 'تعديل آلي سريع للمقاومة حسب التضاريس', 'أمان فائق ضد التعثر والسقوط المفاجئ'],
+        price: 'تبدأ من 25,000 ج.م',
+        image: 'https://www.ottobock.com/_next/image?url=https%3A%2F%2Fspa-prod-commerce.cep.ottobock.com%2Focc%2Fv2%2Fcep-medias%2F3416889_930Wx930H%2F930Wx930H%2FCEP_MEDIA_CATALOG%2FOnline&w=1600&q=75',
+        material: 'معالج الكتروني ذكي، بطارية تدوم 48 ساعة، كربون',
+        warranty: 'ضمان 3 سنوات شامل المعايرة البرمجية',
+        targetGroup: 'المرضى الراغبون بأحدث التكنولوجيا العالمية',
+        indications: ['التكيف الآلي مع المنحدرات والسلم والأمان الفائق ضد السقوط', 'التحكم الذكي بمستشعرات المشي']
       }
     ],
     indications: [
-      'ضعف عضلات الساق والفخذ',
-      'عدم استقرار الركبة',
-      'شلل الأطراف السفلية',
-      'إصابات الحبل الشوكي المتوسطة والشديدة',
-      'اعتلال الأعصاب المحيطية',
-      'التصلب المتعدد',
-      'متلازمة ما بعد شلل الأطفال'
+      'ضعف عضلات الساق والفخذ شديد الدرجة',
+      'عدم استقرار وانحناء الركبة الخلفي أو الجانبي',
+      'شلل الأطراف السفلية الجزئي أو الكلي'
     ]
   },
   {
     id: 'spinal',
     name: 'جبائر العمود الفقري (Spinal Orthoses)',
-    image: '/public/images/1.jpg',
-    description: 'تستخدم لتصحيح تشوهات العمود الفقري وعلاج مشاكله مثل الجنف والحداب، وتوفير الدعم والاستقرار للعمود الفقري.',
+    image: '/images/1.jpg',
+    description: 'تستخدم لتصحيح تشوهات العمود الفقري (كالجنف والحداب)، وتخفيف الضغط على الفقرات والتثبيت بعد الجراحات.',
     types: [
       {
-        name: 'جبيرة بوسطن (Boston Brace)',
-        description: 'مصممة خصيصًا لعلاج الجنف (الانحناء الجانبي للعمود الفقري) لدى المراهقين، وترتدى عادة لمدة 18-23 ساعة يوميًا.',
-        features: ['تغطي من أسفل الإبطين إلى أعلى الحوض', 'مصنوعة من البلاستيك الصلب مع بطانة داخلية', 'مخصصة حسب قياسات المريض'],
-        image: 'https://5.imimg.com/data5/SELLER/Default/2024/10/456384166/VC/YO/AO/88573415/boston-brace-1000x1000.png'
+        name: 'جبيرة بوسطن الجنفية (Boston Brace)',
+        description: 'مصممة خصيصًا لعلاج الجنف (الانحناء الجانبي للعمود الفقري) لدى الأطفال والمراهقين لمنع زيادة الاعوجاج.',
+        features: ['تغطي من أسفل الإبطين حتى أعلى الحوض', 'تصمم خصيصاً لكل مريض بعد المسح 3D', 'تقوم بالضغط المضاد لتعديل استقامة الفقرات'],
+        price: 'تبدأ من 4,500 ج.م',
+        image: 'https://5.imimg.com/data5/SELLER/Default/2024/10/456384166/VC/YO/AO/88573415/boston-brace-1000x1000.png',
+        material: 'بولي إيثيلين طبي صلب مع بطانة ناعمة مضادة للبكتيريا',
+        warranty: 'ضمان سنة كاملة مع تعديلات مجانية أثناء النمو',
+        targetGroup: 'المراهقون والأطفال المصابون بالجنف (Scoliosis)',
+        indications: ['الجنف الجانبي لدى الأطفال والمراهقين (Scoliosis)', 'منع زيادة اعوجاج العمود الفقري أثناء النمو']
       },
       {
-        name: 'جبيرة TLSO (Thoraco-Lumbo-Sacral Orthosis)',
-        description: 'تدعم المنطقة الصدرية والقطنية والعجزية من العمود الفقري، وتستخدم لعلاج الجنف، الكسور، وبعد الجراحات.',
-        features: ['تقيد حركة الفقرات الصدرية والقطنية', 'تقلل الضغط على العمود الفقري', 'متوفرة بأنماط مختلفة حسب الحالة'],
-        image: 'https://www.superiorbraces.com/cdn/shop/products/a14-02_1024x1024.jpeg?v=1527297450'
+        name: 'جبيرة TLSO الظهرية القطنية (TLSO Brace)',
+        description: 'تدعم المنطقة الصدرية والقطنية والعجزية بالكامل لتثبيت الكسور والتثبيت بعد جراحات تثبيت الفقرات.',
+        features: ['تقيد حركة الانثناء والدوران للفقرات الصدرية والقطنية', 'تقلل الضغط عن الأقراص بين الفقرات', 'خفيفة الوزن ومصممة لراحة التنفس'],
+        price: 'تبدأ من 3,800 ج.م',
+        image: 'https://www.superiorbraces.com/cdn/shop/products/a14-02_1024x1024.jpeg?v=1527297450',
+        material: 'بلاستيك هندسي خفيف ودعامات ألومنيوم',
+        warranty: 'ضمان سنة',
+        targetGroup: 'حالات كسور الفقرات وبعد عمليات الانزلاق الغضروفي',
+        indications: ['كسور الفقرات الصدرية والقطنية', 'التثبيت بعد جراحات الشرائح والمسامير بالظهر', 'تقليل الحمل عن الأقراص الغضروفية']
       },
       {
-        name: 'حزام فيلادلفيا (Philadelphia Collar)',
-        description: 'يستخدم لتثبيت الفقرات العنقية بعد الإصابات أو الجراحة، ويمنع حركة الانحناء والدوران والانثناء الجانبي.',
-        features: ['يغطي الفك السفلي والترقوتين', 'مصنوع من الفوم مع دعامات بلاستيكية', 'سهل الاستخدام والتنظيف'],
-        image: 'https://elheekma.com/wp-content/uploads/2020/08/HJ_128-600x508.jpg'
+        name: 'حزام فيلادلفيا العنقي (Philadelphia Collar)',
+        description: 'يستخدم لتثبيت الفقرات العنقية بدقة بعد الإصابات والحوادث أو جراحات الرقبة لمنع الحركة الضارة.',
+        features: ['يغطي الذقن والرقبة وأعلى الصدر', 'مزود بفتحة حنجرية للتهوية والتنفس', 'مقاوم للماء وسهل التنظيف'],
+        price: 'تبدأ من 900 ج.م',
+        image: 'https://elheekma.com/wp-content/uploads/2020/08/HJ_128-600x508.jpg',
+        material: 'فوم بلازا فوم خفيف ودعامات بلاستيكية',
+        warranty: 'ضمان 6 أشهر',
+        targetGroup: 'إصابات الرقبة والفقرات العنقية',
+        indications: ['كسور وإصابات الفقرات العنقية بالرقبة', 'التثبيت بعد جراحات الرقبة الحادة', 'منع حركات الانثناء القسري']
       },
       {
-        name: 'مشد لومبار (Lumbar Support)',
-        description: 'يستخدم لدعم أسفل الظهر وتخفيف آلام المنطقة القطنية، ويساعد على الحفاظ على وضعية صحيحة أثناء الجلوس والوقوف.',
-        features: ['خفيف الوزن ومرن', 'يمكن ارتداؤه تحت الملابس', 'مناسب للاستخدام اليومي والعمل'],
-        image: 'data:image/jpeg;base64,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'
+        name: 'مشد القطنية لومبار (Lumbar Support Belt)',
+        description: 'يدعم أسفل الظهر ويخفف آلام المنطقة القطنية والإجهاد العضلي أثناء العمل أو رفع الأثقال.',
+        features: ['خفيف الوزن ومطاطي يمكن ارتداؤه تحت الملابس', 'يحتوي على 4 دعامات مرنة في الظهر', 'يزيد الضغط البطني الداخلي لتخفيف حمل الظهر'],
+        price: 'تبدأ من 650 ج.م',
+        image: 'https://images.pexels.com/photos/4506109/pexels-photo-4506109.jpeg?auto=compress&cs=tinysrgb&w=600',
+        material: 'قماش نيوبين مسامي مع أحزمة شد مزدوجة',
+        warranty: 'ضمان 6 أشهر',
+        targetGroup: 'العمال، السائقون، والذين يعانون من آلام الظهر اليومية',
+        indications: ['الانزلاق الغضروفي القطني (Lumbar Disc)', 'آلام أسفل الظهر وإجهاد العمال والسائقين', 'دعم الظهر أثناء الحمل الأثقال']
       }
     ],
     indications: [
-      'الجنف (الانحناء الجانبي للعمود الفقري)',
-      'الحداب (زيادة التقوس في المنطقة الصدرية)',
-      'كسور العمود الفقري',
-      'بعد جراحات العمود الفقري',
-      'آلام أسفل الظهر المزمنة',
-      'هشاشة العظام',
-      'انزلاق الفقرات'
+      'الجنف (الانحناء الجانبي للعمود الفقري Scoliosis)',
+      'الحداب (زيادة التقوس الصدري Kyphosis)',
+      'كسور الفقرات الناتجة عن الحوادث أو الهشاشة'
     ]
   },
   {
     id: 'upper-limb',
     name: 'جبائر الطرف العلوي (Upper Limb Orthoses)',
     image: 'https://deccanorthopro.com/wp-content/uploads/2018/11/upper_extremity_orthotics_img4.jpg',
-    description: 'تستخدم لدعم وتثبيت مفاصل الطرف العلوي، بما في ذلك الأصابع واليد والرسغ والكوع والكتف، في حالات الإصابات والاضطرابات العصبية والعضلية.',
+    description: 'تستخدم لدعم وتثبيت مفاصل اليد والرسغ والكوع والكتف لعلاج الإصابات، التهابات الأوتار، أو الشلل بعد الجلطات.',
     types: [
       {
-        name: 'جبائر الأصابع (Finger Orthoses)',
-        description: 'تستخدم لتثبيت أو تصحيح وضعية الأصابع بعد الإصابات أو الجراحة، وتساعد على استعادة الوظيفة.',
-        features: ['متوفرة لإصبع واحد أو عدة أصابع', 'قابلة للتعديل حسب حجم الإصبع', 'مصنوعة من مواد خفيفة ومريحة'],
-        image: 'https://m.media-amazon.com/images/I/71LINb+ej1L.jpg'
+        name: 'جبائر الأصابع الدقيقة (Finger Orthoses)',
+        description: 'تستخدم لتثبيت أو تصحيح وضعية الأصابع بعد إصابات الأوتار أو الكسور أو حالات التيبس.',
+        features: ['متوفرة لإصبع واحد أو عدة أصابع', 'قابلة للتعديل بسهولة لتناسب مقاس الأصبع', 'مصنوعة من ألومنيوم مبطن بفوم ناعم'],
+        price: 'تبدأ من 300 ج.م',
+        image: 'https://m.media-amazon.com/images/I/71LINb+ej1L.jpg',
+        material: 'ألومنيوم مرن وفوم ناعم',
+        warranty: 'ضمان 3 أشهر',
+        targetGroup: 'إصابات الأصابع وأوتار اليد',
+        indications: ['إصابات وأوتار الأصابع (Trigger Finger)', 'كسور وتيبس مفاصل الأصابع', 'تثبيت السلاميات']
       },
       {
-        name: 'جبائر الرسغ (Wrist Orthoses)',
-        description: 'تثبت مفصل الرسغ في وضعية وظيفية، وتستخدم في حالات متلازمة النفق الرسغي، التهاب الأوتار، وبعد الكسور.',
-        features: ['توفر راحة للرسغ وتقليل الألم', 'يمكن ارتداؤها أثناء النوم أو طوال اليوم', 'متوفرة بأحجام مختلفة للاستخدام اليمنى واليسرى'],
-        image: 'https://melbournehand.com.au/wp-content/uploads/2022/12/MHR-Splint-board-animate_01.gif'
+        name: 'جبيرة الرسغ والنفق الرسغي (Wrist Cock-up Brace)',
+        description: 'تثبت مفصل الرسغ في وضعية راحة وظيفية وتخفف الضغط عن العصب الأوسط في حالات النفق الرسغي.',
+        features: ['توفر راحة فورية للرسغ وتقليل النملان', 'مزودة بدعامة ألومنيوم سفلية قابلة للتشكيل', 'يمكن ارتدائها أثناء النوم والعمل'],
+        price: 'تبدأ من 550 ج.م',
+        image: 'https://melbournehand.com.au/wp-content/uploads/2022/12/MHR-Splint-board-animate_01.gif',
+        material: 'قماش مسامي مريح مع دعامة تشريحية',
+        warranty: 'ضمان 6 أشهر',
+        targetGroup: 'مرضى النفق الرسغي والتهاب أوتار اليد',
+        indications: ['متلازمة النفق الرسغي (Carpal Tunnel Syndrome)', 'التهاب أوتار الرسغ والإجهاد المكتبي', 'راحة مفصل اليد']
       },
       {
-        name: 'جبائر الكوع (Elbow Orthoses)',
-        description: 'تستخدم لتقييد حركة الكوع أو دعمه بعد الإصابات أو الجراحات، وتساعد في علاج التهاب الأوتار ومرفق التنس.',
-        features: ['تحكم في درجة انثناء ومد الكوع', 'مزودة بمفصل قابل للتعديل', 'مريحة للاستخدام اليومي'],
-        image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRqPvErzWeX7YSS-2xYKPqIBnphcstQ8vS-zQ&s'
+        name: 'جبيرة الكوع المفصلية (Elbow ROM Brace)',
+        description: 'تحدد نطاق حركة الكوع بدقة بعد جراحات الأوتار والكسور لضمان التعافي الآمن التدريجي.',
+        features: ['تحكم دقيق بالدرجات في ثني ومد الكوع', 'مزودة بمفصل مدرج من 0 إلى 120 درجة', 'أحزمة تثبيت سهلة التعديل'],
+        price: 'تبدأ من 2,400 ج.م',
+        image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRqPvErzWeX7YSS-2xYKPqIBnphcstQ8vS-zQ&s',
+        material: 'مفاصل ستيل مبطنة مع أذرع تلسكوبية',
+        warranty: 'ضمان سنة',
+        targetGroup: 'كسور الكوع وإصابات أوتار المرفق',
+        indications: ['بعد جراحات وتر ومفصل الكوع', 'تحديد درجات ثني الكوع بعد الكسور', 'الوقاية من الشد العضلي القسري']
       },
       {
-        name: 'جبائر الكتف (Shoulder Orthoses)',
-        description: 'تستخدم لتثبيت مفصل الكتف بعد الجراحات أو الإصابات، مثل خلع الكتف أو تمزق العضلات الدوارة.',
-        features: ['تحد من حركة الكتف في الاتجاهات المختلفة', 'تساعد في تخفيف الألم', 'قابلة للتعديل حسب الحاجة'],
-        image: 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkGBwoOEQoKDQcNBwoIBwoHBwcHBw8ICQcKIB0XIiAdHx8kKCksJCYlJx8fLTEtJSkrLi4uIyszODgsNygtOisBCgoKDQ0OFQ8QFS0ZFRk3KzcrLSsrLS0tKzc3Ny03KzcrNy0rLS0tLSstKys3LSs3KysrKzgrKysrKzcrOCsrN//AABEIAPQAzgMBIgACEQEDEQH/xAAcAAABBQEBAQAAAAAAAAAAAAACAAEDBAYFBwj/xABWEAABAwEDBQkMBQgGCQUAAAACAAEDBAUREhMhIjEyBhRBQlFSYWKRByNxcoGCkqGxwdHwJDNTY6JDRFRzk7LC4RY0g5SV0xUXNUVWdOLx8lVkhcPS/8QAGQEBAQEBAQEAAAAAAAAAAAAAAAECAwQF/8QAIxEBAAIBAwUAAwEAAAAAAAAAAAECEQMSMQQhIkFRMkJhgf/aAAwDAQACEQMRAD8A9gTsgvTs60g2dEyBOygkZ096BnRM6AmdEzoESAk7OhZ096KNJVZa6nHXMPix989iqS21G2xER+OeBQddklnTtqofUIB5jl7VVOuqSfPUH/ZnkvYg0VTVCDsN2Mi1C3vWJ3XUUko74i/rFL36H70eFvK3ruXVjPNpaZGuHuw3TU9mQxzSDlpKqoGnpqbHhM9WJ/ALZ/C7NwqTETGJWJxOWfppxlEZG+eh08skb6+LoLoVNmDjkqqeYfpR5becZsQSX8Iu3Lru5XXKqI73/AfjdK+bqUmkvdS8WhdjgjYcQgOI9BTQQC7qtQ0pNrMjFdiGNcJl1wWTuR2A+UmqpvycGGhh68usn8Gy3kdc/dFXb3hkkb6zBghDj4n1XdKt2baFDRDQ0E9WNNU1kTy04THkt8k11976md3fMz6892penpaZnd8cNe+K7fraU1piLCJjojoAcfwXShmA2YgPGKzTLgbtZKqnpytCkqzo6izjGbHCf1sLuzEztqdmvvudnzsvow8T0pJeU7l+6sJNk7Qh0s2Crog18uIb83hbsXqglezPyqzGBzGdEyjZ0TOqykTs6BnRM6KNnTs6BEzqA2dOgZ1BV1OFsLbSA6uqybZttcWepkPWRH1OJ2JppL/31G+dRTIU6a5QMLJ2ZEydBQr7SqBYhgss5iDYlqpgpKcOy937GWJt/c3XVpQ2lUTb5qKUHA6GPRpwhvvuBuDPyu7vy6l6ISVwoMJZ2WhwkGLI8zPjizte3gf2ruSwRysMwnjyu2fx6dbeRdOWhjfEWDAX3fHXFrIJqEiqowKpoT066jhDFLEPCYNwu3C3Ddmz6+erTdXDenfbZYgp7tatX3MoJ6mPCMgGM0c4DNDLHpBKD52drtd6kpYyfERh1AD1v7u1eCmja1sfHtvqxFValiykxTSYKkacB3tEB5XBUXuzuWa5rmuuud9b8i4Vt7j47RnKonmI8IYDOPRx3X3M3Q1/atXHT8UO8jx8noq4FOLNhFfQpSKxiHhtabTl5FblbaljzjR0Vv1OR3pFUb2qrqwYr3JmZsTPc1zamuSqe6BalRT1VDUQ0tTHWUctIdTDCdNLEzs7X63Z36LmT90OTFXVBREOKKGGmPKQsQZVmvdvBnb1rKvIX5Shx9elmyWPyOu8Vc8unYkOVmhj+1mih7XZn9S94ppzBsIykLeO68t7m9jySSjWb2KGnpwLInNpFLM7XNddmdma97+ll6iLLN57rDtM6K9Azp2dVEiK9Rs6JnQGzomdAzpHJc2IkUp5sLdZcmaS99JFUT3uSqGaypyfjKMX2euGDszJwe9vF/eUZvm8Qy9qgmuT3Jge9hRNmQIU7tnTJ0CvTOydMyBkAtm/AjdlVrX0REdqWbIh5db9iCjBQ5JpJIgy0ITFNSRSB3qhvfPc/C197s3Be/ArsEBaRGWMj48mj2NwKZoxuwjoDohg4mbUpbrsKAI47lHadZHTQzVR/V0sJTH5GvuU6xfdPtDDTx0Yn/XJhx/qmzv7lYHmstQUpSTH9ZPMVTN4zu7v63UtDTFNLDTjtVVTFCHUvfO/ka9/IqzstZ3NqHKVeWLTGipimDqSvmb1O/Yu89oY9vU6OnGIRjDZAMAZMOKzXXKXRT3JXLztuizo2dRM6JnW2UjOiZ0DOnZ0EjOqVoScUVPPJcPj6Cp1p6XirMrCkZ3JpOKjeSN+OKAQ4qioYpNMh5+n5ykFh0vHNV6wMLjJzDRhJn8+X2oJYXzKa9V41OzoCZOLpmToE78ZK/MkzpEgZlUdsUw4tmICPznuZvVerSrxgTSTFgIxPD1tTfzQWmZCTIWPqEHmOgqJRZsSCOurIYRxSF5nHPwMvKO6BWjUSQk2yOLvW1gHlv1XrbPimqKcZNOOUywB4GLN2sr9fudoZtGSkH90+1SJ7vVqVpTTjtm1vfx4c0hDxvNk5vhXsPc2s0oaXfBwlDNXnvkwm2wiuuFuxr7ulZbdNuUp6E46rSmpct/U+OZa2Z31XalrbG3bWXIwxyVBUE3HCqDDFi6Ha9vWy6zOYeXGIy1Vyd0EcokwkBiYnsFHpAY9FyPEuYup2QM6JltkbOjZZ3dXuiGhjHDhOol+pHmDyuvJ7U3S10pET2jU4j+zrjiAPI1zLWMmXuNcY3jfxVyp6m8iItkz9NeOUm6y1In0bUlPqVR5f2rW2Ju8hkcY6qHech6G+YfqjLpZ9SxNZXLV1NCJd8jMoS+72FzZ5qynccoeWj4kvM+C68VQLtiEsY/d8TwtrbyIJMLsQuGMSDxgMVlVaC2YZWych4CPQMZNHAXQohqR2RMTwHgPsZ1y7Zp44wkJz2Qxwy9XW2dULIqNCMv0jT9SDX0016uia4tJUc1dOKS9BcZ0kAnm0UTOgIUxOljvSuQInv8AGURBJpEMwgPidHKz+5SEyZmQA2+G44+v4KCtcsBY8P8AZm/wVqWS5tvZ+dSw+7W3ijEqeObvk+h3viBqd/c38lYjIye6zdFJMQ0sBFDDS/nkJvFLUnmfM7ama7yv0a9Nuc7oVOYDDXlvOYQwb+wPJS1ObW9zaL5s/B0rCM/F4qnsSwiq6iOENCHBvmplwfVA3xd2ZvCuk1iIN0y1ndItuEhhpY9PTy2VjByA+RmfU6wkEmkRc39516RaW4gamLJ/6Unhmi04ZZNKLFyOLa2WBtSxrQs58NXSYIcfebRpe+05+F+B/DcpSVvEfrmY/q7ZNu1lI+KCpwDx6aTvtOfhH3tc69KsLdfQ1rXPMNHOIZSWmq5Ah5L3Z3zO2dtXLnuXj0kg3Dh4yFjuWprEueX0kzqOrqo4Y5JjLBHEGM/giZ1gO6fa+HJ0e+cA4MtMMekZlfmZ2bo9qzEKx+6S2JKmaSYy2z0A5kTamboWelkUkk8L7NR+0BQHGW0OGYfu/gtphETpmkuQu6F0Vq9y26uSmeOGUyOl2A+1oeln5OVnzeXX6SNbmGTEJxlphL+SO/l5Hfl1Lwq9bvcRa5PDJSnp71w4Mp9k9+Z+x1i0e1hd3W1M0gFDSwnUzVHeYaaAHllxPwXNr8LcDK7aG5mupIaGYy2gyM0Q/mdzZmd+F3a93u1PmWx3F2GMI7+kD6RVB9HCT82p31M3S/sXWtjIzRFHjEyExPBj6bn9rrlmsLi3phKDREcW1x12aSYbtvAuTVxZN8KGKUmcVRqRlRtJeuNTTFwmrsUpILwuleoAO9EMnzsoJ7xQEdyjORUayqubb89BVtu0xiCSQj0QDGfPXk1bWSTSyTHtSnscwW1M3kXZ3WW1lHyYmWTE9M+fwXv0M64BNeulI9sylBiJxEQxkRiABHtmTvczN03r1PcvY40UIiWHfFRp1csfOuzCz8jfF+FZvueWPGWK0pMJlFMVNSBtZKW7SLw3Pc3hdbn0kvPpYhbh1KWSOMmKMwE4zDAcUgMQSD0s+tVRkzImlXNWL3RdziE8U1n4aCTBjOhk/qsvgfiv6vAvNLQpaiAypp4ippotuKQcPlblbpXvw1HFVG1bPs+raNqqgGsaH6oprxcOhnbPd0aluLJhomdeb/0dLKVk1XUFaU1RVzGAY33vTw3u7M12t7rlvqsyw4R4yw+6u0cLb1jmwSY/pOT/ACUVz5nflfkXnva1rbK9v670rFa7rM9aFkWSWISMgLY7ybSh61nKqxY4371aPmyA4mHhuvU1VWE0hQxw48kGmeNogiLkv5Gb2rkVE8kj4ccp9Sih0PZnXatNsflP+uc2m08QvHRlhxGYTF9zon5GfX4FzpQu6489TUtDUk499qqYcenvqHDjbov4fIunOIRDiwRffVFbx7ujhfsW4ZlwMW11dvqeHkXpvc83KzRZSsrKTItPTw7xo5JsMp53d3MeBrrrmfPyspdxO5+aRobSqjHIkDTWXZ0YOIGz6jNvWzeB35FuDK7Xx/3vivJ1HUY8avVoaH7WTHPI7YcsWHmY1DlBvyZbX76K/OJf+BoKmGORsOwQHjA49sC5W+C8M2tL1xFYc62acmbLNsht9Tp8C4MVdTvpDUhhDrstTFV7UcmhIG3zDF9Tt0P8WXn+6qPe83e9CGoDLAHMK+52bo1P5V7em1d3jLx9RpbfKHea2qcdkzm6kML+18yRbph/QC/tKkIlhpa4hHFIZdQOOa41VakhPo6A/PCvbth5My9OLdpGLf1YP73i9jKjP3QCbZyQf2Jl7XZeZFIT6zJCmIVuKvd/VcUv2YB8FyZd09ZKxmZkcMQd+DLZzve65muzvdfmWfhjIiEW2v4eVXYSp2PJZHAQ99ilxvhqiuzvdysmIRLaEZYspGA4h0DH7UOTw/FNZuAjhhOo3rT1FQEO+5PzO97nZ+ls7N610qkqPIQ4MW/BmPfOUDQw62e/Vdddm1s7PyrqbibB3zN/pKSPHS054AHBo1lSz67uG7Ne/K3hSezVq4x3y9IoqSOnijp4gEIYgwAHvfpfX5VMDD1fnyqLHn/gRg+dchNdemOO9EHoInZBUKIuKmaMuerTgnuHmIAtWoycc03GihLAHPLUzdrsvL7RkJmmmLTw4j/Wlfw9Lu9/ldeibp3+jl/zNKB+k3vuXnG6DNAXXmiDzb7/AHLPTR4zb3Lt1E+UV+OLSUpTSR0vFP6RVnxzv/7+tb96OGjgHJwiBbAaHIzu+fyetY3ctKO+qznYxAPFZ7lt7WMiip9DZmID8rO7etmbyrje27Wis8OlK40pt7ZO1ZCFikMscksww+c/8r0tx+5obVqJJpsR0NnVAwnT7Iyu3A/QoN1El8QyD+b1MUx+tvey0/ckr4Y4rZpb+/BXNaMRfaRELMzty52ftXq18xX48+lETPdq7XtKnhPTIQHRDvewAs13Yh37GQjhMamGo0MeNjAx5F53u1lmlIYQIgyplljjNxwC2d1nrJtGpoDYqeS8cf0ikk+pqLuVuB+ls/hbMvBXQm9Zs9ltWKzFXptqT1Vn5OXTqbLPQmKS+WWyS4Hd9bj0vq4c2rsUkhSiJCeiemBri2Lupp60PMwVNPNcRRZs7O2p2duHU6agkGzZhosX0Wsilq7LGQ8W9rnbEF/I17O2fU93Be/Ga+sYmHaLe44lbqassVORBgw1O9pvFdnvbtZuxZnulVIx7xJtr6UGPmbDrsbpq0cniHaKrhMO1md+x1lO6FIWRoMQYMVWRw5Tjjhe/wBbt2sr035wxr96Sx9RORPnNQu6Z016+u+aJOLXuhU8IXaXGPY6nSgjmYQfjYcGCowm4vhdtbeBLBibJmWkOnDKP5TkJlKSrHo4R0sO3Cce3EXR0PyKi41TI46Y4JAPAfMPXc7L1fcNUDJQ0Y/YAVJzdl3Zn7Ln8q8jOS/DzR2Pi69D7l9T3qsp+NFUjMAdUmu9o+tZtwQ3bIxfMo/DiUrNe2Zc1TRonZDCiQJmFO0aMG/60x+cg5tvhigqvugGr9B2J29TrzTdO30ea7aimiPsJmf1O69dOAXfFzgwTBxDF15xbtjZPLUxnjAgKE+fLC73s7P0tm8LO3AmhS1Ymst6162mLQye5mUWq5Pv6YZg7Wd/evRXOMo5ISLBiDQPawSs97O3gdmfyLy2vhkppBkj2oDxh97C+tvI/tXafdXC4YhLBoeeBLza+nbfuq76N67NspbUYb5ITDAJgYGHM5Wbl/7LNU9XVUR75iPTp/o568FRDfmf51K3/SgXk75FloS0DlwacXI7cq61XBDMA4DExwd5PiGL8D9Dr2R518nmnxt2cUt1ZyyxlJCwCWhKeUxXXs7X6ulVaiTCZLm2hQFEbtgfDi9DodIqrZD67DoY+OPR0rNaxWMQWtNpzLowVEkZjNFMVNN9qF3Y7Pmduh10j3RVRz0dTV1ZHHSnku9gwjED63Zm152Z38Cz4mSRMRbSk0i3MLF5r7bjdfblIcNLHSVrVNQM2WmKHSw6na/sWYtW16qreMqibLb3hyNOEYMIAz3X5uV7m7GVAQSdkppVqt9WbHSvTIo2vfCurmkhjv2tkdv4Kd3TNm0W2QSWkJ9SifO+JOZ58PF/fTM6gdmWy7mkt09RH9rQ4/Rdvi6xuJaPcDPdW0+l9fDNT9rXt7FJ4HrLP1VMzbOgq+UUzyRs2kY/2hsK5NLMTohfOqm/qUGz1cQfrKgB96gO3aEW/wBo02L/AJuPQ9aDqE9yB8y4n9JbNb/eMBlxzyzepD/Sazf06L9sg0jOqFtUtLLGRTzDTDF+cyGw5K/ld+B7ldZ1ie6FOTyU8PFCnywczKu5Ne7cNzD63XaGGWtumjdyjCYakQPvNTDo+XPd4FlZNz0hPiy0UPnuXqWgpmvjEi0yxyh2O/8AJOTCzKzESROGcOxRbDirh0eIMO0XarEFPk9VWfiRgrpPnURMmMLlDVNHI2EyM/PcSPo9a570lOL5gL03XQNvnsVaVlmRGzQtxCT44eYXz5VESFUTYoeZ7find6f7H8D/ABVdO6Cwz0/2Pt+KMZIW2Q9vxVRk96C5lIeb7fimysf2I+h/NVhdPegnykf6MPoMnaW78iP4PgoGdE7oLG+ep89iW+C+TdV2SvQWN8ydb9saF5y+Tf4qJJAZH1B+fKlj8X0GQO6dnQGzl1fQZTRYX1gPoMoGdWIOFRX0AzrGbvXFpaUiw6VJMHY4O3tdbFlg+6rSYhs+QPrMtLD1MkzM+vlvd+1OErETzOGXp5BwFdxKmX2td7UJvmUNmwldIJbQH7W/krBhmW0c6TWhdHNrQKKEmVWqZW3VeqbMg56ZO6ZQJPckkyBJMnSZA7J0zJ0CTpk6BJ0KdA6SSSB0mTJxQGKmh4VALqeNFe/s6y3dBhxw0ZfZVxY/FcD/AJLUM6p2vQjUwyU7ngI9OE/spWzs/wA8qMvJ6F7jqOuEXtL4qWV83nqOuDe8kkMgGFQGHLBIDD0s/wA8qqlUj1vTZXJgEutAzI8pH9mXpoSkH7H8bplcGJv/AMKCds3mKfKDzB9N0JHfxB9aZXDkG2dNcuk8fNwqA2mbiB6GJQwqXdRPcXMJG88nU/uyWWk6n92ZAFySLLTdT9iyWXm54/sWQMye5LLzfa/gb4JPLN+kkgfAXML0ETRScwvQdQu8j/lj9N02HrF+2dBYyMnMSyJdX02+KrYBTtCPMFBZaPrj6bJ8l1h9Naax9yglHHJKGAiDHg2dF9V7cq0tDuUoW2ocf4ljcrzVouuPrL3KzBZVRJox08s36ukMvWvXaawqOPYpg9BdEKaNsN2gpukeSQbkLWL/AHcYDz5jii9r3q4G4e1vs4h8arH3M69PdiU8NMVybpBs6JnUbOiZ10YV7Qs2jqWw1FGFTg2DkDTivzZnbO3kdlj7V7nYviKjr8j/AOzrb5Q1amPW3nYlumdOzoZeLWrYNpUv19AWT/SYe/0/a2rysy5jGvflwbU3HWXU4i3tvOQ9uWiuix+FrnZ+xDLx7KJ8ovRZO5rT8S15Q/XU4S+x2Vc+5hJwboBAfvLIcv8A7EXLBY0sa3f+q6b/ANfD/BT/AMxP/qul/wCIg/wY/wDMUXLAk4vrBQlTxvs6C9FbuVTf8RB/gr/5i51d3PZoX/2uE3/xzxfxOpkYYqcm2TxqNxJtoForQsKSH84Gb9XDhwetc9qaR+JohtnxATdA5rMkrL05X7H43Ug0pfIJuMKjMnaNXmoZi0WXZsuwRbSLTL7xTcYcGGhmJ8Igtfuc3Oxs4zShliHTAJNgC8HKunQWaLawXbhiu0dLCs5lUwN1VOHoIAYVPd84FBNDJsjg9qshHfpKhky4qlCQh2kF8IRRk6qwSyP/AOCtNnQVGdOzoGdEzrswkZ0TOo2dEyA2dFegZ07OgkZ0TOo2dEzqA2dEzoGdOzoJomvf8fYuDbxizYn42JaGkb6wuYHtWZ3TteMfj7CxZqGOrIhkfSBUpqUX0W0BXZKLqJhpr+asq4bWffsqeKy+UF2wp7lNHCXM/BhQcqCzxZ8we1danpLuIrUMN3y3tU9yCFo7uopQe5EIKRo70BgynF1FGCmFkEseHzlKLDxsKgZ1I3nepBYZMMl2bHqUQumF7teFBEzomdAydnXZhIzomdRomdBIyJnUaJnQGzor0F6dnQSM6dnQMiZ1Bdpm0JOuYgs7bcd7+ItHTbBfrvcyz9rbRDgXOeWo4cJoUQw3qzd87ScYxUVAMPoqxHGPM/hROydo82JAnYuqndiT3Zkztm4poHbzVIzKMWUt6BMxc9Ss+ZROycOqglA1LeoXfmp26fnyoJuH+NPivQM/ztJ7r9fu+CCNkSSS7sHZEySSgJkTJJIHZEkkgJk7JJKC7swi7ZtMvcuDW5yvfPoe9JJc55ajhTFCKdJRRvrSwtfrftSSQDe+jnRtrTJICFrsSMUkkAFrRPqSSQTDquSdJJAbcVJkkkH/2Q=='
+        name: 'جبيرة ابعاد الكتف (Shoulder Abduction Splint)',
+        description: 'تثبت الكتف في وضعية إبعاد محددة بعد جراحات الأوتار الكفة الدوارة (Rotator Cuff) لمنع الشد.',
+        features: ['تثبت الذراع على وسادة إبعاد بمقدار 30-45 درجة', 'تخفف الوزن بالكامل عن مفصل الكتف', 'حزام صدر عريض لتوزيع الوزن'],
+        price: 'تبدأ من 1,800 ج.م',
+        image: 'https://deccanorthopro.com/wp-content/uploads/2018/11/upper_extremity_orthotics_img4.jpg',
+        material: 'وسادة إسفنجية عالية الكثافة مع حمالات تثبيت',
+        warranty: 'ضمان 6 أشهر',
+        targetGroup: 'جراحات وتر الكتف وخلع المفصل',
+        indications: ['جراحات وتر الكتف الكفة الدوارة (Rotator Cuff)', 'تثبيت خلع الكتف الحاد', 'تخفيف الوزن عن مفصل الكتف']
       }
     ],
     indications: [
-      'إصابات الأعصاب الطرفية',
-      'متلازمة النفق الرسغي',
-      'التهاب المفاصل',
-      'إصابات وتوترات العضلات والأوتار',
-      'كسور العظام',
-      'إعادة التأهيل بعد الجراحة',
-      'الشلل الدماغي والسكتة الدماغية'
+      'متلازمة النفق الرسغي (Carpal Tunnel Syndrome)',
+      'إصابات وتر اليد والأصابع (Trigger Finger)',
+      'التهاب المفاصل الروماتويدي باليد'
     ]
   },
   {
     id: 'hip',
     name: 'جبائر الورك والحوض (Hip Orthoses)',
     image: 'https://www.orliman.com/wp-content/uploads/HO4001-1.jpg',
-    description: 'تستخدم لدعم وتثبيت مفصل الورك والحوض، وتساعد في علاج خلع الورك الولادي واضطرابات الورك الأخرى.',
+    description: 'تستخدم لدعم وتثبيت مفصل الورك والحوض، وتساعد في علاج خلع الورك الولادي للأطفال وما بعد عمليات المفصل.',
     types: [
       {
-        name: 'وسادة Pavlik (Pavlik Harness)',
-        description: 'تستخدم لعلاج خلع الورك الولادي لدى الأطفال الرضع، وتبقي مفصل الورك في وضعية صحيحة لتشجيع التطور الطبيعي.',
-        features: ['مصنوعة من مواد ناعمة ومريحة', 'قابلة للتعديل مع نمو الطفل', 'يمكن ارتداؤها 23 ساعة يوميًا'],
-        image: 'https://www.alimed.com/_resources/cache/images/product/51968_850x480-pad.jpg'
+        name: 'حزام بافليك للأطفال (Pavlik Harness)',
+        description: 'يستخدم لعلاج خلع الورك الولادي لدى الأطفال الرضع، حيث يبقي مفصل الورك في وضعية أمان لتنمو المحفظة صحيحة.',
+        features: ['مصنوع من أشرطة ناعمة لا تسبب تهيج جلد الرضيع', 'قابل للتعديل بسهولة مع نمو الطفل الشهري', 'يسمح بحركة طبيعية آمنة للقدمين'],
+        price: 'تبدأ من 1,200 ج.م',
+        image: 'https://www.alimed.com/_resources/cache/images/product/51968_850x480-pad.jpg',
+        material: 'قطن ناعم وأشرطة فيلكرو طبية',
+        warranty: 'ضمان 6 أشهر مع تعديلات قياس مجانية',
+        targetGroup: 'الأطفال الرضع المصابون بخلع الورك الولادي (DDH)',
+        indications: ['خلع الورك الولادي لدى الأطفال الرضع (DDH)', 'تحفيز التطور الطبيعي لمحفظة الفخذ']
       },
-      
       {
-        name: 'جبيرة الورك المفصلية (Hip Abduction Orthosis)',
-        description: 'تستخدم لمنع تقارب الوركين والحفاظ على وضعية تباعد مناسبة، خاصة بعد جراحات استبدال مفصل الورك.',
-        features: ['تسمح بالجلوس والمشي مع الحفاظ على تباعد الوركين', 'قابلة للتعديل حسب درجة التباعد المطلوبة', 'مريحة للاستخدام اليومي'],
-        image: 'https://www.alimed.com/_resources/cache/images/product/62975_850x480-pad.jpg'
+        name: 'جبيرة إبعاد الورك للكبار (Hip Abduction Brace)',
+        description: 'تمنع التقارب المفرط للورك وتحافظ على تباعد مفصلي آمن خاصة بعد عمليات تغيير مفصل الفخذ.',
+        features: ['تمنع خلع المفصل الصناعي الجديد أثناء النوم أو المشي', 'مزودة بمفصل يحدد درجة الثني والإبعاد', 'بطانات حوض وفخذ قابلة للغسيل'],
+        price: 'تبدأ من 5,500 ج.م',
+        image: 'https://www.alimed.com/_resources/cache/images/product/62975_850x480-pad.jpg',
+        material: 'هيكل بولي كربونات ومفاصل فولاذية صلبة',
+        warranty: 'ضمان 18 شهراً',
+        targetGroup: 'المرضى الخاضعون لعمليات استبدال مفصل الورك',
+        indications: ['ما بعد عمليات استبدال وتغيير مفصل الورك للكبار', 'الوقاية من خلع المفصل الصناعي الجديد']
       }
     ],
     indications: [
-      'خلع الورك الولادي',
-      'بعد جراحات استبدال مفصل الورك',
-      'كسور عظم الفخذ',
-      'آلام المفاصل العجزية الحرقفية',
-      'عدم استقرار الحوض',
-      'ألم العصب الوركي',
-      'إعادة التأهيل بعد إصابات الورك'
+      'خلع الورك الولادي لدى الأطفال (DDH)',
+      'ما بعد عمليات استبدال وتغيير مفصل الورك',
+      'كسور عنق عظم الفخذ والحوض'
     ]
   }
 ];
@@ -233,385 +441,598 @@ const orthosesData = [
 const compareData = [
   {
     feature: 'نوع الدعم',
-    afo: 'دعم للكاحل والقدم فقط',
-    kafo: 'دعم للركبة والكاحل والقدم',
-    spinal: 'دعم للعمود الفقري',
-    upper: 'دعم للأصابع والرسغ والكوع والكتف',
-    hip: 'دعم للورك والحوض'
+    afo: 'دعم الكاحل والقدم',
+    kafo: 'دعم كامل للركبة والكاحل والقدم',
+    spinal: 'دعم وتثبيت العمود الفقري',
+    upper: 'دعم اليد، الرسغ، الكوع، الكتف',
+    hip: 'دعم مفصل الورك والحوض'
   },
   {
-    feature: 'حالات الاستخدام',
-    afo: 'ضعف عضلات القدم، الشلل الدماغي، السكتة الدماغية',
-    kafo: 'ضعف عضلات الساق والفخذ، عدم استقرار الركبة، شلل الأطراف السفلية',
-    spinal: 'الجنف، الحداب، كسور العمود الفقري، آلام الظهر',
-    upper: 'إصابات الأعصاب، متلازمة النفق الرسغي، التهاب المفاصل',
-    hip: 'خلع الورك الولادي، كسور الفخذ، آلام الحوض'
+    feature: 'أبرز حالات الاستخدام',
+    afo: 'سقوط القدم، الشلل الدماغي، الجلطات',
+    kafo: 'ضعف عضلات الفخذ، شلل الأطفال، إصابات الحبل الشوكي',
+    spinal: 'الجنف، الحداب، كسور الفقرات، الظهر',
+    upper: 'النفق الرسغي، الجلطات، كسور الذراع',
+    hip: 'خلع الورك الولادي، جراحات مفصل الفخذ'
   },
   {
     feature: 'مستوى التثبيت',
-    afo: 'متوسط',
-    kafo: 'عالي',
-    spinal: 'عالي جدًا',
-    upper: 'متغير حسب المنطقة',
-    hip: 'عالي جدًا'
+    afo: 'متوسط إلى عالي',
+    kafo: 'عالي جداً',
+    spinal: 'عالي جداً وتصلب دقيق',
+    upper: 'متغير حسب المفصل المستهدف',
+    hip: 'عالي وقفل كامل للإبعاد'
   },
   {
-    feature: 'الراحة',
-    afo: 'عالية',
-    kafo: 'متوسطة',
-    spinal: 'متوسطة إلى منخفضة',
-    upper: 'عالية نسبيًا',
-    hip: 'منخفضة إلى متوسطة'
+    feature: 'الوزن والراحة',
+    afo: 'خفيفة ومريحة للحذاء',
+    kafo: 'متوسطة إلى ثقيلة (الكربون يخففها)',
+    spinal: 'مبطنة خفيفة للارتداء اليومي',
+    upper: 'خفيفة جداً ومصممة للراحة',
+    hip: 'ثقيلة ومخصصة للتثبيت'
   },
   {
     feature: 'سهولة الاستخدام',
-    afo: 'سهل',
-    kafo: 'متوسط',
-    spinal: 'صعب نسبيًا',
-    upper: 'سهل إلى متوسط',
-    hip: 'صعب'
-  },
-  {
-    feature: 'الوزن',
-    afo: 'خفيف',
-    kafo: 'متوسط إلى ثقيل',
-    spinal: 'متوسط إلى ثقيل',
-    upper: 'خفيف',
-    hip: 'ثقيل'
-  },
-  {
-    feature: 'قابلية التعديل',
-    afo: 'محدودة',
-    kafo: 'متوسطة',
-    spinal: 'عالية',
-    upper: 'عالية جدًا',
-    hip: 'متوسطة'
+    afo: 'سهل الارتداء بالحذاء',
+    kafo: 'يتطلب تدريباً بسيطاً',
+    spinal: 'سهل بمساعدة مرافق',
+    upper: 'سهل للغاية بكتف واحد',
+    hip: 'يتطلب ضبط الأخصائي'
   }
 ];
 
 const Orthoses = () => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeCategory, setActiveCategory] = useState<string>('all');
+  const [selectedProduct, setSelectedProduct] = useState<{
+    item: OrthosisTypeItem;
+    categoryName: string;
+    indications: string[];
+  } | null>(null);
+
   useEffect(() => {
     document.documentElement.dir = 'rtl';
     document.body.classList.add('font-cairo');
     window.scrollTo(0, 0);
   }, []);
 
+  // Filter Categories & Items based on Active Tab and Search Query
+  const filteredCategories = orthosesData.map(cat => {
+    if (activeCategory !== 'all' && cat.id !== activeCategory) {
+      return null;
+    }
+
+    const matchingTypes = cat.types.filter(type => {
+      const q = searchQuery.toLowerCase().trim();
+      if (!q) return true;
+      const matchItemInd = type.indications ? type.indications.some(ind => ind.toLowerCase().includes(q)) : false;
+      return (
+        type.name.toLowerCase().includes(q) ||
+        type.description.toLowerCase().includes(q) ||
+        cat.name.toLowerCase().includes(q) ||
+        matchItemInd ||
+        cat.indications.some(ind => ind.toLowerCase().includes(q))
+      );
+    });
+
+    if (matchingTypes.length === 0 && searchQuery) return null;
+
+    return {
+      ...cat,
+      types: matchingTypes
+    };
+  }).filter(Boolean) as OrthosisCategory[];
+
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-slate-50/40 font-cairo">
       <Navbar />
 
       {/* Hero Section */}
-      <section className="relative py-20 bg-gradient-to-b from-medical-100 to-white overflow-hidden">
-        <div className="container mx-auto px-4">
+      <section className="relative py-20 lg:py-28 bg-gradient-to-b from-medical-950 via-medical-900 to-medical-850 text-white overflow-hidden">
+        <div className="absolute inset-0 opacity-20 pointer-events-none">
+          <div className="absolute -top-30 right-10 w-[500px] h-[500px] bg-medical-500 rounded-full blur-[140px]" />
+          <div className="absolute bottom-0 left-10 w-[450px] h-[450px] bg-sky-400 rounded-full blur-[120px]" />
+        </div>
+
+        <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
-            <div className="inline-block py-2 px-6 bg-medical-200 text-medical-800 rounded-full text-sm font-semibold mb-4">
-              <span>الجبائر الطبية</span>
+            <div className="inline-flex items-center gap-2 py-1.5 px-4 bg-white/10 text-medical-200 rounded-full text-xs sm:text-sm font-bold mb-6 border border-white/15 backdrop-blur-md">
+              <Sparkles className="h-4 w-4 text-sky-300" />
+              <span>موسوعة الجبائر الطبية المخصصة والأجهزة التقويمية</span>
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-              حلول متكاملة من الجبائر الطبية لجميع أجزاء الجسم
+
+            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black leading-tight mb-6 font-cairo">
+              حلول تقويمية متطورة
+              <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-300 via-medical-200 to-white">
+                لكافة أجزاء الجسم ودواعي التعافي
+              </span>
             </h1>
-            <p className="text-xl text-gray-600 mb-8">
-              نقدم مجموعة شاملة من الجبائر الطبية عالية الجودة المصممة خصيصًا لتلبية احتياجاتك.
-              سواء كنت بحاجة إلى دعم للأصابع، الكاحل، الركبة، الظهر أو الورك، لدينا الحلول المناسبة.
+
+            <p className="text-base sm:text-lg text-gray-300 max-w-2xl mx-auto leading-relaxed font-medium mb-8">
+              استكشف أحدث الجبائر الطبية المخصصة، أحذية الجبيرة الهوائية (Air Walker)، والفرش الطبي المخصص بالفحص الضوئي 3D لدعم كافة الحالات.
             </p>
+
+            {/* Quick Search & Filter Controls */}
+            <div className="bg-white/10 backdrop-blur-lg p-3 sm:p-4 rounded-2xl border border-white/20 shadow-2xl max-w-2xl mx-auto">
+              <div className="relative flex items-center">
+                <Search className="absolute right-4 h-5 w-5 text-gray-400" />
+                <Input
+                  type="text"
+                  placeholder="ابحث عن نوع الجبيرة (مثال: air walker، فلات فوت، سكري، جنف، أكيليس)..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pr-12 pl-4 py-3 bg-white text-gray-900 placeholder:text-gray-400 rounded-xl font-medium border-0 focus-visible:ring-2 focus-visible:ring-medical-400"
+                />
+              </div>
+            </div>
           </div>
-          
-          <motion.div 
-            className="mt-12 relative max-w-5xl mx-auto"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-          >
-            <img 
-              src="/public/images/ortho.png" 
-              alt="الجبائر الطبية" 
-              className="w-full rounded-2xl shadow-2xl"
-            />
-            <div className="absolute inset-0 rounded-2xl bg-gradient-to-tr from-medical-600/30 to-transparent"></div>
-          </motion.div>
-          
-          <div className="mt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-            {orthosesData.map((orthosis, index) => (
-              <motion.div
-                key={orthosis.id}
-                className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow"
-                whileHover={{ y: -5 }}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: index * 0.1 }}
-              >
-                <Link to={`#${orthosis.id}`} className="block">
-                  <div className="h-32 bg-gradient-to-r from-medical-200 to-medical-300 flex items-center justify-center">
-                    {orthosis.id === 'afo' && <Activity className="h-12 w-12 text-medical-700" />}
-                    {orthosis.id === 'kafo' && <PersonStanding className="h-12 w-12 text-medical-700" />}
-                    {orthosis.id === 'spinal' && <Ruler className="h-12 w-12 text-medical-700" />}
-                    {orthosis.id === 'upper-limb' && <Hand className="h-12 w-12 text-medical-700" />}
-                    {orthosis.id === 'hip' && <Bandage className="h-12 w-12 text-medical-700" />}
-                  </div>
-                  <div className="p-4">
-                    <h3 className="font-bold text-lg text-center text-medical-800">{orthosis.name}</h3>
-                  </div>
-                </Link>
-              </motion.div>
+
+          {/* Quick Stats */}
+          <div className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto text-center">
+            {[
+              { label: 'تصميم مخصص 100%', val: 'مسح 3D' },
+              { label: 'ضمان الجودة والسلامة', val: 'معايير ألمانية' },
+              { label: 'تغطية لكافة المحافظات', val: 'شبكة فروعنا' },
+              { label: 'استشارات مجانية', val: 'أخصائيون معتمدون' }
+            ].map((st, i) => (
+              <div key={i} className="bg-white/5 border border-white/10 rounded-2xl p-4 backdrop-blur-xs">
+                <div className="text-sky-300 font-bold text-lg sm:text-xl font-cairo">{st.val}</div>
+                <div className="text-xs text-gray-300 mt-1 font-medium">{st.label}</div>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Types of Orthoses */}
-      <section className="py-20 bg-white">
+      {/* Category Selection Tabs */}
+      <section className="py-8 bg-white border-b border-gray-200 sticky top-16 z-30 shadow-xs">
         <div className="container mx-auto px-4">
-          <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-900 mb-16">أنواع الجبائر الطبية</h2>
-          
-          <div className="grid grid-cols-1 gap-24 mt-12">
-            {orthosesData.map((orthosis, index) => (
-              <motion.div 
-                key={orthosis.id}
-                id={orthosis.id}
-                className="flex flex-col md:flex-row items-center gap-8 scroll-mt-24"
-                initial={{ opacity: 0, y: 50 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                viewport={{ once: true }}
+          <div className="flex items-center justify-start md:justify-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+            {[
+              { id: 'all', label: 'كافة الجبائر', icon: Layers },
+              { id: 'afo', label: 'الكاحل والقدم (AFO)', icon: Activity },
+              { id: 'air-walker', label: 'الجبيرة الهوائية (Air Walker)', icon: Flame },
+              { id: 'medical-insoles', label: 'الفرش الطبي (Insoles)', icon: Footprints },
+              { id: 'kafo', label: 'الركبة والكاحل (KAFO)', icon: PersonStanding },
+              { id: 'spinal', label: 'العمود الفقري', icon: Ruler },
+              { id: 'upper-limb', label: 'الطرف العلوي', icon: Hand },
+              { id: 'hip', label: 'الورك والحوض', icon: Bandage },
+            ].map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeCategory === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveCategory(tab.id)}
+                  className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all duration-300 ${isActive
+                    ? 'bg-medical-700 text-white shadow-md scale-105'
+                    : 'bg-slate-100 text-gray-700 hover:bg-slate-200'
+                    }`}
+                >
+                  <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-medical-700'}`} />
+                  <span>{tab.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Products & Detailed Cards Showcase */}
+      <section className="py-16 bg-slate-50/50">
+        <div className="container mx-auto px-4 max-w-7xl">
+          {filteredCategories.length === 0 ? (
+            <div className="text-center py-20 bg-white rounded-3xl border border-gray-200 shadow-xs my-8">
+              <Search className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+              <h3 className="text-xl font-bold text-gray-800 font-cairo">لم نجد جبائر تطابق بحثك</h3>
+              <p className="text-sm text-gray-500 mt-2">جرب البحث بكلمات أخرى مثل (Air Walker, فلات فوت, سكري) أو اختر فئة أخرى.</p>
+              <Button
+                onClick={() => { setSearchQuery(''); setActiveCategory('all'); }}
+                className="mt-6 bg-medical-700 text-white font-bold rounded-xl"
               >
-                <div className="md:w-2/5">
-                  <div className="relative rounded-xl overflow-hidden shadow-xl">
-                    <img 
-                      src={orthosis.image} 
-                      alt={orthosis.name} 
-                      className="w-full aspect-video object-cover"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-tr from-medical-600/40 to-transparent"></div>
-                    <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm text-medical-800 px-3 py-1 rounded-full text-sm font-semibold">
-                      {orthosis.name.split('(')[0]}
+                إعادة عرض جميع الجبائر
+              </Button>
+            </div>
+          ) : (
+            filteredCategories.map((category) => (
+              <div key={category.id} id={category.id} className="mb-20 scroll-mt-36">
+                {/* Category Header Banner */}
+                <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200/80 shadow-sm mb-8 flex flex-col lg:flex-row gap-6 items-center justify-between">
+                  <div className="lg:w-2/3">
+                    <div className="inline-flex items-center gap-2 px-3.5 py-1 bg-medical-50 text-medical-800 rounded-full text-xs font-bold mb-3 border border-medical-100">
+                      <ShieldCheck className="w-4 h-4 text-medical-600" />
+                      <span>قسم الأجهزة التقويمية المعتمدة</span>
+                    </div>
+                    <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 font-cairo mb-3">
+                      {category.name}
+                    </h2>
+                    <p className="text-gray-600 text-sm sm:text-base leading-relaxed font-medium">
+                      {category.description}
+                    </p>
+
+                    {/* Indications Chips */}
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      <span className="text-xs font-bold text-gray-700 ml-1 py-1">دواعي الاستخدام العامة:</span>
+                      {category.indications.map((ind, idx) => (
+                        <span key={idx} className="bg-slate-100 text-slate-700 text-xs font-semibold px-3 py-1 rounded-lg border border-slate-200">
+                          {ind}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="lg:w-1/3 w-full">
+                    <div className="rounded-2xl overflow-hidden shadow-md h-48 sm:h-52 bg-gray-100 relative group">
+                      <img
+                        src={category.image}
+                        alt={category.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex items-end p-4">
+                        <span className="text-white text-xs font-bold bg-medical-600/90 px-3 py-1 rounded-full backdrop-blur-xs">
+                          {category.types.length} موديلات متوفرة
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
-                
-                <div className="md:w-3/5">
-                  <h3 className="text-2xl md:text-3xl font-bold mb-4">{orthosis.name}</h3>
-                  <p className="text-gray-600 mb-6 text-lg">{orthosis.description}</p>
-                  
-                  <Accordion type="single" collapsible className="mb-6">
-                    <AccordionItem value="indications">
-                      <AccordionTrigger className="text-lg font-semibold">
-                        <Info className="h-5 w-5 mr-2 text-medical-600" />
-                        دواعي الاستخدام
-                      </AccordionTrigger>
-                      <AccordionContent>
-                        <ul className="list-disc list-inside space-y-1 text-gray-600">
-                          {orthosis.indications.map((indication, idx) => (
-                            <li key={idx}>{indication}</li>
-                          ))}
-                        </ul>
-                      </AccordionContent>
-                    </AccordionItem>
-                  </Accordion>
-                  
-                  <Tabs defaultValue={orthosis.types[0].name} className="w-full">
-                    <TabsList className="w-full grid grid-cols-2 lg:grid-cols-4 mb-4">
-                      {orthosis.types.map((type, idx) => (
-                        <TabsTrigger key={idx} value={type.name} className="text-xs md:text-sm">
-                          {type.name.split('(')[0]}
-                        </TabsTrigger>
-                      ))}
-                    </TabsList>
-                    
-                    {orthosis.types.map((type, idx) => (
-                      <TabsContent key={idx} value={type.name}>
-                        <div className="bg-gray-50 rounded-lg p-6">
-                          <div className="flex flex-col md:flex-row gap-6">
-                            <div className="md:w-1/3">
-                              <img 
-                                src={type.image} 
-                                alt={type.name} 
-                                className="w-full aspect-square object-cover rounded-lg shadow-md"
-                              />
+
+                {/* Sub-types Product Cards Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {category.types.map((type, tIdx) => (
+                    <motion.div
+                      key={tIdx}
+                      className="bg-white rounded-3xl overflow-hidden border border-gray-200/90 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between group"
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.4, delay: tIdx * 0.08 }}
+                      viewport={{ once: true }}
+                    >
+                      <div>
+                        {/* Image Box */}
+                        <div className="h-56 bg-slate-50 relative overflow-hidden flex items-center justify-center p-3">
+                          <img
+                            src={type.image}
+                            alt={type.name}
+                            className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
+                            onError={(e) => {
+                              e.currentTarget.src = 'https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=600&q=80';
+                            }}
+                          />
+                          {type.price && (
+                            <div className="absolute top-3 right-3 bg-medical-700 text-white font-bold text-xs px-3 py-1 rounded-full shadow-md">
+                              {type.price}
                             </div>
-                            <div className="md:w-2/3">
-                              <div className="flex justify-between items-center mb-2">
-                                <h4 className="text-xl font-bold text-medical-800">{type.name}</h4>
-                                {type.price && (
-                                  <span className="bg-medical-100 text-medical-700 px-3 py-1 rounded-full text-sm font-bold shadow-sm">
-                                    {type.price}
-                                  </span>
-                                )}
+                          )}
+                        </div>
+
+                        {/* Card Content */}
+                        <div className="p-5">
+                          <h3 className="font-bold text-base text-gray-900 mb-2 font-cairo group-hover:text-medical-700 transition-colors">
+                            {type.name}
+                          </h3>
+                          <p className="text-xs text-gray-600 line-clamp-3 leading-relaxed mb-4 font-medium">
+                            {type.description}
+                          </p>
+
+                          {/* Features Bullet List */}
+                          <div className="space-y-1.5 pt-2 border-t border-gray-100">
+                            {type.features.slice(0, 2).map((feat, fIdx) => (
+                              <div key={fIdx} className="flex items-start gap-1.5 text-xs text-gray-700">
+                                <CheckCircle2 className="w-3.5 h-3.5 text-medical-600 flex-shrink-0 mt-0.5" />
+                                <span className="line-clamp-1 font-medium">{feat}</span>
                               </div>
-                              <p className="text-gray-600 mb-4">{type.description}</p>
-                              <h5 className="font-semibold text-medical-700 mb-2">المميزات الرئيسية:</h5>
-                              <ul className="space-y-1">
-                                {type.features.map((feature, fIdx) => (
-                                  <li key={fIdx} className="flex items-center">
-                                    <span className="text-medical-500 mr-2">●</span>
-                                    <span>{feature}</span>
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
+                            ))}
                           </div>
                         </div>
-                      </TabsContent>
-                    ))}
-                  </Tabs>
+                      </div>
+
+                      {/* Card Footer Button */}
+                      <div className="p-5 pt-0">
+                        <Button
+                          onClick={() => setSelectedProduct({
+                            item: type,
+                            categoryName: category.name,
+                            indications: category.indications
+                          })}
+                          className="w-full bg-medical-50 hover:bg-medical-700 text-medical-700 hover:text-white font-bold rounded-xl text-xs py-2.5 transition-all duration-300 border border-medical-200"
+                        >
+                          عرض التفاصيل والقياسات
+                          <ChevronRight className="w-4 h-4 mr-1 rtl:rotate-180" />
+                        </Button>
+                      </div>
+                    </motion.div>
+                  ))}
                 </div>
-              </motion.div>
-            ))}
-          </div>
+              </div>
+            ))
+          )}
         </div>
       </section>
 
-      {/* Comparison Table */}
-      <section className="py-20 bg-medical-50">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-900 mb-12">مقارنة بين أنواع الجبائر المختلفة</h2>
-          
-          <div className="mt-12 overflow-x-auto">
-            <Table className="w-full">
-              <TableCaption>مقارنة شاملة بين أنواع الجبائر الطبية المختلفة لعام 2025</TableCaption>
+      {/* Comparison Table Section */}
+      <section className="py-20 bg-white border-t border-gray-200">
+        <div className="container mx-auto px-4 max-w-7xl">
+          <div className="text-center mb-12">
+            <span className="text-xs font-bold text-medical-700 bg-medical-50 px-4 py-1.5 rounded-full border border-medical-100 inline-block mb-3">
+              جدول المقارنة الطبية
+            </span>
+            <h2 className="text-2xl sm:text-4xl font-extrabold text-gray-900 font-cairo">
+              مقارنة بين أنواع الجبائر الطبية المختلفة
+            </h2>
+            <p className="text-sm text-gray-500 mt-2">دليل توضيحي لمساعدتك على فهم الاختلافات الرئيسية بين الأجهزة التقويمية.</p>
+          </div>
+
+          <div className="overflow-x-auto rounded-2xl border border-gray-200 shadow-xs bg-white">
+            <Table className="w-full text-xs sm:text-sm">
               <TableHeader>
-                <TableRow>
-                  <TableHead className="text-right">الميزة</TableHead>
-                  <TableHead className="text-right bg-medical-100">جبائر الكاحل والقدم (AFO)</TableHead>
-                  <TableHead className="text-right bg-medical-100">جبائر الركبة والكاحل والقدم (KAFO)</TableHead>
-                  <TableHead className="text-right bg-medical-100">جبائر العمود الفقري</TableHead>
-                  <TableHead className="text-right bg-medical-100">جبائر الطرف العلوي</TableHead>
-                  <TableHead className="text-right bg-medical-100">جبائر الورك والحوض</TableHead>
+                <TableRow className="bg-medical-900 text-white hover:bg-medical-900">
+                  <TableHead className="text-right text-white font-bold">الميزة / المقارنة</TableHead>
+                  <TableHead className="text-right text-sky-200 font-bold">جبائر الكاحل (AFO)</TableHead>
+                  <TableHead className="text-right text-sky-200 font-bold">جبائر الركبة (KAFO)</TableHead>
+                  <TableHead className="text-right text-sky-200 font-bold">العمود الفقري</TableHead>
+                  <TableHead className="text-right text-sky-200 font-bold">الطرف العلوي</TableHead>
+                  <TableHead className="text-right text-sky-200 font-bold">الورك والحوض</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {compareData.map((row, index) => (
-                  <TableRow key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                    <TableCell className="font-medium">{row.feature}</TableCell>
-                    <TableCell>{row.afo}</TableCell>
-                    <TableCell>{row.kafo}</TableCell>
-                    <TableCell>{row.spinal}</TableCell>
-                    <TableCell>{row.upper}</TableCell>
-                    <TableCell>{row.hip}</TableCell>
+                  <TableRow key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-slate-50/60'}>
+                    <TableCell className="font-bold text-gray-900">{row.feature}</TableCell>
+                    <TableCell className="text-gray-700">{row.afo}</TableCell>
+                    <TableCell className="text-gray-700">{row.kafo}</TableCell>
+                    <TableCell className="text-gray-700">{row.spinal}</TableCell>
+                    <TableCell className="text-gray-700">{row.upper}</TableCell>
+                    <TableCell className="text-gray-700">{row.hip}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
           </div>
-          
-          <div className="mt-12 bg-white p-6 rounded-lg shadow-md">
-            <h3 className="text-xl font-semibold mb-4 flex items-center">
-              <Info className="h-5 w-5 mr-2 text-medical-600" />
-              نصائح لاختيار الجبيرة المناسبة:
+
+          {/* Expert Tips */}
+          <div className="mt-12 bg-gradient-to-r from-medical-50 via-white to-sky-50 p-6 sm:p-8 rounded-3xl border border-medical-200/80 shadow-xs">
+            <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2 font-cairo">
+              <Info className="h-5 w-5 text-medical-700" />
+              نصائح هامة من أخصائيينا قبل اختيار الجبيرة:
             </h3>
-            <ul className="space-y-3 text-gray-700">
-              <li className="flex items-start">
-                <span className="inline-block bg-medical-100 text-medical-700 rounded-full h-6 w-6 flex items-center justify-center mr-2 flex-shrink-0">1</span>
-                <span>استشر الأخصائي المختص لتحديد نوع الجبيرة المناسب لحالتك.</span>
-              </li>
-              <li className="flex items-start">
-                <span className="inline-block bg-medical-100 text-medical-700 rounded-full h-6 w-6 flex items-center justify-center mr-2 flex-shrink-0">2</span>
-                <span>تأكد من أن الجبيرة مصنوعة من مواد عالية الجودة ومناسبة لاحتياجاتك.</span>
-              </li>
-              <li className="flex items-start">
-                <span className="inline-block bg-medical-100 text-medical-700 rounded-full h-6 w-6 flex items-center justify-center mr-2 flex-shrink-0">3</span>
-                <span>اختر الجبيرة التي توفر التوازن المناسب بين الدعم والراحة.</span>
-              </li>
-              <li className="flex items-start">
-                <span className="inline-block bg-medical-100 text-medical-700 rounded-full h-6 w-6 flex items-center justify-center mr-2 flex-shrink-0">4</span>
-                <span>ضع في اعتبارك مستوى نشاطك اليومي عند اختيار الجبيرة.</span>
-              </li>
-              <li className="flex items-start">
-                <span className="inline-block bg-medical-100 text-medical-700 rounded-full h-6 w-6 flex items-center justify-center mr-2 flex-shrink-0">5</span>
-                <span>تأكد من تلقي التدريب المناسب على كيفية ارتداء وخلع الجبيرة بشكل صحيح.</span>
-              </li>
-              <li className="flex items-start">
-                <span className="inline-block bg-medical-100 text-medical-700 rounded-full h-6 w-6 flex items-center justify-center mr-2 flex-shrink-0">6</span>
-                <span>راقب الجلد تحت الجبيرة بانتظام للتأكد من عدم وجود تهيج أو احمرار.</span>
-              </li>
-              <li className="flex items-start">
-                <span className="inline-block bg-medical-100 text-medical-700 rounded-full h-6 w-6 flex items-center justify-center mr-2 flex-shrink-0">7</span>
-                <span>التزم بجدول الارتداء الموصى به من قبل الأخصائي لتحقيق أفضل النتائج.</span>
-              </li>
-            </ul>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {[
+                "استشر الأخصائي المختص دائماً لأخذ المقاسات بدقة متناهية عبر المسح ثلاثي الأبعاد 3D.",
+                "اختر الجبيرة التي تحقق التوازن الأمثل بين مستوى التثبيت المطلوب وراحة الحركة اليومية.",
+                "تأكد من ملاءمة نوع الجبيرة لمستوى نشاطك اليومي (عمل، رياضة، حركة خفيفة).",
+                "راقب صحة الجلد بانتظام تحت الجبيرة واحرص على ارتداء الجوارب القطنية المخصصة.",
+                "التزم ببرنامج التدرج في ساعات الارتداء اليومية الموصى به من قبل الطبيب المعالج.",
+                "احرص على إجراء الصيانة وتعديل الضغط عند تغيير الوزن أو مع نمو الأطفال."
+              ].map((tip, idx) => (
+                <div key={idx} className="flex items-start gap-3 bg-white p-3.5 rounded-xl border border-gray-100 shadow-2xs">
+                  <div className="w-6 h-6 rounded-full bg-medical-700 text-white font-bold text-xs flex items-center justify-center flex-shrink-0 mt-0.5">
+                    {idx + 1}
+                  </div>
+                  <span className="text-xs sm:text-sm text-gray-700 font-medium leading-relaxed">{tip}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Manufacturing Workflow Section */}
+      <section className="py-20 bg-slate-50/70 border-t border-gray-200">
+        <div className="container mx-auto px-4 max-w-7xl">
+          <div className="text-center mb-16">
+            <span className="text-xs font-bold text-medical-700 bg-medical-50 px-4 py-1.5 rounded-full border border-medical-100 inline-block mb-3">
+              خطوات تصنيع وتفصيل الجبيرة
+            </span>
+            <h2 className="text-2xl sm:text-4xl font-extrabold text-gray-900 font-cairo">
+              كيف نصنع لك الجبيرة الطبية المخصصة؟
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+            {[
+              { step: '01', title: 'التقييم السريري', desc: 'فحص الحركية وقياس الضغط وتقييم المفاصل بدقة.' },
+              { step: '02', title: 'المسح الضوئي 3D', desc: 'أخذ نموذج رقمي دقيق للغاية لأبعاد العضو.' },
+              { step: '03', title: 'التصميم الرقمي CAD', desc: 'تعديل النموذج وتوزيع نقاط الضغط والراحة.' },
+              { step: '04', title: 'التشكيـل والتبطين', desc: 'صب الخامات الطبية عالية الجودة والتبطين الناعم.' },
+              { step: '05', title: 'التجربة والمتابعة', desc: 'ضبط الجبيرة على المريض والمتابعة الدورية.' }
+            ].map((st, i) => (
+              <div key={i} className="bg-white p-6 rounded-2xl border border-gray-200 shadow-xs relative text-center flex flex-col justify-between">
+                <div>
+                  <div className="w-12 h-12 bg-medical-50 text-medical-700 font-black text-lg rounded-xl flex items-center justify-center mx-auto mb-4 border border-medical-100">
+                    {st.step}
+                  </div>
+                  <h4 className="font-bold text-sm text-gray-900 mb-2 font-cairo">{st.title}</h4>
+                  <p className="text-xs text-gray-600 leading-relaxed font-medium">{st.desc}</p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* FAQ Section */}
       <section className="py-20 bg-white">
-        <div className="container mx-auto px-4">
-          <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-900 mb-12">الأسئلة الشائعة</h2>
-          
-          <div className="mt-12 max-w-3xl mx-auto">
-            <Accordion type="single" collapsible>
-              <AccordionItem value="item-1">
-                <AccordionTrigger>كيف يتم تحديد نوع الجبيرة المناسب لي؟</AccordionTrigger>
-                <AccordionContent>
-                  يتم تحديد نوع الجبيرة المناسب بعد تقييم شامل من قبل أخصائي العلاج الطبيعي أو أخصائي الأطراف الصناعية والجبائر. يأخذ هذا التقييم في الاعتبار حالتك الطبية، ومستوى النشاط، والاحتياجات اليومية، ونوع الدعم المطلوب.
-                </AccordionContent>
-              </AccordionItem>
-              
-              <AccordionItem value="item-2">
-                <AccordionTrigger>هل الجبائر الطبية مصنوعة حسب الطلب؟</AccordionTrigger>
-                <AccordionContent>
-                  نعم، معظم الجبائر الطبية في  واصل-wasselا حسب الطلب لتناسب القياسات الدقيقة للمريض. نأخذ قياسات دقيقة ونستخدم تقنيات متطورة مثل المسح ثلاثي الأبعاد لضمان الملاءمة المثالية والراحة القصوى.
-                </AccordionContent>
-              </AccordionItem>
-              
-              <AccordionItem value="item-3">
-                <AccordionTrigger>ما هي مدة ارتداء الجبيرة يوميًا؟</AccordionTrigger>
-                <AccordionContent>
-                  تختلف مدة ارتداء الجبيرة حسب الحالة والتوصيات الطبية. بعض الحالات قد تتطلب ارتداء الجبيرة طوال اليوم، بينما حالات أخرى قد تتطلب ارتداءها لفترات محددة فقط. سيقدم الأخصائي توجيهات محددة حول جدول الارتداء المناسب لحالتك.
-                </AccordionContent>
-              </AccordionItem>
-              
-              <AccordionItem value="item-4">
-                <AccordionTrigger>كم تستغرق فترة التأقلم مع الجبيرة الجديدة؟</AccordionTrigger>
-                <AccordionContent>
-                  تختلف فترة التأقلم من شخص لآخر، ولكنها عادة ما تتراوح بين أسبوع إلى أربعة أسابيع. خلال هذه الفترة، قد تشعر ببعض الانزعاج أو عدم الراحة، لكن هذا أمر طبيعي. نقدم دعمًا ومتابعة مستمرة خلال فترة التأقلم لضمان تحقيق أفضل النتائج.
-                </AccordionContent>
-              </AccordionItem>
-              
-              <AccordionItem value="item-5">
-                <AccordionTrigger>هل يمكن ارتداء الجبيرة أثناء النوم؟</AccordionTrigger>
-                <AccordionContent>
-                  يعتمد ذلك على نوع الجبيرة والغرض منها. بعض الجبائر مصممة خصيصًا للاستخدام أثناء النوم، مثل جبائر الرسغ لمتلازمة النفق الرسغي أو جبائر القدم الليلية. سيوضح لك الأخصائي ما إذا كانت الجبيرة يجب ارتداؤها أثناء النوم أم لا.
-                </AccordionContent>
-              </AccordionItem>
-              
-              <AccordionItem value="item-6">
-                <AccordionTrigger>كيف أعتني بالجبيرة الطبية للحفاظ عليها؟</AccordionTrigger>
-                <AccordionContent>
-                  للحفاظ على الجبيرة في حالة جيدة، من المهم تنظيفها بانتظام باستخدام قطعة قماش مبللة وصابون خفيف، وتجنب غمرها في الماء. تأكد من تجفيفها جيدًا قبل ارتدائها مرة أخرى. تجنب تعريضها للحرارة المباشرة. سنقدم لك تعليمات مفصلة عن كيفية العناية بنوع الجبيرة المحدد الذي تستخدمه.
-                </AccordionContent>
-              </AccordionItem>
-              
-              <AccordionItem value="item-7">
-                <AccordionTrigger>ما هو متوسط عمر الجبيرة الطبية؟</AccordionTrigger>
-                <AccordionContent>
-                  يختلف عمر الجبيرة حسب نوعها، ومستوى النشاط، وطريقة الاستخدام والعناية بها. بشكل عام، يمكن أن تدوم الجبائر من 6 أشهر إلى عدة سنوات. مع النمو (خاصة لدى الأطفال) أو التغيرات في الحالة، قد تحتاج إلى تعديل أو استبدال الجبيرة لضمان استمرار فعاليتها.
-                </AccordionContent>
-              </AccordionItem>
-            </Accordion>
+        <div className="container mx-auto px-4 max-w-4xl">
+          <div className="text-center mb-12">
+            <h2 className="text-2xl sm:text-4xl font-extrabold text-gray-900 font-cairo mb-3">الأسئلة الشائعة حول الجبائر الطبية</h2>
+            <p className="text-sm text-gray-500">إجابات شاملة عن استفسارات العملاء حول اختيار وتفصيل الجبائر.</p>
           </div>
+
+          <Accordion type="single" collapsible className="space-y-4">
+            {[
+              { q: "كيف يتم تحديد نوع الجبيرة المناسب لحالتي؟", a: "يتم التحديد بعد تقييم سريري شامل في أحد مراكز واصل المعتمدة، حيث يفحص الأخصائي نطاق حركة المفاصل وقوة العضلات ونمط المشية لاختيار التصميم الأمثل." },
+              { q: "ما هي ميزة أحذية الجبيرة الهوائية Air Walker عن الجبس العادي؟", a: "تتيح لك تعديل ضغط الهواء حول الساق والكاحل لحماية العظام، إضافة إلى إمكانية فكها لتنظيف الجلد والعناية بالكسر دون الحاجة لفك وتركيب الجبس التقليدي." },
+              { q: "ما أهمية الفرش الطبي المخصص لمرضى السكري والفلات فوت؟", a: "الفرش الطبي المخصص 3D يقوم بتوزيع وزن الجسم بالتساوي وتفريغ نقاط الضغط العالي، مما يمنع تكون تقرحات القدم السكرية ويعالج آلام الفلات فوت والشوكة العظمية." },
+              { q: "هل الجبائر تصنع بمقاسات جاهزة أم تفصيل خاص؟", a: "معظم جبائر منصة واصل تصنع خصيصاً لكل مريض باستخدام تقنيات المسح ثلاثي الأبعاد (3D Scanning) والتصنيع الرقمي لضمان أقصى درجات المطابقة والراحة." },
+              { q: "كم تستغرق مدة ارتداء الجبيرة يومياً؟", a: "تختلف المدة حسب الخطة العلاجية؛ بعض الجبائر ترتدى طوال اليوم وأخرى أثناء الأنشطة أو النوم فقط. يحدد الأخصائي جدول الارتداء المناسب لك." }
+            ].map((faq, index) => (
+              <AccordionItem key={index} value={`item-${index}`} className="bg-slate-50 border border-gray-200 rounded-2xl px-6">
+                <AccordionTrigger className="text-base font-bold text-gray-900 py-4 hover:no-underline font-cairo">
+                  {faq.q}
+                </AccordionTrigger>
+                <AccordionContent className="text-sm text-gray-600 leading-relaxed pb-4 font-medium">
+                  {faq.a}
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 bg-gradient-to-r from-medical-600 to-medical-800">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-              احصل على استشارة مجانية اليوم
-            </h2>
-            <p className="text-medical-100 text-lg mb-8">
-              فريقنا المتخصص مستعد لمساعدتك في اختيار الجبيرة المناسبة لاحتياجاتك. تواصل معنا للحصول على تقييم شامل وخطة علاج مخصصة.
-            </p>
+      <section className="py-16 bg-gradient-to-r from-medical-800 to-medical-950 text-white">
+        <div className="container mx-auto px-4 text-center max-w-4xl">
+          <h2 className="text-2xl sm:text-4xl font-extrabold font-cairo mb-4">
+            هل تحتاج لمساعدة في اختيار الجبيرة المناسبة؟
+          </h2>
+          <p className="text-medical-200 text-sm sm:text-base mb-8 max-w-xl mx-auto font-medium">
+            تواصل مباشرة مع فريقنا الطبي المعتمد لحجز موعد استشارة وتحديد القياسات في أقرب فرع لك.
+          </p>
+          <div className="flex flex-col sm:flex-row justify-center gap-4">
+            <Link to="/booking">
+              <Button size="lg" className="w-full sm:w-auto bg-medical-500 hover:bg-medical-400 text-white font-bold rounded-xl px-8 py-6 text-base shadow-lg">
+                حجز موعد استشارة وتفصيل
+                <Calendar className="mr-2 h-5 w-5" />
+              </Button>
+            </Link>
             <a href="https://wa.me/201119056895" target="_blank" rel="noopener noreferrer">
-              <Button size="lg" className="bg-white text-medical-700 hover:bg-medical-50 px-6 py-6">
-                تواصل معنا الآن
-                <ArrowRight className="mr-2 h-5 w-5 rtl:rotate-180" />
+              <Button size="lg" variant="outline" className="w-full sm:w-auto border-white/30 text-white hover:bg-white/10 font-bold rounded-xl px-8 py-6 text-base">
+                استشارة عبر واتساب
+                <PhoneCall className="mr-2 h-5 w-5" />
               </Button>
             </a>
           </div>
         </div>
       </section>
-      
+
+      {/* Product Detail Modal */}
+      <AnimatePresence>
+        {selectedProduct && (
+          <Dialog open={!!selectedProduct} onOpenChange={() => setSelectedProduct(null)}>
+            <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto rounded-3xl p-6 sm:p-8 font-cairo">
+              <DialogHeader>
+                <div className="inline-flex items-center gap-2 bg-medical-50 text-medical-800 px-3 py-1 rounded-full text-xs font-bold w-fit mb-2">
+                  <ShieldCheck className="w-4 h-4 text-medical-600" />
+                  <span>{selectedProduct.categoryName}</span>
+                </div>
+                <DialogTitle className="text-2xl sm:text-3xl font-extrabold text-gray-900 font-cairo">
+                  {selectedProduct.item.name}
+                </DialogTitle>
+                <DialogDescription className="text-sm text-gray-500">
+                  تفاصيل وحجم ومواصفات الجهاز التقويمي المخصص
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 my-4">
+                {/* Image Showcase */}
+                <div className="bg-slate-50 rounded-2xl p-4 flex items-center justify-center border border-gray-200 min-h-[250px]">
+                  <img
+                    src={selectedProduct.item.image}
+                    alt={selectedProduct.item.name}
+                    className="max-h-64 object-contain rounded-lg"
+                    onError={(e) => {
+                      e.currentTarget.src = 'https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=600&q=80';
+                    }}
+                  />
+                </div>
+
+                {/* Info List */}
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="text-xs font-bold text-gray-500 mb-1">الوصف الطبي:</h4>
+                    <p className="text-xs sm:text-sm text-gray-700 leading-relaxed font-medium">
+                      {selectedProduct.item.description}
+                    </p>
+                  </div>
+
+                  {selectedProduct.item.targetGroup && (
+                    <div>
+                      <h4 className="text-xs font-bold text-gray-500 mb-1">الفئة المستهدفة:</h4>
+                      <p className="text-xs text-medical-900 font-bold bg-sky-50 p-2.5 rounded-lg border border-sky-100">
+                        {selectedProduct.item.targetGroup}
+                      </p>
+                    </div>
+                  )}
+
+                  {selectedProduct.item.price && (
+                    <div className="bg-medical-50 p-3 rounded-xl border border-medical-100 flex items-center justify-between">
+                      <span className="text-xs font-bold text-gray-600">التكلفة التقديرية:</span>
+                      <span className="text-sm font-black text-medical-800">{selectedProduct.item.price}</span>
+                    </div>
+                  )}
+
+                  {selectedProduct.item.material && (
+                    <div>
+                      <h4 className="text-xs font-bold text-gray-500 mb-1">خامات التصنيع:</h4>
+                      <p className="text-xs text-gray-800 font-semibold bg-gray-100 p-2.5 rounded-lg border border-gray-200">
+                        {selectedProduct.item.material}
+                      </p>
+                    </div>
+                  )}
+
+                  {selectedProduct.item.warranty && (
+                    <div>
+                      <h4 className="text-xs font-bold text-gray-500 mb-1">الضمان والصيانة:</h4>
+                      <p className="text-xs text-emerald-800 font-semibold bg-emerald-50 p-2.5 rounded-lg border border-emerald-100 flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
+                        {selectedProduct.item.warranty}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Key Features & Indications */}
+              <div className="space-y-4 pt-4 border-t border-gray-200">
+                <div>
+                  <h4 className="text-sm font-bold text-gray-900 mb-2 font-cairo">المميزات والوظائف الحركية:</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {selectedProduct.item.features.map((feat, idx) => (
+                      <div key={idx} className="flex items-start gap-2 bg-slate-50 p-2.5 rounded-xl border border-slate-100 text-xs text-gray-800 font-medium">
+                        <CheckCircle2 className="w-4 h-4 text-medical-600 flex-shrink-0 mt-0.5" />
+                        <span>{feat}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {((selectedProduct.item.indications && selectedProduct.item.indications.length > 0) || (selectedProduct.indications && selectedProduct.indications.length > 0)) && (
+                  <div>
+                    <h4 className="text-sm font-bold text-gray-900 mb-2 font-cairo">أبرز الدواعي الطبية لهذا المنتج:</h4>
+                    <div className="flex flex-wrap gap-1.5">
+                      {(selectedProduct.item.indications || selectedProduct.indications).map((ind, idx) => (
+                        <span key={idx} className="bg-medical-50 text-medical-800 text-xs font-bold px-3 py-1 rounded-lg border border-medical-100">
+                          {ind}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Modal Action Buttons */}
+              <div className="mt-6 pt-4 border-t border-gray-200 flex flex-col sm:flex-row gap-3 justify-end">
+                <Button
+                  variant="outline"
+                  onClick={() => setSelectedProduct(null)}
+                  className="rounded-xl font-bold text-xs"
+                >
+                  إغلاق النافذة
+                </Button>
+                <Link to="/booking" onClick={() => setSelectedProduct(null)}>
+                  <Button className="w-full sm:w-auto bg-medical-700 hover:bg-medical-800 text-white font-bold rounded-xl text-xs px-6 py-2.5">
+                    حجز موعد استشارة وتفصيل
+                    <Calendar className="mr-2 h-4 w-4" />
+                  </Button>
+                </Link>
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
+      </AnimatePresence>
+
       <Footer />
     </div>
   );

@@ -516,7 +516,7 @@ export function getLocalCenters(): Center[] {
     return updated;
   });
 
-  if (modified || !saved) {
+  if (saved && modified) {
     localStorage.setItem('centers', JSON.stringify(enriched));
   }
   return enriched;
@@ -613,7 +613,6 @@ export function getLocalSpecialists(): Specialist[] {
       console.error('Error parsing specialists:', e);
     }
   }
-  localStorage.setItem('specialists', JSON.stringify(defaultSpecialists));
   return defaultSpecialists;
 }
 

@@ -87,6 +87,10 @@ const AdminDashboard = () => {
     }
 
     loadData();
+
+    const handleSync = () => loadData();
+    window.addEventListener('wasel-db-updated', handleSync);
+    return () => window.removeEventListener('wasel-db-updated', handleSync);
   }, []);
 
   const formatPhoneForWhatsapp = (phone: string) => {

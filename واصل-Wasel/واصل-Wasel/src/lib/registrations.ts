@@ -156,30 +156,25 @@ export async function isUsernameTaken(username: string): Promise<boolean> {
 
 export async function syncDatabase() {
   try {
-    const hasLocalSpecs = localStorage.getItem('specialists') !== null;
-    const hasLocalCenters = localStorage.getItem('centers') !== null;
-
-    // If local data already exists, sync local changes to cloud instead of overwriting local storage
-    if (hasLocalSpecs && hasLocalCenters) {
-      const specs = getLocalSpecialists();
-      const centers = getLocalCenters();
-      uploadLocalData(specs, centers);
-      return;
-    }
-
-    // Otherwise (fresh visitor/browser), load from cloud database
     const res = await fetch(`${API_BASE}?action=db`);
     if (!res.ok) return;
     const db = await res.json();
 
+    let updated = false;
     if (db.specialists && Array.isArray(db.specialists) && db.specialists.length > 0) {
       saveLocalSpecialists(db.specialists);
+      updated = true;
     }
     if (db.centers && Array.isArray(db.centers) && db.centers.length > 0) {
       saveLocalCenters(db.centers);
+      updated = true;
+    }
+
+    if (updated && typeof window !== 'undefined') {
+      window.dispatchEvent(new Event('wasel-db-updated'));
     }
   } catch (err) {
-    // Soft ignore network error
+    console.error('syncDatabase error:', err);
   }
 }
 

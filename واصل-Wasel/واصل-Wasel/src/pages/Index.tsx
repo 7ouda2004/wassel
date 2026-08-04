@@ -139,11 +139,11 @@ const Index = () => {
             ].map((item, idx) => (
               <div key={idx} className="bg-slate-50/60 rounded-3xl overflow-hidden border border-gray-200/70 hover:shadow-lg transition-all duration-300 flex flex-col justify-between group">
                 <div>
-                  <div className="h-56 overflow-hidden bg-gray-100 relative">
+                  <div className="h-56 overflow-hidden bg-gray-50 relative flex items-center justify-center">
                     <img 
                       src={item.image} 
                       alt={item.title} 
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      className="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-500"
                       onError={(e) => { e.currentTarget.src = item.fallback; }}
                     />
                   </div>
@@ -170,11 +170,11 @@ const Index = () => {
         <div className="container mx-auto px-4 max-w-7xl">
           <div className="flex flex-col lg:flex-row items-center gap-12">
             <div className="lg:w-1/2">
-              <div className="rounded-3xl overflow-hidden shadow-xl border border-gray-200/80">
+              <div className="rounded-3xl overflow-hidden shadow-xl border border-gray-200/80 bg-gray-50">
                 <img 
                   src="/images/team.png" 
                   alt="Quality Care Team" 
-                  className="w-full h-[400px] object-cover"
+                  className="w-full h-auto max-h-[500px] object-contain"
                   onError={(e) => { e.currentTarget.src = DEFAULT_CENTER_IMAGE; }}
                 />
               </div>
