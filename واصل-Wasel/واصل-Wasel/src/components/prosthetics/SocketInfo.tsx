@@ -780,7 +780,7 @@ const SocketInfo: React.FC = () => {
           <div className="space-y-8">
             
             {/* SEARCH BAR & CATEGORY FILTERS */}
-            <div className="bg-white/80 backdrop-blur-xl p-4 sm:p-6 rounded-3xl border border-gray-100 shadow-lg space-y-4">
+            <div className="bg-white/90 backdrop-blur-xl p-5 sm:p-6 rounded-3xl border border-gray-100 shadow-sm space-y-4">
               
               {/* Search input */}
               <div className="relative max-w-xl mx-auto">
@@ -811,15 +811,15 @@ const SocketInfo: React.FC = () => {
                     <button
                       key={cat.id}
                       onClick={() => setSelectedCategory(cat.id)}
-                      className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all duration-200 ${
+                      className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 ${
                         isSelected
-                          ? 'bg-medical-600 text-white font-black shadow-md shadow-medical-500/20 scale-105'
+                          ? 'bg-medical-600 text-white shadow-md shadow-medical-500/20 scale-105'
                           : 'bg-gray-50 text-gray-600 hover:bg-medical-50 border border-gray-200 hover:border-medical-200'
                       }`}
                     >
                       <Icon className={`w-3.5 h-3.5 ${isSelected ? 'text-white' : 'text-medical-500'}`} />
                       <span>{cat.label}</span>
-                      <span className={`px-1.5 py-0.5 rounded-full text-[10px] ${
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] ${
                         isSelected ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-500'
                       }`}>
                         {cat.count}
@@ -844,81 +844,80 @@ const SocketInfo: React.FC = () => {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.9 }}
                         transition={{ duration: 0.4, delay: idx * 0.05 }}
-                        className={`bg-white rounded-3xl overflow-hidden border-2 shadow-sm hover:shadow-xl transition-all duration-500 flex flex-col justify-between group relative ${
-                          isSelectedForCompare ? 'border-amber-300 ring-2 ring-amber-200' : 'border-gray-100 hover:border-medical-200'
+                        className={`bg-white rounded-3xl overflow-hidden border-2 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between group relative ${
+                          isSelectedForCompare ? 'border-amber-400 ring-2 ring-amber-200' : 'border-gray-100 hover:border-medical-200'
                         }`}
                       >
-                        {/* Top Banner Image with Gradient Overlay */}
-                        <div className="relative h-52 w-full overflow-hidden bg-gray-100">
+                        {/* 1. Image Header Container - Pure Image without text overlay */}
+                        <div className="relative h-48 w-full overflow-hidden bg-slate-50">
                           <img
                             src={item.image}
                             alt={item.name}
-                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                             onError={(e) => {
                               e.currentTarget.src = 'https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?q=80&w=1000&auto=format&fit=crop';
                             }}
                           />
-                          <div className="absolute inset-0 bg-gradient-to-t from-white via-white/20 to-transparent" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
 
-                          {/* Badge Tag */}
+                          {/* Status Badge Tag */}
                           <div className="absolute top-3 right-3 z-10">
-                            <span className="bg-medical-600 text-white font-extrabold text-[11px] px-3 py-1 rounded-full shadow-md">
+                            <span className="bg-medical-600/90 backdrop-blur-md text-white font-extrabold text-[11px] px-3 py-1 rounded-full shadow-sm">
                               {item.badge}
-                            </span>
-                          </div>
-
-                          {/* Category Badge */}
-                          <div className="absolute top-3 left-3 z-10">
-                            <span className="bg-white/90 backdrop-blur-md text-gray-600 font-bold text-[10px] px-2.5 py-1 rounded-full border border-gray-200">
-                              {item.categoryLabel}
-                            </span>
-                          </div>
-
-                          {/* Title over image bottom */}
-                          <div className="absolute bottom-3 right-4 left-4 z-10">
-                            <h3 className="text-base font-extrabold text-gray-900 font-cairo leading-snug group-hover:text-medical-700 transition-colors">
-                              {item.name}
-                            </h3>
-                            <span className="text-[11px] text-medical-600 font-mono font-medium block">
-                              {item.nameEn}
                             </span>
                           </div>
                         </div>
 
-                        {/* Card Content Body */}
-                        <div className="p-5 flex-grow space-y-4">
+                        {/* 2. Card Body Content - Spacious and Clean */}
+                        <div className="p-6 flex-grow flex flex-col justify-between space-y-5">
                           
-                          {/* Short Description */}
-                          <p className="text-gray-600 text-xs sm:text-sm leading-relaxed line-clamp-3">
-                            {item.shortDesc}
-                          </p>
+                          {/* Top Header: Category Pill & Titles */}
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="inline-block px-3 py-1 rounded-lg text-[11px] font-bold bg-medical-50 text-medical-700 border border-medical-100">
+                                {item.categoryLabel}
+                              </span>
+                            </div>
+
+                            <h3 className="text-lg font-extrabold text-gray-900 font-cairo leading-snug group-hover:text-medical-600 transition-colors">
+                              {item.name}
+                            </h3>
+                            <span className="text-xs text-gray-400 font-mono block">
+                              {item.nameEn}
+                            </span>
+
+                            {/* Short Description */}
+                            <p className="text-gray-600 text-xs sm:text-sm leading-relaxed font-medium pt-1">
+                              {item.shortDesc}
+                            </p>
+                          </div>
 
                           {/* Feature Highlights */}
-                          <div className="space-y-1.5 pt-1">
-                            <span className="text-[11px] font-bold text-gray-400 block">أبرز المميزات:</span>
+                          <div className="space-y-2 pt-2 border-t border-gray-100">
+                            <span className="text-[11px] font-bold text-gray-400 block">أبرز المميزات التشريحية:</span>
                             {item.features.slice(0, 3).map((feat, fIdx) => (
-                              <div key={fIdx} className="flex items-start gap-2 text-xs text-gray-700 font-medium">
-                                <CheckCircle2 className="w-3.5 h-3.5 text-medical-500 shrink-0 mt-0.5" />
-                                <span className="line-clamp-1">{feat}</span>
+                              <div key={fIdx} className="flex items-start gap-2.5 text-xs text-gray-700 font-medium">
+                                <CheckCircle2 className="w-4 h-4 text-medical-500 shrink-0 mt-0.5" />
+                                <span className="leading-snug">{feat}</span>
                               </div>
                             ))}
                           </div>
 
                           {/* Specifications Quick Bar */}
-                          <div className="grid grid-cols-2 gap-2 pt-3 border-t border-gray-100 text-xs">
-                            <div className="bg-medical-50/50 p-2 rounded-xl border border-medical-100">
+                          <div className="grid grid-cols-2 gap-2.5 pt-2 text-xs">
+                            <div className="bg-medical-50/60 p-2.5 rounded-xl border border-medical-100">
                               <span className="text-[10px] font-bold text-gray-400 block">K-Level:</span>
                               <span className="font-extrabold text-medical-700">{item.kLevel}</span>
                             </div>
-                            <div className="bg-gray-50 p-2 rounded-xl border border-gray-100">
+                            <div className="bg-gray-50 p-2.5 rounded-xl border border-gray-100">
                               <span className="text-[10px] font-bold text-gray-400 block">البطانة:</span>
                               <span className="font-bold text-gray-700 truncate block">{item.linerType.split(' ')[0]}...</span>
                             </div>
                           </div>
                         </div>
 
-                        {/* Card Footer Actions */}
-                        <div className="p-5 pt-0 flex items-center gap-2">
+                        {/* 3. Card Actions Footer */}
+                        <div className="p-6 pt-0 flex items-center gap-2">
                           <Button
                             onClick={() => setDetailModalItem(item)}
                             className="flex-1 bg-gradient-to-r from-medical-500 to-medical-700 hover:from-medical-600 hover:to-medical-800 text-white font-bold text-xs py-2.5 rounded-xl transition-all duration-300 shadow-md shadow-medical-500/20"
@@ -968,7 +967,7 @@ const SocketInfo: React.FC = () => {
           <div className="space-y-12 max-w-5xl mx-auto">
             
             {/* Header intro card */}
-            <div className="bg-gradient-to-r from-medical-50 via-white to-blue-50 p-6 sm:p-8 rounded-3xl border border-medical-100 text-right space-y-3 shadow-lg relative overflow-hidden">
+            <div className="bg-gradient-to-r from-medical-50 via-white to-blue-50 p-6 sm:p-8 rounded-3xl border border-medical-100 text-right space-y-3 shadow-sm relative overflow-hidden">
               <div className="flex items-center gap-3">
                 <Cpu className="w-8 h-8 text-medical-600" />
                 <div>
@@ -976,7 +975,7 @@ const SocketInfo: React.FC = () => {
                   <span className="text-xs text-medical-600 font-mono">Precision Prosthetic Fabrication Protocol</span>
                 </div>
               </div>
-              <p className="text-gray-600 text-xs sm:text-sm leading-relaxed">
+              <p className="text-gray-600 text-xs sm:text-sm leading-relaxed font-medium">
                 نستخدم أحدث ما توصلت إليه التكنولوجيا الالمانية والامريكية في مسح وتصميم وتصنيع السوكيت رقمياً بدون عجين الجبس التقليدي، لضمان مطابقة متناهية بالمليمتر وتوزيع محاذاة ليزري خالي من أخطاء العنصر البشري.
               </p>
             </div>
@@ -998,7 +997,7 @@ const SocketInfo: React.FC = () => {
                   </div>
 
                   {/* Step Box Card */}
-                  <div className="bg-white p-6 sm:p-8 rounded-3xl border border-gray-100 hover:border-medical-200 shadow-md hover:shadow-xl transition-all duration-300 space-y-5">
+                  <div className="bg-white p-6 sm:p-8 rounded-3xl border border-gray-100 hover:border-medical-200 shadow-sm hover:shadow-lg transition-all duration-300 space-y-5">
                     
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-100 pb-4">
                       <div>
