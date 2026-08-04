@@ -52,7 +52,7 @@ const Team = () => {
             transition={{ duration: 0.8 }}
           >
             <img 
-              src="/public/images/team.png"
+              src="/images/team.png"
               alt="فريق عمل واصل" 
               className="w-full h-auto max-h-[500px] object-contain rounded-2xl shadow-2xl"
               onError={(e) => {
@@ -73,11 +73,11 @@ const Team = () => {
             {specialists.map((member, index) => (
               <motion.div 
                 key={member.id}
-                className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 flex flex-col h-full justify-between"
-                initial={{ opacity: 0, y: 30 }}
+                className="bg-white rounded-2xl shadow-sm hover:shadow-xl overflow-hidden border border-gray-100 flex flex-col h-full justify-between transition-all duration-300 hover:-translate-y-1"
+                initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: index * 0.08, ease: "easeOut" }}
+                viewport={{ once: true, margin: "-50px" }}
               >
                 <div>
                   <div className="relative h-80">

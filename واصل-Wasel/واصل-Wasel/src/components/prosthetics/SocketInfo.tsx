@@ -241,7 +241,7 @@ const ALL_SOCKET_TYPES: SocketTypeItem[] = [
       'إحساس دقيق بملامسة الأرض وثبات العضلات'
     ],
     limitations: [
-      'يتطلب تدريباً وتدقيقاً استثنائياً من أخصائي التراف الصناعية',
+      'يتطلب تدريباً وتدقيقاً استثنائياً من أخصائي الأطراف الصناعية',
       'تكنولوجيا مسجلة بتكلفة أعلى'
     ],
     comfortRating: 5,
@@ -477,7 +477,7 @@ const ALL_SOCKET_TYPES: SocketTypeItem[] = [
     stabilityRating: 5,
     kLevel: 'K1 - K4',
     weightCategory: 'نظام قفل مدمج خفيف',
-    linerType: 'بطانة سيليكون مزودة برزوز قفل سفلي',
+    linerType: 'بطانة سيليكون مزودة بمسمار قفل سفلي',
     image: 'https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?q=80&w=1000&auto=format&fit=crop',
     badge: 'السهل الممتنع وسريع الخلع',
     bgGradient: 'from-teal-500/10 via-emerald-500/5 to-transparent',
@@ -577,11 +577,11 @@ const MANUFACTURING_STEPS: ManufacturingStep[] = [
     techType: '3D Laser Scanner',
     shortDesc: 'أخذ قياسات تشريحية بالمليمتر للجذمور باستخدام الماسح الضوئي الليزري دون ألم أو عجين جبسي تقليدي.',
     detailedProcess: [
-      'يقوم الأخصائي بمسح الجذمور ضوئياً بماسح ليزري ثلاثي الأبعاد ثلاثي الأبعاد ثلاثي الأبعاد في ثوانٍ معدودة.',
+      'يقوم الأخصائي بمسح الجذمور ضوئياً بماسح ليزري ثلاثي الأبعاد في ثوانٍ معدودة.',
       'إنشاء مجسم رقمي ثلاثي الأبعاد (Digital Cloud Points) بدقة تصل إلى 0.1 مليمتر.',
       'تحديد البروزات العظمية، وتر الصابونة، والمناطق الرخوة والحساسة تشريحياً على الشاشة.'
     ],
-    keyTools: ['3D Scanner', 'digital Calipers', 'Goniometer'],
+    keyTools: ['3D Scanner', 'Digital Calipers', 'Goniometer'],
     image: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?q=80&w=1000&auto=format&fit=crop'
   },
   {
