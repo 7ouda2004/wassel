@@ -1,19 +1,19 @@
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  PersonStanding, 
-  Activity, 
-  Sparkles, 
-  ShieldCheck, 
-  Layers, 
-  Search, 
-  X, 
-  Maximize2, 
-  Info, 
-  HeartPulse, 
-  CheckCircle2, 
-  Zap, 
-  Award, 
+import {
+  PersonStanding,
+  Activity,
+  Sparkles,
+  ShieldCheck,
+  Layers,
+  Search,
+  X,
+  Maximize2,
+  Info,
+  HeartPulse,
+  CheckCircle2,
+  Zap,
+  Award,
   Footprints,
   Cpu,
   Shield,
@@ -24,12 +24,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogDescription 
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription
 } from "@/components/ui/dialog";
 
 // ─── Interfaces ───
@@ -92,7 +92,7 @@ const masterAmputationLevels: AmputationLevelItem[] = [
     controlType: 'تحكم عضلي طبيعي 100%',
     comfortRating: 5,
     mobilityRating: 5,
-    image: 'https://images.unsplash.com/photo-1579684385127-1ef15d508118?q=80&w=1000&auto=format&fit=crop',
+    image: 'https://storage.googleapis.com/dl.dentistrykey.com/clinical/LowerExtremityAmputationsOperativeTechniquesandResults/3_3s20B9780323775571001156.jpg',
     badge: 'استقلالية حركية كاملة',
     kLevelRecommendation: 'K1 - K4'
   },
@@ -128,18 +128,18 @@ const masterAmputationLevels: AmputationLevelItem[] = [
     controlType: 'تحكم عضلي طبيعي مدمج',
     comfortRating: 4,
     mobilityRating: 4,
-    image: 'https://images.unsplash.com/photo-1532938911079-1b06ac7ceec7?q=80&w=1000&auto=format&fit=crop',
+    image: 'https://www.karepoindia.com/blog/wp-content/uploads/2025/08/Lisfranc-amputation-1024x625.webp',
     badge: 'حفظ كعب القدم الطبيعي',
     kLevelRecommendation: 'K1 - K4'
   },
   {
-    id: 'syme-disarticulation',
-    name: 'بتر مفصل الكاحل - صايم (Syme Ankle Disarticulation)',
-    nameEn: 'Syme Ankle Disarticulation',
+    id: 'symes-disarticulation',
+    name: 'بتر مفصل الكاحل  (Syme Ankle Disarticulation)',
+    nameEn: 'Symes Ankle Disarticulation',
     category: 'disarticulation',
     categoryLabel: 'بتر مفاصل - سفلي',
     shortDesc: 'إزالة القدم بالكامل عند مفصل الكاحل مع الحفاظ على وسادة وسحق الكعب الطبيعي للتحميل المباشر.',
-    fullMedicalDesc: 'بتر صايم (Syme) هو أحد أفضل مستويات البتر ميكانيكياً. يتم فيه قطع القدم عند مفصل الكاحل وتثبيت وسادة الكعب الجلدية السميكة أسفل نهاية عظم الظنبوب. يتيح هذا للمريض المشي لبرهة داخل المنزل حتى بدون طرف صناعي، ويتحمل وزن الجسم كاملاً على نهاية الجذمور (End-Bearing).',
+    fullMedicalDesc: 'بتر صايم (Symes) هو أحد أفضل مستويات البتر ميكانيكياً. يتم فيه قطع القدم عند مفصل الكاحل وتثبيت وسادة الكعب الجلدية السميكة أسفل نهاية عظم الظنبوب. يتيح هذا للمريض المشي لبرهة داخل المنزل حتى بدون طرف صناعي، ويتحمل وزن الجسم كاملاً على نهاية الجذمور (End-Bearing).',
     anatomyPoints: [
       'تحميل وزن الجسم بنسبة 100% على نهاية الجذمور (End-Bearing)',
       'نهاية عريضة للجذمور بسبب بروز لقم الكاحل (Malleoli)',
@@ -164,7 +164,7 @@ const masterAmputationLevels: AmputationLevelItem[] = [
     controlType: 'تحكم عظمي وعضلي قوي جداً',
     comfortRating: 5,
     mobilityRating: 5,
-    image: 'https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?q=80&w=1000&auto=format&fit=crop',
+    image: 'https://c8.alamy.com/comp/2AXF365/a-manual-of-operative-surgery-1848-mal-gaigne-employed-asingle-large-internalflap-and-nelatonpeculiar-dorsal-andplantar-flaps-thatwere-larger-on-theinner-than-the-outerside-the-amputationgives-very-excellentresults-the-astrag-alus-forms-a-good-surface-for-support-and-as-the-ankle-joint-ispreserved-a-more-elastic-stump-is-produced-than-results-fromeither-symes-or-pirogoffs-amputation-fig-351-p-460-the-first-three-methods-described-are-practically-varieties-ofthe-oval-or-racket-incision-the-fourth-involves-a-simple-heel-flapfarabeufs-operation-has-been-considered-first-because-2AXF365.jpg',
     badge: 'تحميل مباشر على الكعب',
     kLevelRecommendation: 'K1 - K4'
   },
@@ -236,7 +236,7 @@ const masterAmputationLevels: AmputationLevelItem[] = [
     controlType: 'تحكم بالفخذ المكتمل 100%',
     comfortRating: 5,
     mobilityRating: 4,
-    image: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80&w=1000&auto=format&fit=crop',
+    image: 'https://www.choosept.com/globalassets/choosept/assets/guide-illustrations-images/below-knee-amputation-illustration_880x550.png',
     badge: 'تحميل كامل على الفخذ',
     kLevelRecommendation: 'K2 - K4'
   },
@@ -273,7 +273,7 @@ const masterAmputationLevels: AmputationLevelItem[] = [
     controlType: 'تحكم بمفصل الورك والركبة الذكية',
     comfortRating: 4,
     mobilityRating: 4,
-    image: 'https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?q=80&w=1000&auto=format&fit=crop',
+    image: 'https://orthofixar.com/wp-content/uploads/Transfemoral-Amputation.png',
     badge: 'يتطلب ركبة اصطناعية ذكية',
     kLevelRecommendation: 'K1 - K4'
   },
@@ -310,7 +310,7 @@ const masterAmputationLevels: AmputationLevelItem[] = [
     controlType: 'تحكم بحركة الحوض والجذع',
     comfortRating: 3,
     mobilityRating: 3,
-    image: 'https://images.unsplash.com/photo-1581594693702-fbdc51b2763b?q=80&w=1000&auto=format&fit=crop',
+    image: 'https://opedge.com/wp-content/uploads/2021/10/4a.jpg',
     badge: 'تثبيت كورسيه حوضي شامل',
     kLevelRecommendation: 'K1 - K3'
   },
@@ -346,7 +346,7 @@ const masterAmputationLevels: AmputationLevelItem[] = [
     controlType: 'تحكم بأسفل القفص الصدري والجذع',
     comfortRating: 3,
     mobilityRating: 2,
-    image: 'https://images.unsplash.com/photo-1579684385127-1ef15d508118?q=80&w=1000&auto=format&fit=crop',
+    image: 'https://media.springernature.com/lw685/springer-static/image/chp%3A10.1007%2F978-3-642-34746-7_244/MediaObjects/310002_1_En_244_Fig1_HTML.gif?as=webp',
     badge: 'تأهيل حوضي متخصص',
     kLevelRecommendation: 'K1 - K2'
   },
@@ -422,7 +422,7 @@ const masterAmputationLevels: AmputationLevelItem[] = [
     controlType: 'تحكم كهرومغناطيسي + دوران طبيعي',
     comfortRating: 5,
     mobilityRating: 5,
-    image: 'https://images.unsplash.com/photo-1581092335397-9583fe92d232?q=80&w=1000&auto=format&fit=crop',
+    image: 'https://www.prostheticrehabclinic.co.za/wp-content/themes/eugenerossouw/images/understanding_prosthetics/hand_prostheses/thumb_grip.jpg',
     badge: 'حفظ حركة دوران الساعد',
     kLevelRecommendation: 'نشاط علوي مكتمل'
   },
@@ -458,7 +458,7 @@ const masterAmputationLevels: AmputationLevelItem[] = [
     controlType: 'تحكم عضلات الساعد الكهرومغناطيسي',
     comfortRating: 5,
     mobilityRating: 5,
-    image: 'https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?q=80&w=1000&auto=format&fit=crop',
+    image: 'https://www.armdynamics.com/hs-fs/hubfs/Transradial%20(Below%20the%20Elbow)%20Amputee.jpg?width=600&height=338&name=Transradial%20(Below%20the%20Elbow)%20Amputee.jpg',
     badge: 'النموذج الذهبي للطرف العلوي',
     kLevelRecommendation: 'نشاط علوي متقدم'
   },
@@ -618,7 +618,7 @@ const AmputationLevels: React.FC = () => {
   // Filtered List
   const filteredLevels = useMemo(() => {
     return masterAmputationLevels.filter(item => {
-      const matchCat = selectedCategory === 'all' || 
+      const matchCat = selectedCategory === 'all' ||
         (selectedCategory === 'lower' && (item.category === 'lower' || (item.category === 'disarticulation' && item.categoryLabel.includes('سفلي')) || (item.category === 'partial' && item.categoryLabel.includes('قدم')))) ||
         (selectedCategory === 'upper' && (item.category === 'upper' || (item.category === 'disarticulation' && item.categoryLabel.includes('علوي')) || (item.category === 'partial' && item.categoryLabel.includes('يد')))) ||
         (selectedCategory === 'disarticulation' && item.category === 'disarticulation') ||
@@ -650,10 +650,10 @@ const AmputationLevels: React.FC = () => {
       <div className="absolute bottom-10 left-10 w-96 h-96 bg-sky-400/5 rounded-full blur-3xl pointer-events-none" />
 
       <div className="container mx-auto px-4 max-w-7xl relative z-10">
-        
+
         {/* ─── SECTION HEADER ─── */}
         <div className="text-center max-w-3xl mx-auto mb-14 space-y-4">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: -20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -663,7 +663,7 @@ const AmputationLevels: React.FC = () => {
             <span>الموسوعة الطبية والتأهيلية الشاملة لجميع حالات البتر</span>
           </motion.div>
 
-          <motion.h2 
+          <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -673,7 +673,7 @@ const AmputationLevels: React.FC = () => {
             مستويات وأنواع البتر — <span className="text-medical-600">التشريح والخيارات والتأهيل</span>
           </motion.h2>
 
-          <motion.p 
+          <motion.p
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -686,7 +686,7 @@ const AmputationLevels: React.FC = () => {
 
         {/* ─── SEARCH BAR & CATEGORY FILTERS ─── */}
         <div className="bg-white/90 backdrop-blur-xl p-5 sm:p-6 rounded-3xl border border-gray-100 shadow-sm space-y-4 mb-10">
-          
+
           {/* Search Input */}
           <div className="relative max-w-xl mx-auto">
             <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -698,7 +698,7 @@ const AmputationLevels: React.FC = () => {
               className="pr-12 pl-4 py-3 bg-gray-50 border-gray-200 text-gray-900 placeholder-gray-400 rounded-2xl focus:border-medical-500 focus:ring-medical-500/30 text-sm font-medium"
             />
             {searchQuery && (
-              <button 
+              <button
                 onClick={() => setSearchQuery('')}
                 className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700"
               >
@@ -716,17 +716,15 @@ const AmputationLevels: React.FC = () => {
                 <button
                   key={cat.id}
                   onClick={() => setSelectedCategory(cat.id)}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 ${
-                    isSelected
-                      ? 'bg-medical-600 text-white shadow-md shadow-medical-500/20 scale-105'
-                      : 'bg-gray-50 text-gray-600 hover:bg-medical-50 border border-gray-200 hover:border-medical-200'
-                  }`}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 ${isSelected
+                    ? 'bg-medical-600 text-white shadow-md shadow-medical-500/20 scale-105'
+                    : 'bg-gray-50 text-gray-600 hover:bg-medical-50 border border-gray-200 hover:border-medical-200'
+                    }`}
                 >
                   <Icon className={`w-3.5 h-3.5 ${isSelected ? 'text-white' : 'text-medical-500'}`} />
                   <span>{cat.label}</span>
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] ${
-                    isSelected ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-500'
-                  }`}>
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] ${isSelected ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-500'
+                    }`}>
                     {cat.count}
                   </span>
                 </button>
@@ -778,7 +776,7 @@ const AmputationLevels: React.FC = () => {
 
                   {/* Card Body Content */}
                   <div className="p-6 flex-grow flex flex-col justify-between space-y-5">
-                    
+
                     {/* Title & Subtitle */}
                     <div className="space-y-1.5">
                       <h3 className="text-lg font-extrabold text-gray-900 font-cairo leading-snug group-hover:text-medical-600 transition-colors">
@@ -839,7 +837,7 @@ const AmputationLevels: React.FC = () => {
             <HelpCircle className="w-12 h-12 text-gray-300 mx-auto" />
             <p className="text-base font-bold text-gray-600">لم يتم العثور على حالة بتر تطابق بحثك</p>
             <p className="text-xs text-gray-400">جرب البحث بكلمات أخرى أو اختر تصنيفاً مختلفاً</p>
-            <Button 
+            <Button
               onClick={() => { setSelectedCategory('all'); setSearchQuery(''); }}
               variant="outline"
               className="text-xs border-gray-300 text-gray-500 mt-2"
@@ -856,7 +854,7 @@ const AmputationLevels: React.FC = () => {
         <DialogContent className="max-w-4xl bg-white border-gray-200 text-gray-900 font-cairo max-h-[90vh] overflow-y-auto p-6 sm:p-8 rounded-3xl">
           {detailItem && (
             <div className="space-y-6 text-right">
-              
+
               {/* Modal Header */}
               <DialogHeader className="text-right border-b border-gray-100 pb-4">
                 <div className="flex items-center gap-2 mb-1">
@@ -901,7 +899,7 @@ const AmputationLevels: React.FC = () => {
 
               {/* Grid 1: Anatomy vs Prosthetic Options */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                
+
                 {/* Anatomy Points */}
                 <div className="bg-gray-50 p-5 rounded-2xl border border-gray-200 space-y-3">
                   <h4 className="text-sm font-bold text-gray-900 flex items-center gap-2 border-b border-gray-200 pb-2">
@@ -938,7 +936,7 @@ const AmputationLevels: React.FC = () => {
 
               {/* Grid 2: Functional Outcomes vs Rehabilitation Guidelines */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                
+
                 {/* Functional Outcomes */}
                 <div className="bg-blue-50/50 p-5 rounded-2xl border border-blue-100 space-y-3">
                   <h4 className="text-sm font-bold text-blue-900 flex items-center gap-2 border-b border-blue-100 pb-2">
@@ -982,7 +980,7 @@ const AmputationLevels: React.FC = () => {
 
               {/* Close Action */}
               <div className="pt-4 text-left border-t border-gray-100">
-                <Button 
+                <Button
                   onClick={() => setDetailItem(null)}
                   className="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs px-6 rounded-xl border border-gray-200"
                 >
