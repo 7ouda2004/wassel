@@ -743,6 +743,8 @@ const AdminDashboard = () => {
                           ))}
                         </div>
                       </div>
+                    )}
+
                     {/* Cloud Pending Requests (from JSONBIN / submitRegistration) */}
                     {pendingJsonbinRequests.length > 0 && (
                       <div>
@@ -799,6 +801,8 @@ const AdminDashboard = () => {
                         </div>
                       </div>
                     )}
+                  </div>
+                )}
               </div>
 
               {/* REJECTED REQUESTS SECTION */}
@@ -956,6 +960,10 @@ const AdminDashboard = () => {
                               </div>
                             </div>
                           ))}
+                        </div>
+                      </div>
+                    )}
+
                     {/* Cloud Rejected Requests (from JSONBIN / submitRegistration) */}
                     {rejectedJsonbinRequests.length > 0 && (
                       <div>
