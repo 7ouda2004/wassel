@@ -115,7 +115,7 @@ const Index = () => {
               {
                 title: "الأطراف الصناعية الذكية",
                 desc: "أطراف صناعية علوية وسفلية متطورة مصممة وفق أحدث المعايير لتمنحك حركة طبيعية وثبات تام.",
-                image: "/images/prosthetic_leg.png",
+                image: "/images/pro.png",
                 fallback: "https://images.unsplash.com/photo-1586773860418-d37222d8fce3?auto=format&fit=crop&w=600&q=80",
                 link: "/prosthetics",
                 linkText: "استكشف الأطراف"
@@ -123,7 +123,7 @@ const Index = () => {
               {
                 title: "الجبائر والأجهزة التقويمية",
                 desc: "تشكيلة مخصصة من جبائر الركبة، الكاحل، والعمود الفقري لتوفير الدعم الأمثل ومساعدة الأطفال والكبار.",
-                image: "/images/afo.jpg",
+                image: "/images/afo.png",
                 fallback: "https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=600&q=80",
                 link: "/orthoses",
                 linkText: "استكشف الجبائر"
