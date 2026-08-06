@@ -92,6 +92,8 @@ interface AdminState {
   addApprovalRequest: (request: Omit<ApprovalRequest, 'id' | 'status' | 'submittedAt'>) => Promise<void>;
   approveRequest: (id: string) => Promise<void>;
   rejectRequest: (id: string) => Promise<void>;
+  deleteRequest: (id: string) => Promise<void>;
+  reApproveRequest: (id: string) => Promise<void>;
 
   validateSpecialistLogin: (username: string, password: string) => Promise<any>;
 }
@@ -376,6 +378,40 @@ export const useAdminStore = create<AdminState>()((set, get) => ({
     }
   },
 
+  deleteRequest: async (id) => {
+    await supabase.from('approval_requests').delete().eq('id', id);
+    set(state => ({
+      approvalRequests: state.approvalRequests.filter(r => r.id !== id)
+    }));
+  },
+
+  reApproveRequest: async (id) => {
+    const { data: req } = await supabase.from('approval_requests').update({
+      status: 'approved',
+      reviewed_at: new Date().toISOString()
+    }).eq('id', id).select('*').single();
+
+    if (req) {
+      if (req.type === 'specialist') {
+        await supabase.from('specialists').insert({
+          full_name: req.full_name,
+          phone: req.phone,
+          username: req.username,
+          password: req.password,
+          specialization: req.specialization
+        });
+      } else {
+        await supabase.from('centers').insert({
+          name_ar: req.center_name || req.full_name,
+          phone: req.phone,
+          username: req.username,
+          password: req.password
+        });
+      }
+      get().fetchAll();
+    }
+  },
+
   validateSpecialistLogin: async (username, password) => {
     if ((username === 'admin' && password === 'admin') || (username === '616' && password === 'daizer616')) {
       return { id: 'admin', type: 'admin', fullName: 'Admin User', role: 'admin' };
@@ -390,3 +426,4 @@ export const useAdminStore = create<AdminState>()((set, get) => ({
     return null;
   },
 }));
+

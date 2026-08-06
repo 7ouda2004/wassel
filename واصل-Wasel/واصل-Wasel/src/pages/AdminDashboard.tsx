@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Users, MapPin, PlusCircle, Edit, Trash, Save, Search, 
   UserCheck, ShieldAlert, Clock, Phone, Building, Check, X,
-  Upload, Sparkles, CheckCircle2, AlertCircle, RefreshCw, FileText, Image as ImageIcon, Briefcase, Camera
+  Upload, Sparkles, CheckCircle2, AlertCircle, RefreshCw, FileText, Image as ImageIcon, Briefcase, Camera,
+  Undo2, Trash2, Stethoscope, Building2, Ban
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -35,11 +36,13 @@ import {
   DEFAULT_CENTER_IMAGE, FALLBACK_CENTER_IMAGES, FALLBACK_SPECIALIST_IMAGES, DEFAULT_CASES
 } from '@/lib/db';
 import { syncDatabase, getPendingRequests, uploadLocalData, type RegistrationRequest } from '@/lib/registrations';
+import { useAdminStore, type ApprovalRequest } from '@/stores/admin-store';
 
 const AdminDashboard = () => {
   const [centers, setCenters] = useState<Center[]>([]);
   const [specialists, setSpecialists] = useState<Specialist[]>([]);
   const [pendingCloudRequests, setPendingCloudRequests] = useState<RegistrationRequest[]>([]);
+  const { approvalRequests, fetchRequests, approveRequest, rejectRequest: rejectCloudRequest, deleteRequest, reApproveRequest } = useAdminStore();
 
   // Dialog States for Center
   const [isAddingCenter, setIsAddingCenter] = useState(false);
@@ -73,6 +76,7 @@ const AdminDashboard = () => {
     setCenters(loadedCenters);
     setSpecialists(loadedSpecs);
     getPendingRequests().then(reqs => setPendingCloudRequests(reqs)).catch(() => {});
+    fetchRequests().catch(() => {});
   };
 
   useEffect(() => {
@@ -205,7 +209,7 @@ const AdminDashboard = () => {
   };
 
   const handleRejectCenter = (id: string) => {
-    const updated = centers.filter(c => c.id !== id);
+    const updated = centers.map(c => c.id === id ? { ...c, status: 'rejected' as const } : c);
     setCenters(updated);
     saveLocalCenters(updated);
     uploadLocalData(specialists, updated);
@@ -272,11 +276,84 @@ const AdminDashboard = () => {
   };
 
   const handleRejectSpec = (id: string) => {
-    const updated = specialists.filter(s => s.id !== id);
+    const updated = specialists.map(s => s.id === id ? { ...s, status: 'rejected' as const } : s);
     setSpecialists(updated);
     saveLocalSpecialists(updated);
     uploadLocalData(updated, centers);
     toast.error('تم رفض طلب انضمام الأخصائي');
+  };
+
+  // Re-approve local rejected items
+  const handleReApproveCenter = (id: string) => {
+    const updated = centers.map(c => c.id === id ? { ...c, status: 'active' as const } : c);
+    setCenters(updated);
+    saveLocalCenters(updated);
+    uploadLocalData(specialists, updated);
+    toast.success('تم إعادة قبول وتفعيل المركز بنجاح!');
+  };
+
+  const handleReApproveSpec = (id: string) => {
+    const updated = specialists.map(s => s.id === id ? { ...s, status: 'active' as const } : s);
+    setSpecialists(updated);
+    saveLocalSpecialists(updated);
+    uploadLocalData(updated, centers);
+    toast.success('تم إعادة قبول وتفعيل الأخصائي بنجاح!');
+  };
+
+  // Permanently delete local rejected items
+  const handlePermDeleteCenter = (id: string) => {
+    const updated = centers.filter(c => c.id !== id);
+    setCenters(updated);
+    saveLocalCenters(updated);
+    uploadLocalData(specialists, updated);
+    toast.success('تم حذف المركز نهائياً');
+  };
+
+  const handlePermDeleteSpec = (id: string) => {
+    const updated = specialists.filter(s => s.id !== id);
+    setSpecialists(updated);
+    saveLocalSpecialists(updated);
+    uploadLocalData(updated, centers);
+    toast.success('تم حذف الأخصائي نهائياً');
+  };
+
+  // Cloud approval request handlers
+  const handleApproveCloudRequest = async (id: string) => {
+    try {
+      await approveRequest(id);
+      loadData();
+      toast.success('تم قبول وتفعيل الطلب بنجاح!');
+    } catch {
+      toast.error('حدث خطأ أثناء قبول الطلب');
+    }
+  };
+
+  const handleRejectCloudRequest = async (id: string) => {
+    try {
+      await rejectCloudRequest(id);
+      toast.error('تم رفض الطلب');
+    } catch {
+      toast.error('حدث خطأ أثناء رفض الطلب');
+    }
+  };
+
+  const handleReApproveCloudRequest = async (id: string) => {
+    try {
+      await reApproveRequest(id);
+      loadData();
+      toast.success('تم إعادة قبول الطلب وتفعيله!');
+    } catch {
+      toast.error('حدث خطأ أثناء إعادة القبول');
+    }
+  };
+
+  const handleDeleteCloudRequest = async (id: string) => {
+    try {
+      await deleteRequest(id);
+      toast.success('تم حذف الطلب نهائياً');
+    } catch {
+      toast.error('حدث خطأ أثناء الحذف');
+    }
   };
 
   // Add Case Study Helper
@@ -304,7 +381,12 @@ const AdminDashboard = () => {
   // Filter lists
   const pendingCenters = centers.filter(c => c.status === 'pending');
   const pendingSpecs = specialists.filter(s => s.status === 'pending');
-  const totalPendingCount = pendingCenters.length + pendingSpecs.length + pendingCloudRequests.length;
+  const rejectedCenters = centers.filter(c => c.status === 'rejected');
+  const rejectedSpecs = specialists.filter(s => s.status === 'rejected');
+  const cloudPendingRequests = approvalRequests.filter(r => r.status === 'pending');
+  const cloudRejectedRequests = approvalRequests.filter(r => r.status === 'rejected');
+  const totalPendingCount = pendingCenters.length + pendingSpecs.length + cloudPendingRequests.length;
+  const totalRejectedCount = rejectedCenters.length + rejectedSpecs.length + cloudRejectedRequests.length;
 
   const filteredCentersList = centers.filter(c => 
     c.name.toLowerCase().includes(centerSearchTerm.toLowerCase()) ||
@@ -345,7 +427,7 @@ const AdminDashboard = () => {
           </div>
 
           {/* Stats Bar */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
             <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-xs flex items-center justify-between">
               <div>
                 <p className="text-xs font-bold text-gray-400">إجمالي المراكز المفعلة</p>
@@ -373,6 +455,16 @@ const AdminDashboard = () => {
               </div>
               <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
                 <Clock className="w-6 h-6" />
+              </div>
+            </div>
+
+            <div className="bg-white rounded-2xl p-5 border border-red-100 shadow-xs flex items-center justify-between">
+              <div>
+                <p className="text-xs font-bold text-red-600">طلبات مرفوضة</p>
+                <p className="text-2xl font-extrabold text-red-500 mt-1">{totalRejectedCount}</p>
+              </div>
+              <div className="w-12 h-12 rounded-xl bg-red-50 text-red-500 flex items-center justify-center font-bold">
+                <Ban className="w-6 h-6" />
               </div>
             </div>
           </div>
@@ -422,7 +514,7 @@ const AdminDashboard = () => {
                   </div>
                 ) : (
                   <div className="space-y-6">
-                    {/* Pending Centers */}
+                    {/* Pending Centers (local) */}
                     {pendingCenters.length > 0 && (
                       <div>
                         <h3 className="text-sm font-bold text-gray-800 mb-3 flex items-center gap-2">
@@ -467,7 +559,7 @@ const AdminDashboard = () => {
                       </div>
                     )}
 
-                    {/* Pending Specialists */}
+                    {/* Pending Specialists (local) */}
                     {pendingSpecs.length > 0 && (
                       <div>
                         <h3 className="text-sm font-bold text-gray-800 mb-3 flex items-center gap-2 pt-4 border-t border-gray-100">
@@ -513,9 +605,228 @@ const AdminDashboard = () => {
                         </div>
                       </div>
                     )}
+
+                    {/* Cloud Pending Requests (from Supabase approval_requests) */}
+                    {cloudPendingRequests.length > 0 && (
+                      <div>
+                        <h3 className="text-sm font-bold text-gray-800 mb-3 flex items-center gap-2 pt-4 border-t border-gray-100">
+                          <Sparkles className="w-4 h-4 text-amber-600" />
+                          طلبات انضمام جديدة من بوابة الأخصائيين ({cloudPendingRequests.length}):
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {cloudPendingRequests.map(req => (
+                            <div key={req.id} className="bg-violet-50/40 border border-violet-200/80 rounded-2xl p-5 flex flex-col justify-between">
+                              <div>
+                                <div className="flex items-center justify-between mb-2">
+                                  <h4 className="font-bold text-gray-900 text-base">{req.fullName}</h4>
+                                  <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full ${
+                                    req.type === 'specialist' 
+                                      ? 'text-teal-700 bg-teal-100' 
+                                      : 'text-blue-700 bg-blue-100'
+                                  }`}>
+                                    {req.type === 'specialist' ? (
+                                      <span className="flex items-center gap-1"><Stethoscope className="w-3 h-3" /> أخصائي</span>
+                                    ) : (
+                                      <span className="flex items-center gap-1"><Building2 className="w-3 h-3" /> مركز</span>
+                                    )}
+                                  </span>
+                                </div>
+                                <div className="space-y-1.5 text-xs text-gray-600 mb-4">
+                                  <p><span className="font-bold text-gray-700">رقم الواتساب:</span> <span dir="ltr">{req.phone}</span></p>
+                                  <p><span className="font-bold text-gray-700">اسم المستخدم:</span> <span className="font-mono text-medical-700">@{req.username}</span></p>
+                                  {req.specialization && <p><span className="font-bold text-gray-700">التخصص:</span> {req.specialization}</p>}
+                                  {req.centerName && <p><span className="font-bold text-gray-700">اسم المركز:</span> {req.centerName}</p>}
+                                  <p><span className="font-bold text-gray-700">تاريخ التقديم:</span> {new Date(req.submittedAt).toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+                                </div>
+                              </div>
+
+                              <div className="flex gap-2 pt-3 border-t border-violet-200/60">
+                                <Button 
+                                  onClick={() => handleApproveCloudRequest(req.id)}
+                                  className="flex-grow bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold py-2.5 gap-1.5"
+                                >
+                                  <Check className="w-4 h-4" />
+                                  قبول وتفعيل
+                                </Button>
+                                <Button 
+                                  onClick={() => handleRejectCloudRequest(req.id)}
+                                  variant="destructive"
+                                  className="rounded-xl text-xs font-bold py-2.5 px-4"
+                                >
+                                  <X className="w-4 h-4" />
+                                  رفض
+                                </Button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
+
+              {/* REJECTED REQUESTS SECTION */}
+              {totalRejectedCount > 0 && (
+                <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-red-100">
+                  <div className="flex items-center gap-3 mb-6 pb-4 border-b border-red-100">
+                    <div className="w-10 h-10 rounded-xl bg-red-50 text-red-500 flex items-center justify-center">
+                      <Ban className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-bold text-gray-900 font-cairo">الطلبات المرفوضة ({totalRejectedCount})</h2>
+                      <p className="text-gray-500 text-xs mt-0.5">يمكنك إعادة قبول أي طلب مرفوض أو حذفه نهائياً من النظام.</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-6">
+                    {/* Rejected Centers (local) */}
+                    {rejectedCenters.length > 0 && (
+                      <div>
+                        <h3 className="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
+                          <Building className="w-4 h-4 text-red-400" />
+                          مراكز مرفوضة ({rejectedCenters.length}):
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {rejectedCenters.map(center => (
+                            <div key={center.id} className="bg-red-50/30 border border-red-200/60 rounded-2xl p-5 flex flex-col justify-between opacity-80 hover:opacity-100 transition-opacity">
+                              <div>
+                                <div className="flex items-center justify-between mb-2">
+                                  <h4 className="font-bold text-gray-700 text-base">{center.name}</h4>
+                                  <span className="text-[10px] font-bold text-red-600 bg-red-100 px-2.5 py-1 rounded-full">مرفوض</span>
+                                </div>
+                                <div className="space-y-1 text-xs text-gray-500 mb-3">
+                                  <p><span className="font-bold text-gray-600">المحافظة:</span> {center.location}</p>
+                                  <p><span className="font-bold text-gray-600">الهاتف:</span> <span dir="ltr">{center.phone}</span></p>
+                                </div>
+                              </div>
+                              <div className="flex gap-2 pt-3 border-t border-red-200/40">
+                                <Button 
+                                  onClick={() => handleReApproveCenter(center.id)}
+                                  variant="outline"
+                                  className="flex-grow rounded-xl text-xs font-bold py-2.5 gap-1.5 border-emerald-300 text-emerald-700 hover:bg-emerald-50"
+                                >
+                                  <Undo2 className="w-4 h-4" />
+                                  إعادة قبول
+                                </Button>
+                                <Button 
+                                  onClick={() => handlePermDeleteCenter(center.id)}
+                                  variant="destructive"
+                                  className="rounded-xl text-xs font-bold py-2.5 px-4 gap-1"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                  حذف نهائي
+                                </Button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Rejected Specialists (local) */}
+                    {rejectedSpecs.length > 0 && (
+                      <div>
+                        <h3 className="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2 pt-4 border-t border-red-100">
+                          <Users className="w-4 h-4 text-red-400" />
+                          أخصائيون مرفوضون ({rejectedSpecs.length}):
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {rejectedSpecs.map(spec => (
+                            <div key={spec.id} className="bg-red-50/30 border border-red-200/60 rounded-2xl p-5 flex flex-col justify-between opacity-80 hover:opacity-100 transition-opacity">
+                              <div className="flex items-start gap-3 mb-3">
+                                <img 
+                                  src={spec.image || FALLBACK_SPECIALIST_IMAGES[0]} 
+                                  alt={spec.name} 
+                                  className="w-12 h-12 rounded-full object-cover border-2 border-red-200 grayscale"
+                                  onError={(e) => { e.currentTarget.src = FALLBACK_SPECIALIST_IMAGES[0]; }}
+                                />
+                                <div>
+                                  <h4 className="font-bold text-gray-700 text-base">{spec.name}</h4>
+                                  <p className="text-xs text-gray-500">{spec.role}</p>
+                                  {spec.phone && <p className="text-xs text-gray-400 mt-0.5" dir="ltr">{spec.phone}</p>}
+                                </div>
+                              </div>
+                              <div className="flex gap-2 pt-3 border-t border-red-200/40">
+                                <Button 
+                                  onClick={() => handleReApproveSpec(spec.id)}
+                                  variant="outline"
+                                  className="flex-grow rounded-xl text-xs font-bold py-2.5 gap-1.5 border-emerald-300 text-emerald-700 hover:bg-emerald-50"
+                                >
+                                  <Undo2 className="w-4 h-4" />
+                                  إعادة قبول
+                                </Button>
+                                <Button 
+                                  onClick={() => handlePermDeleteSpec(spec.id)}
+                                  variant="destructive"
+                                  className="rounded-xl text-xs font-bold py-2.5 px-4 gap-1"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                  حذف نهائي
+                                </Button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Cloud Rejected Requests */}
+                    {cloudRejectedRequests.length > 0 && (
+                      <div>
+                        <h3 className="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2 pt-4 border-t border-red-100">
+                          <Sparkles className="w-4 h-4 text-red-400" />
+                          طلبات مرفوضة من بوابة الأخصائيين ({cloudRejectedRequests.length}):
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {cloudRejectedRequests.map(req => (
+                            <div key={req.id} className="bg-red-50/30 border border-red-200/60 rounded-2xl p-5 flex flex-col justify-between opacity-80 hover:opacity-100 transition-opacity">
+                              <div>
+                                <div className="flex items-center justify-between mb-2">
+                                  <h4 className="font-bold text-gray-700 text-base">{req.fullName}</h4>
+                                  <div className="flex items-center gap-1.5">
+                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                                      req.type === 'specialist' ? 'text-teal-600 bg-teal-50' : 'text-blue-600 bg-blue-50'
+                                    }`}>
+                                      {req.type === 'specialist' ? 'أخصائي' : 'مركز'}
+                                    </span>
+                                    <span className="text-[10px] font-bold text-red-600 bg-red-100 px-2 py-0.5 rounded-full">مرفوض</span>
+                                  </div>
+                                </div>
+                                <div className="space-y-1 text-xs text-gray-500 mb-3">
+                                  <p><span className="font-bold text-gray-600">الواتساب:</span> <span dir="ltr">{req.phone}</span></p>
+                                  <p><span className="font-bold text-gray-600">المستخدم:</span> <span className="font-mono">@{req.username}</span></p>
+                                  {req.specialization && <p><span className="font-bold text-gray-600">التخصص:</span> {req.specialization}</p>}
+                                  {req.centerName && <p><span className="font-bold text-gray-600">المركز:</span> {req.centerName}</p>}
+                                  {req.reviewedAt && <p><span className="font-bold text-gray-600">تاريخ الرفض:</span> {new Date(req.reviewedAt).toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' })}</p>}
+                                </div>
+                              </div>
+                              <div className="flex gap-2 pt-3 border-t border-red-200/40">
+                                <Button 
+                                  onClick={() => handleReApproveCloudRequest(req.id)}
+                                  variant="outline"
+                                  className="flex-grow rounded-xl text-xs font-bold py-2.5 gap-1.5 border-emerald-300 text-emerald-700 hover:bg-emerald-50"
+                                >
+                                  <Undo2 className="w-4 h-4" />
+                                  إعادة قبول
+                                </Button>
+                                <Button 
+                                  onClick={() => handleDeleteCloudRequest(req.id)}
+                                  variant="destructive"
+                                  className="rounded-xl text-xs font-bold py-2.5 px-4 gap-1"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                  حذف نهائي
+                                </Button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </TabsContent>
 
             {/* TAB 2: MANAGE CENTERS & IMAGES */}
@@ -592,9 +903,11 @@ const AdminDashboard = () => {
                           </TableCell>
                           <TableCell className="text-center">
                             <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full ${
-                              center.status === 'active' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'
+                              center.status === 'active' ? 'bg-emerald-50 text-emerald-700' : 
+                              center.status === 'rejected' ? 'bg-red-50 text-red-600' : 
+                              'bg-amber-50 text-amber-700'
                             }`}>
-                              {center.status === 'active' ? 'مفعل ويعمل' : 'قيد الانتظار'}
+                              {center.status === 'active' ? 'مفعل ويعمل' : center.status === 'rejected' ? 'مرفوض' : 'قيد الانتظار'}
                             </span>
                           </TableCell>
                           <TableCell className="text-center">
