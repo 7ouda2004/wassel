@@ -494,7 +494,7 @@ const masterAmputationLevels: AmputationLevelItem[] = [
     controlType: 'تحكم بعضد مكتمل + كوع اصطناعي',
     comfortRating: 4,
     mobilityRating: 4,
-    image: 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?q=80&w=1000&auto=format&fit=crop',
+    image: 'https://www.pohlig.net/assets/fotos/ot/krankheitsbilder/amputation/4758/image-thumb__4758__image-media-half/Armstumpf@2x.8d0d16e0.avif',
     badge: 'ثبات وقوة رفع عالية',
     kLevelRecommendation: 'نشاط علوي متقدم'
   },
