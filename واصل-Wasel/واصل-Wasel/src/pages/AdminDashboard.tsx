@@ -37,6 +37,7 @@ import {
 } from '@/lib/db';
 import { syncDatabase, getPendingRequests, uploadLocalData, approveSpecialistInDb, approveCenterInDb, rejectRequest, type RegistrationRequest } from '@/lib/registrations';
 import { useAdminStore, type ApprovalRequest } from '@/stores/admin-store';
+import { supabase } from '@/lib/supabase';
 
 const AdminDashboard = () => {
   const [centers, setCenters] = useState<Center[]>([]);
@@ -160,7 +161,7 @@ const AdminDashboard = () => {
   };
 
   // --- Center Handlers ---
-  const handleSaveCenter = () => {
+  const handleSaveCenter = async () => {
     if (!currentCenter.name.trim() || !currentCenter.location.trim() || !currentCenter.address.trim() || !currentCenter.phone.trim()) {
       toast.error('يرجى ملء كافة الحقول الأساسية للمركز');
       return;
@@ -186,7 +187,25 @@ const AdminDashboard = () => {
 
     setCenters(updatedList);
     saveLocalCenters(updatedList);
-    uploadLocalData(specialists, updatedList);
+    await uploadLocalData(specialists, updatedList);
+
+    // Sync to Supabase centers table
+    try {
+      await supabase.from('centers').upsert({
+        name_ar: centerToSave.name,
+        phone: centerToSave.phone,
+        username: centerToSave.username,
+        password: centerToSave.password,
+        address_ar: centerToSave.address,
+        governorate_ar: centerToSave.location,
+        image: centerToSave.image,
+        working_hours_ar: centerToSave.workingHours,
+        is_active: true
+      }, { onConflict: 'username' });
+    } catch (e) {
+      console.log('Supabase center save fallback:', e);
+    }
+
     setIsAddingCenter(false);
     setIsEditingCenter(false);
   };
@@ -207,11 +226,25 @@ const AdminDashboard = () => {
     toast.success('تم حذف المركز بنجاح');
   };
 
-  const handleApproveCenter = (id: string) => {
+  const handleApproveCenter = async (id: string) => {
     const updated = centers.map(c => c.id === id ? { ...c, status: 'active' as const } : c);
     setCenters(updated);
     saveLocalCenters(updated);
-    uploadLocalData(specialists, updated);
+    await uploadLocalData(specialists, updated);
+    const approvedCenter = updated.find(c => c.id === id);
+    if (approvedCenter) {
+      try {
+        await supabase.from('centers').upsert({
+          name_ar: approvedCenter.name,
+          phone: approvedCenter.phone,
+          username: approvedCenter.username,
+          password: approvedCenter.password || 'center123',
+          address_ar: approvedCenter.address,
+          governorate_ar: approvedCenter.location,
+          is_active: true
+        }, { onConflict: 'username' });
+      } catch (e) {}
+    }
     toast.success('تم قبول وتفعيل المركز بنجاح! يظهر الآن للمرضى في صفحة المراكز.');
   };
 
@@ -224,7 +257,7 @@ const AdminDashboard = () => {
   };
 
   // --- Specialist Handlers ---
-  const handleSaveSpec = () => {
+  const handleSaveSpec = async () => {
     if (!currentSpec.name.trim() || !currentSpec.username.trim()) {
       toast.error('يرجى كتابة الاسم واسم المستخدم');
       return;
@@ -249,12 +282,28 @@ const AdminDashboard = () => {
       toast.success('تمت إضافة الأخصائي وتفعيله بنجاح!');
     } else {
       updatedList = specialists.map(s => s.id === specToSave.id ? specToSave : s);
-      toast.success('تم تعديل بيانات وصورة الأخصائي بنجاح!');
+      toast.success('تم تحديث بيانات وصورة الأخصائي بنجاح!');
     }
 
     setSpecialists(updatedList);
     saveLocalSpecialists(updatedList);
-    uploadLocalData(updatedList, centers);
+    await uploadLocalData(updatedList, centers);
+
+    // Sync to Supabase specialists table
+    try {
+      await supabase.from('specialists').upsert({
+        full_name: specToSave.name,
+        phone: specToSave.phone,
+        username: specToSave.username,
+        password: specToSave.password,
+        specialization: specToSave.role,
+        image: specToSave.image,
+        is_active: true
+      }, { onConflict: 'username' });
+    } catch (e) {
+      console.log('Supabase spec save fallback:', e);
+    }
+
     setIsAddingSpec(false);
     setIsEditingSpec(false);
   };
@@ -275,11 +324,22 @@ const AdminDashboard = () => {
     toast.success('تم حذف الأخصائي بنجاح');
   };
 
-  const handleApproveSpec = (spec: Specialist) => {
+  const handleApproveSpec = async (spec: Specialist) => {
     const updated = specialists.map(s => s.id === spec.id ? { ...s, status: 'active' as const } : s);
     setSpecialists(updated);
     saveLocalSpecialists(updated);
-    uploadLocalData(updated, centers);
+    await uploadLocalData(updated, centers);
+    try {
+      await supabase.from('specialists').upsert({
+        full_name: spec.name,
+        phone: spec.phone,
+        username: spec.username,
+        password: spec.password || 'specialist123',
+        specialization: spec.role,
+        image: spec.image,
+        is_active: true
+      }, { onConflict: 'username' });
+    } catch (e) {}
     toast.success(`تم قبول وتفعيل الأخصائي: ${spec.name}!`);
 
     if (spec.phone) {

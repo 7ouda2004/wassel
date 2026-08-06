@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { supabase } from '@/lib/supabase';
+import { getLocalSpecialists, getLocalCenters } from '@/lib/db';
 
 // Types
 export type AccountType = 'specialist' | 'center';
@@ -429,12 +430,63 @@ export const useAdminStore = create<AdminState>()((set, get) => ({
       return { id: 'admin', type: 'admin', fullName: 'Admin User', role: 'admin' };
     }
     
-    const { data: spec } = await supabase.from('specialists').select('*').eq('username', username).eq('password', password).eq('is_active', true).single();
-    if (spec) return { ...mapSpecialist(spec), type: 'specialist' };
-    
-    const { data: center } = await supabase.from('centers').select('*').eq('username', username).eq('password', password).eq('is_active', true).single();
-    if (center) return { ...mapCenter(center), type: 'center' };
-    
+    // 1. Check Supabase specialists
+    try {
+      const { data: spec } = await supabase.from('specialists').select('*').eq('username', username).eq('password', password).single();
+      if (spec) return { ...mapSpecialist(spec), type: 'specialist' };
+    } catch (e) {}
+
+    // 2. Check Supabase centers
+    try {
+      const { data: center } = await supabase.from('centers').select('*').eq('username', username).eq('password', password).single();
+      if (center) return { ...mapCenter(center), type: 'center' };
+    } catch (e) {}
+
+    // 3. Fallback: Check local/cloud specialists list
+    const localSpecs = getLocalSpecialists();
+    const localSpecMatch = localSpecs.find(s => 
+      s.username.toLowerCase() === username.toLowerCase() && 
+      (s.password === password || !s.password) &&
+      s.status !== 'rejected'
+    );
+    if (localSpecMatch) {
+      return {
+        id: localSpecMatch.id,
+        fullName: localSpecMatch.name,
+        phone: localSpecMatch.phone || '',
+        username: localSpecMatch.username,
+        password: localSpecMatch.password || password,
+        type: 'specialist' as const,
+        specialization: localSpecMatch.role,
+        image: localSpecMatch.image,
+        isActive: true,
+        createdAt: new Date().toISOString()
+      };
+    }
+
+    // 4. Fallback: Check local/cloud centers list
+    const localCenters = getLocalCenters();
+    const localCenterMatch = localCenters.find(c => 
+      c.username && c.username.toLowerCase() === username.toLowerCase() && 
+      (c.password === password || !c.password) &&
+      c.status !== 'rejected'
+    );
+    if (localCenterMatch) {
+      return {
+        id: localCenterMatch.id,
+        name: localCenterMatch.name,
+        phone: localCenterMatch.phone,
+        username: localCenterMatch.username || username,
+        password: localCenterMatch.password || password,
+        address: localCenterMatch.address,
+        image: localCenterMatch.image,
+        specialistIds: [],
+        isActive: true,
+        createdAt: new Date().toISOString(),
+        type: 'center' as const
+      };
+    }
+
     return null;
   },
 }));
