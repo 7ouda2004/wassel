@@ -173,22 +173,82 @@ export async function isUsernameTaken(username: string): Promise<boolean> {
 
 export async function syncDatabase() {
   try {
-    const res = await fetch(`${API_BASE}?action=db`);
-    if (!res.ok) return;
-    const db = await res.json();
-
+    let localSpecs = getLocalSpecialists();
+    let localCenters = getLocalCenters();
     let updated = false;
-    if (db.specialists && Array.isArray(db.specialists) && db.specialists.length > 0) {
-      saveLocalSpecialists(db.specialists);
-      updated = true;
-    }
-    if (db.centers && Array.isArray(db.centers) && db.centers.length > 0) {
-      saveLocalCenters(db.centers);
-      updated = true;
-    }
 
-    if (updated && typeof window !== 'undefined') {
-      window.dispatchEvent(new Event('wasel-db-updated'));
+    // 1. Merge Supabase specialists & centers
+    try {
+      const { data: supaSpecs } = await supabase.from('specialists').select('*');
+      if (supaSpecs && supaSpecs.length > 0) {
+        supaSpecs.forEach(ss => {
+          const idx = localSpecs.findIndex(ls => (ls.username && ss.username && ls.username.toLowerCase() === ss.username.toLowerCase()) || ls.id === ss.id);
+          if (idx >= 0) {
+            localSpecs[idx] = {
+              ...localSpecs[idx],
+              name: ss.full_name || localSpecs[idx].name,
+              phone: ss.phone || localSpecs[idx].phone,
+              password: ss.password || localSpecs[idx].password,
+              role: ss.specialization || localSpecs[idx].role,
+              image: ss.image || localSpecs[idx].image
+            };
+          }
+        });
+        updated = true;
+      }
+
+      const { data: supaCenters } = await supabase.from('centers').select('*');
+      if (supaCenters && supaCenters.length > 0) {
+        supaCenters.forEach(sc => {
+          const idx = localCenters.findIndex(lc => (lc.username && sc.username && lc.username.toLowerCase() === sc.username.toLowerCase()) || lc.id === sc.id);
+          if (idx >= 0) {
+            localCenters[idx] = {
+              ...localCenters[idx],
+              name: sc.name_ar || localCenters[idx].name,
+              phone: sc.phone || localCenters[idx].phone,
+              password: sc.password || localCenters[idx].password,
+              address: sc.address_ar || localCenters[idx].address,
+              location: sc.governorate_ar || localCenters[idx].location,
+              image: sc.image || localCenters[idx].image
+            };
+          }
+        });
+        updated = true;
+      }
+    } catch (e) {}
+
+    // 2. Fetch from JSONBIN API for new additions (without overwriting updated passwords)
+    try {
+      const res = await fetch(`${API_BASE}?action=db`);
+      if (res.ok) {
+        const db = await res.json();
+        if (db.specialists && Array.isArray(db.specialists)) {
+          db.specialists.forEach((cs: Specialist) => {
+            const idx = localSpecs.findIndex(ls => (ls.username && cs.username && ls.username.toLowerCase() === cs.username.toLowerCase()) || ls.id === cs.id);
+            if (idx === -1) {
+              localSpecs.push(cs);
+              updated = true;
+            }
+          });
+        }
+        if (db.centers && Array.isArray(db.centers)) {
+          db.centers.forEach((cc: Center) => {
+            const idx = localCenters.findIndex(lc => (lc.username && cc.username && lc.username.toLowerCase() === cc.username.toLowerCase()) || lc.id === cc.id);
+            if (idx === -1) {
+              localCenters.push(cc);
+              updated = true;
+            }
+          });
+        }
+      }
+    } catch (e) {}
+
+    if (updated) {
+      saveLocalSpecialists(localSpecs);
+      saveLocalCenters(localCenters);
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new Event('wasel-db-updated'));
+      }
     }
   } catch (err) {
     console.error('syncDatabase error:', err);
