@@ -11,6 +11,7 @@ import Footer from '@/components/Footer';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@/stores/auth-store';
 import { useAdminStore } from '@/stores/admin-store';
+import { submitRegistration } from '@/lib/registrations';
 
 const SpecialistLogin = () => {
   const { t, i18n } = useTranslation();
@@ -106,7 +107,7 @@ const SpecialistLogin = () => {
     setIsSubmitting(true);
 
     try {
-      // Send approval request to backend API
+      // 1. Send to Supabase approval_requests
       await addApprovalRequest({
         fullName: regData.fullName,
         phone: regData.phone,
@@ -115,7 +116,19 @@ const SpecialistLogin = () => {
         type: regType,
         centerName: regType === 'center' ? regData.centerName : undefined,
         specialization: regType === 'specialist' ? regData.specialization : undefined,
-      });
+      }).catch(err => console.log('Supabase addApprovalRequest fallback:', err));
+
+      // 2. Also send to JSONBIN / LocalStorage via submitRegistration
+      await submitRegistration({
+        type: regType,
+        full_name: regData.fullName,
+        phone: regData.phone,
+        username: regData.username,
+        password: regData.password,
+        center_name: regType === 'center' ? regData.centerName : undefined,
+        role: regType === 'specialist' ? regData.specialization : undefined,
+        bio: regType === 'specialist' ? regData.specialization : undefined,
+      }).catch(err => console.log('submitRegistration fallback:', err));
 
       toast.success(isAr ? 'تم إرسال طلبك للإدارة للموافقة. سيتم إعلامك عند القبول.' : 'Request sent to admin for approval. You will be notified when accepted.');
       setMode('login');

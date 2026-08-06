@@ -35,7 +35,7 @@ import {
   getLocalSpecialists, saveLocalSpecialists, type Specialist,
   DEFAULT_CENTER_IMAGE, FALLBACK_CENTER_IMAGES, FALLBACK_SPECIALIST_IMAGES, DEFAULT_CASES
 } from '@/lib/db';
-import { syncDatabase, getPendingRequests, uploadLocalData, type RegistrationRequest } from '@/lib/registrations';
+import { syncDatabase, getPendingRequests, uploadLocalData, approveSpecialistInDb, approveCenterInDb, rejectRequest, type RegistrationRequest } from '@/lib/registrations';
 import { useAdminStore, type ApprovalRequest } from '@/stores/admin-store';
 
 const AdminDashboard = () => {
@@ -356,6 +356,73 @@ const AdminDashboard = () => {
     }
   };
 
+  // JSONBIN / Local Cloud request handlers
+  const handleApproveJsonbinRequest = async (req: RegistrationRequest) => {
+    try {
+      if (req.type === 'specialist') {
+        await approveSpecialistInDb(req);
+      } else {
+        await approveCenterInDb(req);
+      }
+      const match = approvalRequests.find(r => r.username === req.username);
+      if (match) {
+        await approveRequest(match.id);
+      }
+      setPendingCloudRequests(prev => prev.filter(r => r.id !== req.id));
+      loadData();
+      toast.success('تم قبول وتفعيل الحساب بنجاح!');
+    } catch {
+      toast.error('حدث خطأ أثناء قبول الطلب');
+    }
+  };
+
+  const handleRejectJsonbinRequest = async (req: RegistrationRequest) => {
+    try {
+      await rejectRequest(req.id);
+      const match = approvalRequests.find(r => r.username === req.username);
+      if (match) {
+        await rejectCloudRequest(match.id);
+      }
+      setPendingCloudRequests(prev => prev.map(r => r.id === req.id ? { ...r, status: 'rejected' } : r));
+      loadData();
+      toast.error('تم رفض الطلب');
+    } catch {
+      toast.error('حدث خطأ أثناء رفض الطلب');
+    }
+  };
+
+  const handleReApproveJsonbinRequest = async (req: RegistrationRequest) => {
+    try {
+      if (req.type === 'specialist') {
+        await approveSpecialistInDb(req);
+      } else {
+        await approveCenterInDb(req);
+      }
+      const match = approvalRequests.find(r => r.username === req.username);
+      if (match) {
+        await reApproveRequest(match.id);
+      }
+      setPendingCloudRequests(prev => prev.map(r => r.id === req.id ? { ...r, status: 'approved' } : r));
+      loadData();
+      toast.success('تم إعادة قبول الطلب وتفعيله!');
+    } catch {
+      toast.error('حدث خطأ أثناء إعادة القبول');
+    }
+  };
+
+  const handleDeleteJsonbinRequest = async (req: RegistrationRequest) => {
+    try {
+      setPendingCloudRequests(prev => prev.filter(r => r.id !== req.id));
+      const match = approvalRequests.find(r => r.username === req.username);
+      if (match) {
+        await deleteRequest(match.id);
+      }
+      toast.success('تم حذف الطلب نهائياً');
+    } catch {
+      toast.error('حدث خطأ أثناء الحذف');
+    }
+  };
+
   // Add Case Study Helper
   const handleAddCaseToSpec = () => {
     if (!newCaseTitle.trim()) {
@@ -385,8 +452,23 @@ const AdminDashboard = () => {
   const rejectedSpecs = specialists.filter(s => s.status === 'rejected');
   const cloudPendingRequests = approvalRequests.filter(r => r.status === 'pending');
   const cloudRejectedRequests = approvalRequests.filter(r => r.status === 'rejected');
-  const totalPendingCount = pendingCenters.length + pendingSpecs.length + cloudPendingRequests.length;
-  const totalRejectedCount = rejectedCenters.length + rejectedSpecs.length + cloudRejectedRequests.length;
+
+  const pendingJsonbinRequests = pendingCloudRequests.filter(r => 
+    r.status === 'pending' && 
+    !cloudPendingRequests.some(c => c.username === r.username) &&
+    !pendingCenters.some(c => c.username === r.username || c.name === r.full_name) &&
+    !pendingSpecs.some(s => s.username === r.username || s.name === r.full_name)
+  );
+
+  const rejectedJsonbinRequests = pendingCloudRequests.filter(r => 
+    r.status === 'rejected' && 
+    !cloudRejectedRequests.some(c => c.username === r.username) &&
+    !rejectedCenters.some(c => c.username === r.username) &&
+    !rejectedSpecs.some(s => s.username === r.username)
+  );
+
+  const totalPendingCount = pendingCenters.length + pendingSpecs.length + cloudPendingRequests.length + pendingJsonbinRequests.length;
+  const totalRejectedCount = rejectedCenters.length + rejectedSpecs.length + cloudRejectedRequests.length + rejectedJsonbinRequests.length;
 
   const filteredCentersList = centers.filter(c => 
     c.name.toLowerCase().includes(centerSearchTerm.toLowerCase()) ||
@@ -661,9 +743,62 @@ const AdminDashboard = () => {
                           ))}
                         </div>
                       </div>
+                    {/* Cloud Pending Requests (from JSONBIN / submitRegistration) */}
+                    {pendingJsonbinRequests.length > 0 && (
+                      <div>
+                        <h3 className="text-sm font-bold text-gray-800 mb-3 flex items-center gap-2 pt-4 border-t border-gray-100">
+                          <Sparkles className="w-4 h-4 text-medical-600" />
+                          طلبات تسجيل جديدة من الموقع ({pendingJsonbinRequests.length}):
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {pendingJsonbinRequests.map(req => (
+                            <div key={req.id} className="bg-sky-50/40 border border-sky-200/80 rounded-2xl p-5 flex flex-col justify-between">
+                              <div>
+                                <div className="flex items-center justify-between mb-2">
+                                  <h4 className="font-bold text-gray-900 text-base">{req.full_name || req.center_name}</h4>
+                                  <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full ${
+                                    req.type === 'specialist' 
+                                      ? 'text-teal-700 bg-teal-100' 
+                                      : 'text-blue-700 bg-blue-100'
+                                  }`}>
+                                    {req.type === 'specialist' ? (
+                                      <span className="flex items-center gap-1"><Stethoscope className="w-3 h-3" /> أخصائي</span>
+                                    ) : (
+                                      <span className="flex items-center gap-1"><Building2 className="w-3 h-3" /> مركز</span>
+                                    )}
+                                  </span>
+                                </div>
+                                <div className="space-y-1.5 text-xs text-gray-600 mb-4">
+                                  <p><span className="font-bold text-gray-700">رقم التواصل:</span> <span dir="ltr">{req.phone}</span></p>
+                                  <p><span className="font-bold text-gray-700">اسم المستخدم:</span> <span className="font-mono text-medical-700">@{req.username}</span></p>
+                                  {req.role && <p><span className="font-bold text-gray-700">الوظيفة/التخصص:</span> {req.role}</p>}
+                                  {req.center_name && <p><span className="font-bold text-gray-700">الفرع:</span> {req.center_name}</p>}
+                                  {req.submitted_at && <p><span className="font-bold text-gray-700">تاريخ التقديم:</span> {new Date(req.submitted_at).toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' })}</p>}
+                                </div>
+                              </div>
+
+                              <div className="flex gap-2 pt-3 border-t border-sky-200/60">
+                                <Button 
+                                  onClick={() => handleApproveJsonbinRequest(req)}
+                                  className="flex-grow bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold py-2.5 gap-1.5"
+                                >
+                                  <Check className="w-4 h-4" />
+                                  قبول وتفعيل
+                                </Button>
+                                <Button 
+                                  onClick={() => handleRejectJsonbinRequest(req)}
+                                  variant="destructive"
+                                  className="rounded-xl text-xs font-bold py-2.5 px-4"
+                                >
+                                  <X className="w-4 h-4" />
+                                  رفض
+                                </Button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
                     )}
-                  </div>
-                )}
               </div>
 
               {/* REJECTED REQUESTS SECTION */}
@@ -812,6 +947,55 @@ const AdminDashboard = () => {
                                 </Button>
                                 <Button 
                                   onClick={() => handleDeleteCloudRequest(req.id)}
+                                  variant="destructive"
+                                  className="rounded-xl text-xs font-bold py-2.5 px-4 gap-1"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                  حذف نهائي
+                                </Button>
+                              </div>
+                            </div>
+                          ))}
+                    {/* Cloud Rejected Requests (from JSONBIN / submitRegistration) */}
+                    {rejectedJsonbinRequests.length > 0 && (
+                      <div>
+                        <h3 className="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2 pt-4 border-t border-red-100">
+                          <Sparkles className="w-4 h-4 text-red-400" />
+                          طلبات مرفوضة من الموقع ({rejectedJsonbinRequests.length}):
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {rejectedJsonbinRequests.map(req => (
+                            <div key={req.id} className="bg-red-50/30 border border-red-200/60 rounded-2xl p-5 flex flex-col justify-between opacity-80 hover:opacity-100 transition-opacity">
+                              <div>
+                                <div className="flex items-center justify-between mb-2">
+                                  <h4 className="font-bold text-gray-700 text-base">{req.full_name || req.center_name}</h4>
+                                  <div className="flex items-center gap-1.5">
+                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                                      req.type === 'specialist' ? 'text-teal-600 bg-teal-50' : 'text-blue-600 bg-blue-50'
+                                    }`}>
+                                      {req.type === 'specialist' ? 'أخصائي' : 'مركز'}
+                                    </span>
+                                    <span className="text-[10px] font-bold text-red-600 bg-red-100 px-2 py-0.5 rounded-full">مرفوض</span>
+                                  </div>
+                                </div>
+                                <div className="space-y-1 text-xs text-gray-500 mb-3">
+                                  <p><span className="font-bold text-gray-600">الواتساب:</span> <span dir="ltr">{req.phone}</span></p>
+                                  <p><span className="font-bold text-gray-600">المستخدم:</span> <span className="font-mono">@{req.username}</span></p>
+                                  {req.role && <p><span className="font-bold text-gray-600">التخصص:</span> {req.role}</p>}
+                                  {req.center_name && <p><span className="font-bold text-gray-600">المركز:</span> {req.center_name}</p>}
+                                </div>
+                              </div>
+                              <div className="flex gap-2 pt-3 border-t border-red-200/40">
+                                <Button 
+                                  onClick={() => handleReApproveJsonbinRequest(req)}
+                                  variant="outline"
+                                  className="flex-grow rounded-xl text-xs font-bold py-2.5 gap-1.5 border-emerald-300 text-emerald-700 hover:bg-emerald-50"
+                                >
+                                  <Undo2 className="w-4 h-4" />
+                                  إعادة قبول
+                                </Button>
+                                <Button 
+                                  onClick={() => handleDeleteJsonbinRequest(req)}
                                   variant="destructive"
                                   className="rounded-xl text-xs font-bold py-2.5 px-4 gap-1"
                                 >

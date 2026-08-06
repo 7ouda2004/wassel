@@ -3,6 +3,7 @@
  */
 
 import { getLocalSpecialists, saveLocalSpecialists, getLocalCenters, saveLocalCenters, type Specialist, type Center } from './db';
+import { supabase } from './supabase';
 
 const API_BASE = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
   ? 'https://wassel-phi.vercel.app/api/registrations'
@@ -72,6 +73,22 @@ export async function submitRegistration(
       body: JSON.stringify(data),
       headers: { 'Content-Type': 'application/json' }
     }).catch(err => console.log('Cloud submit fallback:', err));
+
+    // 3. Also push to Supabase approval_requests table
+    try {
+      await supabase.from('approval_requests').insert({
+        full_name: data.full_name,
+        phone: data.phone,
+        username: data.username,
+        password: data.password,
+        type: data.type,
+        center_name: data.center_name,
+        specialization: data.role || data.bio,
+        status: 'pending'
+      });
+    } catch (e) {
+      console.log('Supabase submit fallback:', e);
+    }
 
     return { ok: true };
   } catch (err: any) {
