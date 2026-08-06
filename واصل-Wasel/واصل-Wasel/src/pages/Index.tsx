@@ -131,7 +131,7 @@ const Index = () => {
               {
                 title: "شبكة مراكزنا بالمحافظات",
                 desc: "فروع معتمدة في كافة أنحاء مصر لتسهيل الوصول للأخصائيين ومتابعة التأهيل والصيانة الدورية.",
-                image: "/images/ortho.png",
+                image: "/images/default_center.png",
                 fallback: "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=600&q=80",
                 link: "/centers",
                 linkText: "تصفح الفروع"
