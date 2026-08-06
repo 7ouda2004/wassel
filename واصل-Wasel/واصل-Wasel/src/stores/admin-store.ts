@@ -236,7 +236,13 @@ export const useAdminStore = create<AdminState>()((set, get) => ({
   },
 
   removeSpecialist: async (id) => {
+    const spec = get().specialists.find(s => s.id === id);
     await supabase.from('specialists').delete().eq('id', id);
+    if (spec) {
+      if (spec.username) await supabase.from('specialists').delete().eq('username', spec.username);
+      if (spec.fullName) await supabase.from('specialists').delete().eq('full_name', spec.fullName);
+      await supabase.from('approval_requests').delete().eq('username', spec.username);
+    }
     set(state => ({ specialists: state.specialists.filter(s => s.id !== id) }));
   },
 
@@ -287,7 +293,13 @@ export const useAdminStore = create<AdminState>()((set, get) => ({
   },
 
   removeCenter: async (id) => {
+    const center = get().centers.find(c => c.id === id);
     await supabase.from('centers').delete().eq('id', id);
+    if (center) {
+      if (center.username) await supabase.from('centers').delete().eq('username', center.username);
+      if (center.name) await supabase.from('centers').delete().eq('name_ar', center.name);
+      await supabase.from('approval_requests').delete().eq('username', center.username);
+    }
     set(state => ({ centers: state.centers.filter(c => c.id !== id) }));
   },
 

@@ -42,7 +42,7 @@ const AdminDashboard = () => {
   const [centers, setCenters] = useState<Center[]>([]);
   const [specialists, setSpecialists] = useState<Specialist[]>([]);
   const [pendingCloudRequests, setPendingCloudRequests] = useState<RegistrationRequest[]>([]);
-  const { approvalRequests, fetchRequests, approveRequest, rejectRequest: rejectCloudRequest, deleteRequest, reApproveRequest } = useAdminStore();
+  const { approvalRequests, fetchRequests, approveRequest, rejectRequest: rejectCloudRequest, deleteRequest, reApproveRequest, removeSpecialist, removeCenter } = useAdminStore();
 
   // Dialog States for Center
   const [isAddingCenter, setIsAddingCenter] = useState(false);
@@ -191,11 +191,18 @@ const AdminDashboard = () => {
     setIsEditingCenter(false);
   };
 
-  const handleDeleteCenter = (id: string) => {
+  const handleDeleteCenter = async (id: string) => {
+    const centerToDelete = centers.find(c => c.id === id);
     const updated = centers.filter(c => c.id !== id);
     setCenters(updated);
     saveLocalCenters(updated);
-    uploadLocalData(specialists, updated);
+    await uploadLocalData(specialists, updated);
+    if (centerToDelete) {
+      await removeCenter(id).catch(() => {});
+      if (centerToDelete.username) {
+        await deleteRequest(centerToDelete.username).catch(() => {});
+      }
+    }
     setConfirmDeleteCenter(null);
     toast.success('تم حذف المركز بنجاح');
   };
@@ -252,11 +259,18 @@ const AdminDashboard = () => {
     setIsEditingSpec(false);
   };
 
-  const handleDeleteSpec = (id: string) => {
+  const handleDeleteSpec = async (id: string) => {
+    const specToDelete = specialists.find(s => s.id === id);
     const updated = specialists.filter(s => s.id !== id);
     setSpecialists(updated);
     saveLocalSpecialists(updated);
-    uploadLocalData(updated, centers);
+    await uploadLocalData(updated, centers);
+    if (specToDelete) {
+      await removeSpecialist(id).catch(() => {});
+      if (specToDelete.username) {
+        await deleteRequest(specToDelete.username).catch(() => {});
+      }
+    }
     setConfirmDeleteSpec(null);
     toast.success('تم حذف الأخصائي بنجاح');
   };
@@ -301,19 +315,33 @@ const AdminDashboard = () => {
   };
 
   // Permanently delete local rejected items
-  const handlePermDeleteCenter = (id: string) => {
+  const handlePermDeleteCenter = async (id: string) => {
+    const centerToDelete = centers.find(c => c.id === id);
     const updated = centers.filter(c => c.id !== id);
     setCenters(updated);
     saveLocalCenters(updated);
-    uploadLocalData(specialists, updated);
+    await uploadLocalData(specialists, updated);
+    if (centerToDelete) {
+      await removeCenter(id).catch(() => {});
+      if (centerToDelete.username) {
+        await deleteRequest(centerToDelete.username).catch(() => {});
+      }
+    }
     toast.success('تم حذف المركز نهائياً');
   };
 
-  const handlePermDeleteSpec = (id: string) => {
+  const handlePermDeleteSpec = async (id: string) => {
+    const specToDelete = specialists.find(s => s.id === id);
     const updated = specialists.filter(s => s.id !== id);
     setSpecialists(updated);
     saveLocalSpecialists(updated);
-    uploadLocalData(updated, centers);
+    await uploadLocalData(updated, centers);
+    if (specToDelete) {
+      await removeSpecialist(id).catch(() => {});
+      if (specToDelete.username) {
+        await deleteRequest(specToDelete.username).catch(() => {});
+      }
+    }
     toast.success('تم حذف الأخصائي نهائياً');
   };
 
